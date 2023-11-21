@@ -1,0 +1,10 @@
+﻿using SocialNetwork.DataAccess.Entities;
+
+namespace SocialNetwork.DataAccess.Repositories.Interfaces
+{
+    public interface IRefreshTokenRepository : IGenericRepository<RefreshToken>
+    {
+        Task<bool> RevokeToken(RefreshToken token);
+        Task<RefreshToken> GetToken(string Token, string Jti);
+    }
+}
