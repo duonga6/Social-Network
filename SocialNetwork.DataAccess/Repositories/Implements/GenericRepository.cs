@@ -32,19 +32,9 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             }
         }
 
-        public virtual Task<bool> Delete(Guid id)
-        {
-            throw new NotImplementedException();
-        }
-
         public virtual async Task<ICollection<T>> FindBy(Expression<Func<T, bool>> filter = null, CancellationToken cancellationToken = default)
         {
             return await _dbSet.Where(filter).ToListAsync(cancellationToken);
-        }
-
-        public virtual Task<ICollection<T>> GetAll()
-        {
-            throw new NotImplementedException();
         }
 
         public virtual async Task<T> GetById(Guid id)
@@ -52,9 +42,25 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return await _dbSet.FindAsync(id);
         }
 
+        // Chưa triển khai
         public virtual Task<bool> Update(T entity)
         {
             throw new NotImplementedException();
+        }
+        // Chưa
+        public virtual Task<bool> Delete(Guid id)
+        {
+            throw new NotImplementedException();
+        }
+        // Chưa
+        public virtual Task<ICollection<T>> GetAll()
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual async Task<T> FindOneBy(Expression<Func<T, bool>> filter = null, CancellationToken cancellationToken = default)
+        {
+            return await _dbSet.FirstOrDefaultAsync(filter, cancellationToken);
         }
     }
 }

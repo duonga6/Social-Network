@@ -16,7 +16,7 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 .HasConstraintName("FK_PostComment_User")
                 .IsRequired();
 
-            builder.ToTable("PostComment");
+            builder.ToTable("PostComments");
         }
     }
 }

@@ -13,6 +13,12 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         public IRefreshTokenRepository RefreshTokenRepository { get; }
         public IRoleRepository RoleRepository { get; }
 
+        public IPostImageRepository PostImageRepository { get; }
+
+        public IPostRepository PostRepository { get; }
+
+        public IPostCommentRepository PostCommentRepository { get; }
+
         public readonly AppDbContext _context;
 
         public UnitOfWork(AppDbContext context, ILogger<UnitOfWork> logger)
@@ -22,6 +28,9 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             UserRepository = new UserRepository(logger, context);
             RoleRepository = new RoleRepository(logger, context);
             RefreshTokenRepository = new RefreshTokenRepository(logger, context);
+            PostImageRepository = new PostImageRepository(logger, context);
+            PostRepository = new PostRepository(logger, context);
+            PostCommentRepository = new PostCommentRepository(logger, context);
         }
 
         public async Task<bool> CompleteAsync()

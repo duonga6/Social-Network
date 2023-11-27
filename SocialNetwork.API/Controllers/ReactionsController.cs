@@ -3,14 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.Business.DTOs.Reaction.Requests;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper.Interfaces;
+using SocialNetwork.DataAccess.Utilities.Roles;
 
 namespace SocialNetwork.API.Controllers
 {
-    [Authorize(Roles = "Administrator")]
-    public class ReactionController : BaseController
+    [Authorize(Roles = RoleName.Administrator)]
+    public class ReactionsController : BaseController
     {
         private readonly IReactionService _reactionService;
-        public ReactionController(IReactionService reactionService)
+        public ReactionsController(IReactionService reactionService)
         {
             _reactionService = reactionService;
         }
@@ -35,9 +36,10 @@ namespace SocialNetwork.API.Controllers
         }
 
         [HttpPut]
-        public async Task<IResponse> Update([FromBody] UpdateReactionRequest model)
+        [Route("{Id:guid}")]
+        public async Task<IResponse> Update(Guid Id, [FromBody] UpdateReactionRequest model)
         {
-            return await _reactionService.Update(model);
+            return await _reactionService.Update(Id, model);
         }
 
         [HttpDelete]

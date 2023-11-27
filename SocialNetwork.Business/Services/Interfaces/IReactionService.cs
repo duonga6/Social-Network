@@ -9,7 +9,7 @@ namespace SocialNetwork.Business.Services.Interfaces
         Task<IResponse> GetAll();
         Task<IResponse> GetById(Guid id);
         Task<IResponse> Add(CreateReactionRequest entity);
-        Task<IResponse> Update(UpdateReactionRequest entity);
+        Task<IResponse> Update(Guid Id, UpdateReactionRequest entity);
         Task<IResponse> Delete(Guid id);
     }
 }

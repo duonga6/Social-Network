@@ -18,6 +18,8 @@ namespace SocialNetwork.Business
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IPostService, PostService>();
+            services.AddScoped<IPostCommentService, PostCommentService>();
 
         }
     }

@@ -12,6 +12,11 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
         }
 
+        public override async Task<ICollection<User>> GetAll() 
+        {
+            return await _dbSet.AsNoTracking().ToListAsync();
+        }
+
         public async Task<User> FindByEmail(string email)
         {
             return await _dbSet.FirstOrDefaultAsync(x => x.Email == email);

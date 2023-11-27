@@ -33,7 +33,7 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 p.UserId
             });
 
-            builder.ToTable("PostReaction");
+            builder.ToTable("PostReactions");
         }
     }
 }

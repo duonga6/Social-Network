@@ -37,6 +37,8 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 .HasForeignKey(r => r.UserId)
                 .HasConstraintName("FK_RefreshToken_User")
                 .IsRequired();
+
+            builder.ToTable("RefreshTokens");
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Reaction.Requests;
 using SocialNetwork.Business.DTOs.Reaction.Response;
 using SocialNetwork.Business.Services.Interfaces;
@@ -19,7 +20,7 @@ namespace SocialNetwork.Business.Services.Implements
         {
             var checkEntity = await _unitOfWork.ReactionRepository.FindBy(x => x.Name == entity.Name && x.Code == entity.Code);
             if (checkEntity.Count > 0)
-                return new ErrorResponse(400, "Name and Code are already exist");
+                return new ErrorResponse(400, Messages.ReactionExist);
 
             var addEntity = _mapper.Map<Reaction>(entity);
 
@@ -27,7 +28,7 @@ namespace SocialNetwork.Business.Services.Implements
             var result = await _unitOfWork.CompleteAsync();
             
             if (!result)
-                return new ErrorResponse(400, "Error adding");
+                return new ErrorResponse(400, Messages.AddError);
 
             var reusltEntity = _mapper.Map<GetReactionReponse>(addEntity);
             return new DataResponse(reusltEntity, 201);
@@ -37,15 +38,15 @@ namespace SocialNetwork.Business.Services.Implements
         {
             var entity = await _unitOfWork.ReactionRepository.GetById(id);
             if (entity == null)
-                return new ErrorResponse(404, "Not found");
+                return new ErrorResponse(404, Messages.NotFound);
 
             await _unitOfWork.ReactionRepository.Delete(id);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
-                return new ErrorResponse(400, "Error deleting");
+                return new ErrorResponse(400, Messages.DeleteError);
 
-            return new SuccessResponse("Delete successfully", 204);
+            return new SuccessResponse(Messages.DeletedSuccessfully, 204);
         }
 
         public async Task<IResponse> GetAll()
@@ -59,34 +60,34 @@ namespace SocialNetwork.Business.Services.Implements
         {
             var entity = await _unitOfWork.ReactionRepository.GetById(id);
             if (entity == null)
-                return new ErrorResponse(404, "Not found");
+                return new ErrorResponse(404, Messages.NotFound);
 
             var reusltEntity = _mapper.Map<GetReactionReponse>(entity);
 
             return new DataResponse(reusltEntity, 200);
         }
 
-        public async Task<IResponse> Update(UpdateReactionRequest entity)
+        public async Task<IResponse> Update(Guid Id, UpdateReactionRequest entity)
         {
-            var findEntity = await _unitOfWork.ReactionRepository.GetById(entity.Id);
+            var findEntity = await _unitOfWork.ReactionRepository.GetById(Id);
             if (findEntity == null)
-                return new ErrorResponse(404, "Not found");
+                return new ErrorResponse(404, Messages.NotFound);
 
             if (entity.Name == findEntity.Name && entity.Code == findEntity.Code)
             {
-                return new ErrorResponse(400, "Name and Code are already exist");
+                return new ErrorResponse(400, Messages.ReactionExist);
             }    
 
             var updateEntity = _mapper.Map<Reaction>(entity);
+            updateEntity.Id = Id;
 
             await _unitOfWork.ReactionRepository.Update(updateEntity);
             var result = await _unitOfWork.CompleteAsync();
             
             if (!result)
-                return new ErrorResponse(400, "Error updating");
+                return new ErrorResponse(400, Messages.UpdateError);
 
-            var resultEntity = _mapper.Map<GetReactionReponse>(updateEntity);
-            return new DataResponse(resultEntity, 200);
+            return new DataResponse(_mapper.Map<GetReactionReponse>(updateEntity), 200);
             
         }
     }

@@ -8,7 +8,6 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            builder.ToTable("Users");
 
             builder.Property(p => p.FirstName)
                 .HasColumnType("nvarchar(50)")
@@ -17,6 +16,8 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
             builder.Property(p => p.LastName)
                 .HasColumnType("nvarchar(50)")
                 .IsRequired();
+
+            builder.ToTable("Users");
         }
     }
 }

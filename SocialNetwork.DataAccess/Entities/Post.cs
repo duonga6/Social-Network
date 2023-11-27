@@ -10,5 +10,6 @@ namespace SocialNetwork.DataAccess.Entities
         public string AuthorId { get; set; }
         public virtual User Author { get; set; }
         public virtual ICollection<PostReaction> Reactions { get; set; }
+        public virtual ICollection<PostImage> Images { get; set; }
     }
 }

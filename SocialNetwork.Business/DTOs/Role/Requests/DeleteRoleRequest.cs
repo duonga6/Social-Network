@@ -5,6 +5,6 @@ namespace SocialNetwork.Business.DTOs.Role.Request
     public class DeleteRoleRequest
     {
         [Required]
-        public string RoleName { get; set; } = string.Empty;
+        public string Id { set; get; } = string.Empty;
     }
 }

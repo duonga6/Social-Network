@@ -6,6 +6,7 @@ namespace SocialNetwork.DataAccess.Repositories.Interfaces
     {
         Task<ICollection<T>> GetAll();
         Task<ICollection<T>> FindBy(Expression<Func<T, bool>> filter = null, CancellationToken cancellationToken = default);
+        Task<T> FindOneBy(Expression<Func<T, bool>> filter = null, CancellationToken cancellationToken = default);
         Task<T> GetById(Guid id);
         Task<bool> Add(T entity);
         Task<bool> Update(T entity);

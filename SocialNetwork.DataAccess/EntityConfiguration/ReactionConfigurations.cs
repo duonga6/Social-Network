@@ -15,9 +15,7 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
             builder.HasIndex(r => r.Name)
                 .IsUnique();
 
-            
-
-            builder.ToTable("Reaction");
+            builder.ToTable("Reactions");
         }
     }
 }

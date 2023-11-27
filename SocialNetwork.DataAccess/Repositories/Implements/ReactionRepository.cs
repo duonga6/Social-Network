@@ -13,6 +13,11 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
         }
 
+        public override async Task<ICollection<Reaction>> GetAll()
+        {
+            return await _dbSet.Where(x => x.Status == 1).AsNoTracking().ToListAsync();
+        }
+
         public override async Task<bool> Delete(Guid id)
         {
             try
@@ -27,25 +32,6 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             catch (Exception ex)
             {
                 _logger.LogError(ex, "{Repo} error function: Delete", typeof(ReactionRepository));
-                throw;
-            }
-        }
-
-        public override async Task<ICollection<Reaction>> GetAll()
-        {
-            try
-            {
-                var entity = await _dbSet.Where(x => x.Status == 1)
-                .AsNoTracking()
-                .AsSplitQuery()
-                .OrderBy(x => x.Code)
-                .ToListAsync();
-
-                return entity;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "{Repo} error function: GetAll", typeof(ReactionRepository));
                 throw;
             }
         }

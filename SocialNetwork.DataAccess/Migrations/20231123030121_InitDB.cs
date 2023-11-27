@@ -10,7 +10,7 @@ namespace SocialNetwork.DataAccess.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Reaction",
+                name: "Reactions",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -22,7 +22,7 @@ namespace SocialNetwork.DataAccess.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Reaction", x => x.Id);
+                    table.PrimaryKey("PK_Reactions", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -92,7 +92,7 @@ namespace SocialNetwork.DataAccess.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Post",
+                name: "Posts",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -105,12 +105,37 @@ namespace SocialNetwork.DataAccess.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Post", x => x.Id);
+                    table.PrimaryKey("PK_Posts", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Post_User",
                         column: x => x.AuthorId,
                         principalTable: "Users",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Token = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    JwtId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    IsUsed = table.Column<bool>(type: "bit", nullable: false),
+                    IsRevoked = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpiredAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RefreshToken_User",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -199,7 +224,7 @@ namespace SocialNetwork.DataAccess.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PostComment",
+                name: "PostComments",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -212,23 +237,45 @@ namespace SocialNetwork.DataAccess.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PostComment", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_PostComment_Post_PostId",
-                        column: x => x.PostId,
-                        principalTable: "Post",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                    table.PrimaryKey("PK_PostComments", x => x.Id);
                     table.ForeignKey(
                         name: "FK_PostComment_User",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PostComments_Posts_PostId",
+                        column: x => x.PostId,
+                        principalTable: "Posts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "PostReaction",
+                name: "PostImages",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Url = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    PostId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PostImages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PostImage_Image",
+                        column: x => x.PostId,
+                        principalTable: "Posts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PostReactions",
                 columns: table => new
                 {
                     ReactionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -237,16 +284,16 @@ namespace SocialNetwork.DataAccess.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PostReaction", x => new { x.PostId, x.ReactionId, x.UserId });
+                    table.PrimaryKey("PK_PostReactions", x => new { x.PostId, x.ReactionId, x.UserId });
                     table.ForeignKey(
                         name: "FK_PostReaction_Post",
                         column: x => x.PostId,
-                        principalTable: "Post",
+                        principalTable: "Posts",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_PostReaction_Reaction",
                         column: x => x.ReactionId,
-                        principalTable: "Reaction",
+                        principalTable: "Reactions",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_PostReaction_User",
@@ -256,7 +303,7 @@ namespace SocialNetwork.DataAccess.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CommentReaction",
+                name: "CommentReactions",
                 columns: table => new
                 {
                     ReactionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -265,16 +312,16 @@ namespace SocialNetwork.DataAccess.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CommentReaction", x => new { x.ReactionId, x.UserId, x.CommentId });
+                    table.PrimaryKey("PK_CommentReactions", x => new { x.ReactionId, x.UserId, x.CommentId });
                     table.ForeignKey(
                         name: "FK_CommentReaction_Post",
                         column: x => x.CommentId,
-                        principalTable: "PostComment",
+                        principalTable: "PostComments",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_CommentReaction_Reaction",
                         column: x => x.ReactionId,
-                        principalTable: "Reaction",
+                        principalTable: "Reactions",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_CommentReaction_User",
@@ -283,46 +330,78 @@ namespace SocialNetwork.DataAccess.Migrations
                         principalColumn: "Id");
                 });
 
+            migrationBuilder.InsertData(
+                table: "Reactions",
+                columns: new[] { "Id", "Code", "CreatedAt", "Name", "Status", "UpdatedAt" },
+                values: new object[,]
+                {
+                    { new Guid("233d6190-06bd-4a23-bb14-07b50e228f43"), 1, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4084), "Like", 1, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4087) },
+                    { new Guid("24613ada-36ea-4fe0-a0be-46510d957e48"), 2, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4089), "Love", 1, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4090) },
+                    { new Guid("6ca517dd-7772-4958-abec-013986ab1729"), 4, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4092), "Wow", 1, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4092) },
+                    { new Guid("70e558cf-44ec-47b0-8cdf-6db4663232a2"), 5, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4093), "Sad", 1, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4094) },
+                    { new Guid("815598c7-4633-4b06-9954-e349da888a0f"), 6, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4095), "Angry", 1, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4095) },
+                    { new Guid("cb892953-2bca-437b-b4a5-62cdfe34ebb8"), 3, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4091), "Haha", 1, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4091) }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Roles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[,]
+                {
+                    { "460fa2e4-4a3f-4ff7-b2d9-4a7aea04b2a5", "2e65256c-4be0-4aa5-9454-8e4eb97949aa", "Administrator", "ADMINISTRATOR" },
+                    { "4ed177a7-032d-4574-8147-f2f561b89c04", "5fd0ced7-37ce-4eb0-813d-084cf064db55", "User", "USER" }
+                });
+
             migrationBuilder.CreateIndex(
-                name: "IX_CommentReaction_CommentId",
-                table: "CommentReaction",
+                name: "IX_CommentReactions_CommentId",
+                table: "CommentReactions",
                 column: "CommentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CommentReaction_UserId",
-                table: "CommentReaction",
+                name: "IX_CommentReactions_UserId",
+                table: "CommentReactions",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Post_AuthorId",
-                table: "Post",
-                column: "AuthorId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PostComment_PostId",
-                table: "PostComment",
+                name: "IX_PostComments_PostId",
+                table: "PostComments",
                 column: "PostId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PostComment_UserId",
-                table: "PostComment",
+                name: "IX_PostComments_UserId",
+                table: "PostComments",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PostReaction_ReactionId",
-                table: "PostReaction",
+                name: "IX_PostImages_PostId",
+                table: "PostImages",
+                column: "PostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PostReactions_ReactionId",
+                table: "PostReactions",
                 column: "ReactionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PostReaction_UserId",
-                table: "PostReaction",
+                name: "IX_PostReactions_UserId",
+                table: "PostReactions",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Reaction_Name",
-                table: "Reaction",
+                name: "IX_Posts_AuthorId",
+                table: "Posts",
+                column: "AuthorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Reactions_Name",
+                table: "Reactions",
                 column: "Name",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_UserId",
+                table: "RefreshTokens",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RoleClaims_RoleId",
@@ -367,10 +446,16 @@ namespace SocialNetwork.DataAccess.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "CommentReaction");
+                name: "CommentReactions");
 
             migrationBuilder.DropTable(
-                name: "PostReaction");
+                name: "PostImages");
+
+            migrationBuilder.DropTable(
+                name: "PostReactions");
+
+            migrationBuilder.DropTable(
+                name: "RefreshTokens");
 
             migrationBuilder.DropTable(
                 name: "RoleClaims");
@@ -388,16 +473,16 @@ namespace SocialNetwork.DataAccess.Migrations
                 name: "UserTokens");
 
             migrationBuilder.DropTable(
-                name: "PostComment");
+                name: "PostComments");
 
             migrationBuilder.DropTable(
-                name: "Reaction");
+                name: "Reactions");
 
             migrationBuilder.DropTable(
                 name: "Roles");
 
             migrationBuilder.DropTable(
-                name: "Post");
+                name: "Posts");
 
             migrationBuilder.DropTable(
                 name: "Users");

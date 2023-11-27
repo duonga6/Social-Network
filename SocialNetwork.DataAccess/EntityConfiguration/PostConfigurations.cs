@@ -23,7 +23,7 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 .HasColumnType("nvarchar(MAX)")
                 .IsRequired();
 
-            builder.ToTable("Post");
+            builder.ToTable("Posts");
         }
     }
 }

@@ -5,11 +5,11 @@ using SocialNetwork.Business.Wrapper.Interfaces;
 
 namespace SocialNetwork.API.Controllers
 {
-    public class RoleController : BaseController
+    public class RolesController : BaseController
     {
         private readonly IRoleService _roleService;
 
-        public RoleController(IRoleService roleService)
+        public RolesController(IRoleService roleService)
         {
             _roleService = roleService;
         }
@@ -27,15 +27,24 @@ namespace SocialNetwork.API.Controllers
         }
 
         [HttpPut]
-        public async Task<IResponse> Update(UpdateRoleRequest request)
+        [Route("{Id}")]
+        public async Task<IResponse> Update(string Id, UpdateRoleRequest request)
         {
-            return await _roleService.Update(request);
+            return await _roleService.Update(Id, request);
         }
 
         [HttpDelete]
-        public async Task<IResponse> Delete(DeleteRoleRequest request)
+        [Route("{Id}")]
+        public async Task<IResponse> Delete(string Id)
         {
-            return await _roleService.Delete(request);
+            return await _roleService.Delete(Id);
+        }
+
+        [HttpGet]
+        [Route("{Id}")]
+        public async Task<IResponse> GetById(string Id)
+        {
+            return await _roleService.GetById(Id);
         }
     }
 }

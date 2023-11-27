@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Role.Request;
 using SocialNetwork.Business.DTOs.Role.Responses;
 using SocialNetwork.Business.Helper;
@@ -24,7 +25,7 @@ namespace SocialNetwork.Business.Services.Implements
             var checkExistRole = await _roleManager.FindByNameAsync(request.RoleName);
             if (checkExistRole != null)
             {
-                return new ErrorResponse(400, "Role is already exist");
+                return new ErrorResponse(400, Messages.RoleExist);
             }
 
             var newRole = new IdentityRole()
@@ -34,18 +35,18 @@ namespace SocialNetwork.Business.Services.Implements
             var result = await _roleManager.CreateAsync(newRole);
             if (!result.Succeeded)
             {
-                return new ErrorResponse(400, "Error when add role");
+                return new ErrorResponse(400, Messages.AddError);
             }
 
-            return new DataResponse(_mapper.Map<GetRoleResponse>(newRole), 201, "Create successfully");
+            return new DataResponse(_mapper.Map<GetRoleResponse>(newRole), 201, Messages.CreatedSuccessfully);
         }
 
-        public async Task<IResponse> Delete(DeleteRoleRequest request)
+        public async Task<IResponse> Delete(string Id)
         {
-            var role = await _roleManager.FindByNameAsync(request.RoleName);
+            var role = await _roleManager.FindByIdAsync(Id);
             if (role == null)
             {
-                return new ErrorResponse(404, "Role not found");
+                return new ErrorResponse(404, Messages.NotFound);
             }    
 
             var result = await _roleManager.DeleteAsync(role);
@@ -54,7 +55,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, result.GetErrors());
             }
 
-            return new SuccessResponse("Delete successfully", 204);
+            return new SuccessResponse(Messages.DeletedSuccessfully, 204);
         }
 
         public async Task<IResponse> GetAll()
@@ -64,12 +65,23 @@ namespace SocialNetwork.Business.Services.Implements
             return new DataResponse(_mapper.Map<List<GetRoleResponse>>(roles), 200);
         }
 
-        public async Task<IResponse> Update(UpdateRoleRequest request)
+        public async Task<IResponse> GetById(string id)
         {
-            var updateRole = await _roleManager.FindByIdAsync(request.Id);
+            var role = await _roleManager.FindByIdAsync(id);
+            if (role == null)
+            {
+                return new ErrorResponse(404, Messages.NotFound);
+            }
+
+            return new DataResponse(_mapper.Map<GetRoleResponse>(role), 200);
+        }
+
+        public async Task<IResponse> Update(string Id, UpdateRoleRequest request)
+        {
+            var updateRole = await _roleManager.FindByIdAsync(Id);
             if (updateRole == null)
             {
-                return new ErrorResponse(404, "Role not found");
+                return new ErrorResponse(404, Messages.NotFound);
             }
 
             updateRole.Name = request.RoleName;
@@ -81,7 +93,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, result.GetErrors());
             }
 
-            return new SuccessResponse("Delete successfully", 204);
+            return new DataResponse(_mapper.Map<GetRoleResponse>(updateRole), 204, Messages.UpdatedSuccessfully);
         }
     }
 }

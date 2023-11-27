@@ -51,15 +51,17 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "9fd924b1-8949-4bba-a86a-8600bf486ec0",
-                            ConcurrencyStamp = "233db0f3-0d33-4be3-adf7-3505a4831a0f",
-                            Name = "Administrator"
+                            Id = "460fa2e4-4a3f-4ff7-b2d9-4a7aea04b2a5",
+                            ConcurrencyStamp = "2e65256c-4be0-4aa5-9454-8e4eb97949aa",
+                            Name = "Administrator",
+                            NormalizedName = "ADMINISTRATOR"
                         },
                         new
                         {
-                            Id = "004f2b09-f7e1-44e4-94a6-cc3ebd467434",
-                            ConcurrencyStamp = "8491b38a-2a29-44bc-9849-d20b7162cbaa",
-                            Name = "User"
+                            Id = "4ed177a7-032d-4574-8147-f2f561b89c04",
+                            ConcurrencyStamp = "5fd0ced7-37ce-4eb0-813d-084cf064db55",
+                            Name = "User",
+                            NormalizedName = "USER"
                         });
                 });
 
@@ -186,7 +188,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("CommentReaction", (string)null);
+                    b.ToTable("CommentReactions", (string)null);
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Post", b =>
@@ -220,7 +222,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("AuthorId");
 
-                    b.ToTable("Post", (string)null);
+                    b.ToTable("Posts", (string)null);
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostComment", b =>
@@ -255,7 +257,37 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PostComment", (string)null);
+                    b.ToTable("PostComments", (string)null);
+                });
+
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostImage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("PostId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("PostImages", (string)null);
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostReaction", b =>
@@ -275,7 +307,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PostReaction", (string)null);
+                    b.ToTable("PostReactions", (string)null);
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Reaction", b =>
@@ -305,62 +337,62 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Reaction", (string)null);
+                    b.ToTable("Reactions", (string)null);
 
                     b.HasData(
                         new
                         {
-                            Id = new Guid("c477fdff-7fd3-4906-b1f0-de68b6a50d9e"),
+                            Id = new Guid("233d6190-06bd-4a23-bb14-07b50e228f43"),
                             Code = 1,
-                            CreatedAt = new DateTime(2023, 11, 20, 17, 16, 13, 586, DateTimeKind.Utc).AddTicks(5839),
+                            CreatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4084),
                             Name = "Like",
                             Status = 1,
-                            UpdatedAt = new DateTime(2023, 11, 20, 17, 16, 13, 586, DateTimeKind.Utc).AddTicks(5842)
+                            UpdatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4087)
                         },
                         new
                         {
-                            Id = new Guid("ad2d5f04-0959-4727-b8e8-62229f0f5b58"),
+                            Id = new Guid("24613ada-36ea-4fe0-a0be-46510d957e48"),
                             Code = 2,
-                            CreatedAt = new DateTime(2023, 11, 20, 17, 16, 13, 586, DateTimeKind.Utc).AddTicks(5843),
+                            CreatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4089),
                             Name = "Love",
                             Status = 1,
-                            UpdatedAt = new DateTime(2023, 11, 20, 17, 16, 13, 586, DateTimeKind.Utc).AddTicks(5843)
+                            UpdatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4090)
                         },
                         new
                         {
-                            Id = new Guid("cf74c568-08bd-45f1-9e70-7b10ccfcc188"),
+                            Id = new Guid("cb892953-2bca-437b-b4a5-62cdfe34ebb8"),
                             Code = 3,
-                            CreatedAt = new DateTime(2023, 11, 20, 17, 16, 13, 586, DateTimeKind.Utc).AddTicks(5845),
+                            CreatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4091),
                             Name = "Haha",
                             Status = 1,
-                            UpdatedAt = new DateTime(2023, 11, 20, 17, 16, 13, 586, DateTimeKind.Utc).AddTicks(5845)
+                            UpdatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4091)
                         },
                         new
                         {
-                            Id = new Guid("fdf27bc4-85c1-4d01-aa91-90df48a498b4"),
+                            Id = new Guid("6ca517dd-7772-4958-abec-013986ab1729"),
                             Code = 4,
-                            CreatedAt = new DateTime(2023, 11, 20, 17, 16, 13, 586, DateTimeKind.Utc).AddTicks(5855),
+                            CreatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4092),
                             Name = "Wow",
                             Status = 1,
-                            UpdatedAt = new DateTime(2023, 11, 20, 17, 16, 13, 586, DateTimeKind.Utc).AddTicks(5855)
+                            UpdatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4092)
                         },
                         new
                         {
-                            Id = new Guid("b70ace09-d359-49e0-bde8-fa6f8c565140"),
+                            Id = new Guid("70e558cf-44ec-47b0-8cdf-6db4663232a2"),
                             Code = 5,
-                            CreatedAt = new DateTime(2023, 11, 20, 17, 16, 13, 586, DateTimeKind.Utc).AddTicks(5857),
+                            CreatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4093),
                             Name = "Sad",
                             Status = 1,
-                            UpdatedAt = new DateTime(2023, 11, 20, 17, 16, 13, 586, DateTimeKind.Utc).AddTicks(5857)
+                            UpdatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4094)
                         },
                         new
                         {
-                            Id = new Guid("ad88a430-7540-4ffd-9f71-10f3f336287b"),
+                            Id = new Guid("815598c7-4633-4b06-9954-e349da888a0f"),
                             Code = 6,
-                            CreatedAt = new DateTime(2023, 11, 20, 17, 16, 13, 586, DateTimeKind.Utc).AddTicks(5858),
+                            CreatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4095),
                             Name = "Angry",
                             Status = 1,
-                            UpdatedAt = new DateTime(2023, 11, 20, 17, 16, 13, 586, DateTimeKind.Utc).AddTicks(5858)
+                            UpdatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4095)
                         });
                 });
 
@@ -402,7 +434,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshToken");
+                    b.ToTable("RefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.User", b =>
@@ -603,6 +635,18 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostImage", b =>
+                {
+                    b.HasOne("SocialNetwork.DataAccess.Entities.Post", "Post")
+                        .WithMany("Images")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_PostImage_Image");
+
+                    b.Navigation("Post");
+                });
+
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostReaction", b =>
                 {
                     b.HasOne("SocialNetwork.DataAccess.Entities.Post", "Post")
@@ -647,6 +691,8 @@ namespace SocialNetwork.DataAccess.Migrations
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Post", b =>
                 {
+                    b.Navigation("Images");
+
                     b.Navigation("Reactions");
                 });
 

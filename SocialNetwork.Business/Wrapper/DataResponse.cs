@@ -1,4 +1,5 @@
-﻿using SocialNetwork.Business.Wrapper.Interfaces;
+﻿using SocialNetwork.Business.Constants;
+using SocialNetwork.Business.Wrapper.Interfaces;
 
 namespace SocialNetwork.Business.Wrapper
 {
@@ -15,7 +16,7 @@ namespace SocialNetwork.Business.Wrapper
         public DataResponse(object data, int statusCode)
         {
             Data = data;
-            Message = "Get data successfully";
+            Message = Messages.GetSuccessfully;
             StatusCode = statusCode;
         }
 

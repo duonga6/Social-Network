@@ -12,7 +12,7 @@ using SocialNetwork.DataAccess.Context;
 namespace SocialNetwork.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20231119025209_InitDB")]
+    [Migration("20231123030121_InitDB")]
     partial class InitDB
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -49,6 +49,22 @@ namespace SocialNetwork.DataAccess.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("Roles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "460fa2e4-4a3f-4ff7-b2d9-4a7aea04b2a5",
+                            ConcurrencyStamp = "2e65256c-4be0-4aa5-9454-8e4eb97949aa",
+                            Name = "Administrator",
+                            NormalizedName = "ADMINISTRATOR"
+                        },
+                        new
+                        {
+                            Id = "4ed177a7-032d-4574-8147-f2f561b89c04",
+                            ConcurrencyStamp = "5fd0ced7-37ce-4eb0-813d-084cf064db55",
+                            Name = "User",
+                            NormalizedName = "USER"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -174,7 +190,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("CommentReaction", (string)null);
+                    b.ToTable("CommentReactions", (string)null);
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Post", b =>
@@ -208,7 +224,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("AuthorId");
 
-                    b.ToTable("Post", (string)null);
+                    b.ToTable("Posts", (string)null);
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostComment", b =>
@@ -243,7 +259,37 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PostComment", (string)null);
+                    b.ToTable("PostComments", (string)null);
+                });
+
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostImage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("PostId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("PostImages", (string)null);
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostReaction", b =>
@@ -263,7 +309,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PostReaction", (string)null);
+                    b.ToTable("PostReactions", (string)null);
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Reaction", b =>
@@ -293,7 +339,104 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Reaction", (string)null);
+                    b.ToTable("Reactions", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("233d6190-06bd-4a23-bb14-07b50e228f43"),
+                            Code = 1,
+                            CreatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4084),
+                            Name = "Like",
+                            Status = 1,
+                            UpdatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4087)
+                        },
+                        new
+                        {
+                            Id = new Guid("24613ada-36ea-4fe0-a0be-46510d957e48"),
+                            Code = 2,
+                            CreatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4089),
+                            Name = "Love",
+                            Status = 1,
+                            UpdatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4090)
+                        },
+                        new
+                        {
+                            Id = new Guid("cb892953-2bca-437b-b4a5-62cdfe34ebb8"),
+                            Code = 3,
+                            CreatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4091),
+                            Name = "Haha",
+                            Status = 1,
+                            UpdatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4091)
+                        },
+                        new
+                        {
+                            Id = new Guid("6ca517dd-7772-4958-abec-013986ab1729"),
+                            Code = 4,
+                            CreatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4092),
+                            Name = "Wow",
+                            Status = 1,
+                            UpdatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4092)
+                        },
+                        new
+                        {
+                            Id = new Guid("70e558cf-44ec-47b0-8cdf-6db4663232a2"),
+                            Code = 5,
+                            CreatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4093),
+                            Name = "Sad",
+                            Status = 1,
+                            UpdatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4094)
+                        },
+                        new
+                        {
+                            Id = new Guid("815598c7-4633-4b06-9954-e349da888a0f"),
+                            Code = 6,
+                            CreatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4095),
+                            Name = "Angry",
+                            Status = 1,
+                            UpdatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4095)
+                        });
+                });
+
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("JwtId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.User", b =>
@@ -494,6 +637,18 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostImage", b =>
+                {
+                    b.HasOne("SocialNetwork.DataAccess.Entities.Post", "Post")
+                        .WithMany("Images")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_PostImage_Image");
+
+                    b.Navigation("Post");
+                });
+
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostReaction", b =>
                 {
                     b.HasOne("SocialNetwork.DataAccess.Entities.Post", "Post")
@@ -524,8 +679,22 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("SocialNetwork.DataAccess.Entities.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_RefreshToken_User");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Post", b =>
                 {
+                    b.Navigation("Images");
+
                     b.Navigation("Reactions");
                 });
 
@@ -550,6 +719,8 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.Navigation("PostReactions");
 
                     b.Navigation("Posts");
+
+                    b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618
         }
