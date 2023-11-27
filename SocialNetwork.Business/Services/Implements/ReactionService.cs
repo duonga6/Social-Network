@@ -18,7 +18,7 @@ namespace SocialNetwork.Business.Services.Implements
 
         public async Task<IResponse> Add(CreateReactionRequest entity)
         {
-            var checkEntity = await _unitOfWork.ReactionRepository.FindBy(x => x.Name == entity.Name && x.Code == entity.Code);
+            var checkEntity = await _unitOfWork.ReactionRepository.FindBy(x => x.Name == entity.Name);
             if (checkEntity.Count > 0)
                 return new ErrorResponse(400, Messages.ReactionExist);
 
@@ -34,7 +34,7 @@ namespace SocialNetwork.Business.Services.Implements
             return new DataResponse(reusltEntity, 201);
         }
 
-        public async Task<IResponse> Delete(Guid id)
+        public async Task<IResponse> Delete(int id)
         {
             var entity = await _unitOfWork.ReactionRepository.GetById(id);
             if (entity == null)
@@ -56,7 +56,7 @@ namespace SocialNetwork.Business.Services.Implements
             return new DataResponse(reusltEntity, 200);
         }
 
-        public async Task<IResponse> GetById(Guid id)
+        public async Task<IResponse> GetById(int id)
         {
             var entity = await _unitOfWork.ReactionRepository.GetById(id);
             if (entity == null)
@@ -67,13 +67,13 @@ namespace SocialNetwork.Business.Services.Implements
             return new DataResponse(reusltEntity, 200);
         }
 
-        public async Task<IResponse> Update(Guid Id, UpdateReactionRequest entity)
+        public async Task<IResponse> Update(int Id, UpdateReactionRequest entity)
         {
             var findEntity = await _unitOfWork.ReactionRepository.GetById(Id);
             if (findEntity == null)
                 return new ErrorResponse(404, Messages.NotFound);
 
-            if (entity.Name == findEntity.Name && entity.Code == findEntity.Code)
+            if (entity.Name == findEntity.Name)
             {
                 return new ErrorResponse(400, Messages.ReactionExist);
             }    

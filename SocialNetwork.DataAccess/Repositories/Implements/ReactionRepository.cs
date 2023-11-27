@@ -13,20 +13,27 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
         }
 
-        public override async Task<ICollection<Reaction>> GetAll()
+        public async Task<Reaction> GetById(int id)
         {
-            return await _dbSet.Where(x => x.Status == 1).AsNoTracking().ToListAsync();
+            return await _dbSet.FirstAsync(x => x.Id == id);
         }
 
-        public override async Task<bool> Delete(Guid id)
+        public override async Task<ICollection<Reaction>> GetAll()
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<bool> Delete(int id)
         {
             try
             {
-                var entity = await _dbSet.FindAsync(id);
+                var entity = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
                 if (entity == null) { return false; }
 
-                entity.Status = 0;
-                entity.UpdatedAt = DateTime.UtcNow;
+                _dbSet.Remove(entity);
+
                 return true;
             }
             catch (Exception ex)
@@ -40,10 +47,9 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
             try
             {
-                var result = await _dbSet.FindAsync(entity.Id);
+                var result = await _dbSet.FirstOrDefaultAsync(x => x.Id == entity.Id);
                 if (result == null) return false;
 
-                result.Code = entity.Code;
                 result.Name = entity.Name;
 
                 result.UpdatedAt = DateTime.UtcNow;

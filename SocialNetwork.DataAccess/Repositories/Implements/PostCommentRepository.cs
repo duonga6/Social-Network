@@ -19,11 +19,16 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .ToListAsync();
         }
 
+        public override async Task<PostComment> GetById(Guid id)
+        {
+            return await _dbSet.FirstOrDefaultAsync(x => x.Id == id && x.Status == 1);
+        }
+
         public override async Task<bool> Update(PostComment entity)
         {
             try
             {
-                var entityUpdate = await _dbSet.FindAsync(entity.Id);
+                var entityUpdate = await _dbSet.FirstOrDefaultAsync(x => x.Id == entity.Id && x.PostId == entity.PostId && x.UserId == entity.UserId && x.Status == 1);
                 if (entityUpdate == null) 
                 {
                     return false;
@@ -45,7 +50,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
             try
             {
-                var entity = await _dbSet.FindAsync(id);
+                var entity = await _dbSet.FirstOrDefaultAsync(x => x.Id == id && x.Status == 1);
                 if (entity == null) { return false; }
 
                 entity.Status = 0;

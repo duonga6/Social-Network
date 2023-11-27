@@ -13,11 +13,15 @@
         public static string AddError => "Error create";
         public static string UpdateError => "Error update";
         public static string DeleteError => "Error delete";
-        public static string NotFound => "Resources not found";
+        public static string NotFound => "Not found";
         public static string NotFounb(string resource) => $"{resource} not found";
-        
+        public static string UnAuthorized => "Unauthorized";
+        public static string BadRequest => "Bad Request";
+
         // Reaction
         public static string ReactionExist => "Name and Code are already exist";
+        public static string PostReactionExist => "This user has already added a reaction";
+        public static string CommentReactionExist => "This user has already added a reaction";
 
         // User
         public static string LoginSuccessfully => "Login successfully";

@@ -2,7 +2,7 @@
 {
     public class PostReaction
     {
-        public Guid ReactionId { get; set; }
+        public int ReactionId { get; set; }
         public Reaction Reaction { get; set; }
 
         public Guid PostId { get; set; }
@@ -10,5 +10,8 @@
 
         public string UserId { get; set; }
         public virtual User User { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
     }
 }

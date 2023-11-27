@@ -7,9 +7,9 @@ namespace SocialNetwork.Business.Services.Interfaces
     public interface IReactionService
     {
         Task<IResponse> GetAll();
-        Task<IResponse> GetById(Guid id);
+        Task<IResponse> GetById(int id);
         Task<IResponse> Add(CreateReactionRequest entity);
-        Task<IResponse> Update(Guid Id, UpdateReactionRequest entity);
-        Task<IResponse> Delete(Guid id);
+        Task<IResponse> Update(int id, UpdateReactionRequest entity);
+        Task<IResponse> Delete(int id);
     }
 }

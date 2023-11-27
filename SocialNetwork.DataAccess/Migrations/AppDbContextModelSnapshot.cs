@@ -51,15 +51,15 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "460fa2e4-4a3f-4ff7-b2d9-4a7aea04b2a5",
-                            ConcurrencyStamp = "2e65256c-4be0-4aa5-9454-8e4eb97949aa",
+                            Id = "088de2eb-26a2-49d0-945f-f85472e7752d",
+                            ConcurrencyStamp = "fbd2a443-ea5c-480a-a856-910900f0e530",
                             Name = "Administrator",
                             NormalizedName = "ADMINISTRATOR"
                         },
                         new
                         {
-                            Id = "4ed177a7-032d-4574-8147-f2f561b89c04",
-                            ConcurrencyStamp = "5fd0ced7-37ce-4eb0-813d-084cf064db55",
+                            Id = "9ee648c6-0f35-4fb8-a8cf-2b66f153e70a",
+                            ConcurrencyStamp = "55031e76-a283-47d4-8916-63f3c003cc9f",
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -173,20 +173,26 @@ namespace SocialNetwork.DataAccess.Migrations
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.CommentReaction", b =>
                 {
-                    b.Property<Guid>("ReactionId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<Guid>("CommentId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("ReactionId", "UserId", "CommentId");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ReactionId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("UserId", "CommentId");
 
                     b.HasIndex("CommentId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("ReactionId");
 
                     b.ToTable("CommentReactions", (string)null);
                 });
@@ -295,13 +301,19 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.Property<Guid>("PostId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ReactionId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("PostId", "ReactionId", "UserId");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ReactionId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("PostId", "UserId");
 
                     b.HasIndex("ReactionId");
 
@@ -312,12 +324,11 @@ namespace SocialNetwork.DataAccess.Migrations
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Reaction", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Code")
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -325,9 +336,6 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(20)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -342,57 +350,45 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("233d6190-06bd-4a23-bb14-07b50e228f43"),
-                            Code = 1,
-                            CreatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4084),
+                            Id = 1,
+                            CreatedAt = new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9136),
                             Name = "Like",
-                            Status = 1,
-                            UpdatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4087)
+                            UpdatedAt = new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9134)
                         },
                         new
                         {
-                            Id = new Guid("24613ada-36ea-4fe0-a0be-46510d957e48"),
-                            Code = 2,
-                            CreatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4089),
+                            Id = 2,
+                            CreatedAt = new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9138),
                             Name = "Love",
-                            Status = 1,
-                            UpdatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4090)
+                            UpdatedAt = new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9138)
                         },
                         new
                         {
-                            Id = new Guid("cb892953-2bca-437b-b4a5-62cdfe34ebb8"),
-                            Code = 3,
-                            CreatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4091),
+                            Id = 3,
+                            CreatedAt = new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9139),
                             Name = "Haha",
-                            Status = 1,
-                            UpdatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4091)
+                            UpdatedAt = new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9138)
                         },
                         new
                         {
-                            Id = new Guid("6ca517dd-7772-4958-abec-013986ab1729"),
-                            Code = 4,
-                            CreatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4092),
+                            Id = 4,
+                            CreatedAt = new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9139),
                             Name = "Wow",
-                            Status = 1,
-                            UpdatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4092)
+                            UpdatedAt = new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9139)
                         },
                         new
                         {
-                            Id = new Guid("70e558cf-44ec-47b0-8cdf-6db4663232a2"),
-                            Code = 5,
-                            CreatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4093),
+                            Id = 5,
+                            CreatedAt = new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9140),
                             Name = "Sad",
-                            Status = 1,
-                            UpdatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4094)
+                            UpdatedAt = new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9140)
                         },
                         new
                         {
-                            Id = new Guid("815598c7-4633-4b06-9954-e349da888a0f"),
-                            Code = 6,
-                            CreatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4095),
+                            Id = 6,
+                            CreatedAt = new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9141),
                             Name = "Angry",
-                            Status = 1,
-                            UpdatedAt = new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4095)
+                            UpdatedAt = new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9140)
                         });
                 });
 

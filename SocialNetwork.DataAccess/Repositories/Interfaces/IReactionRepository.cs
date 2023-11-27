@@ -6,5 +6,7 @@ namespace SocialNetwork.DataAccess.Repositories.Interfaces
 {
     public interface IReactionRepository : IGenericRepository<Reaction>
     {
+        Task<Reaction> GetById(int id);
+        Task<bool> Delete(int id);
     }
 }

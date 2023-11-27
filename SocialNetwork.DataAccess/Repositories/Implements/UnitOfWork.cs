@@ -18,6 +18,9 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         public IPostRepository PostRepository { get; }
 
         public IPostCommentRepository PostCommentRepository { get; }
+        public IPostReactionRepository PostReactionRepository { get; }
+
+        public ICommentReactionRepository CommentReactionRepository { get; }
 
         public readonly AppDbContext _context;
 
@@ -31,6 +34,8 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             PostImageRepository = new PostImageRepository(logger, context);
             PostRepository = new PostRepository(logger, context);
             PostCommentRepository = new PostCommentRepository(logger, context);
+            PostReactionRepository = new PostReactionRepository(logger, context);
+            CommentReactionRepository = new CommentReactionRepository(logger, context);
         }
 
         public async Task<bool> CompleteAsync()

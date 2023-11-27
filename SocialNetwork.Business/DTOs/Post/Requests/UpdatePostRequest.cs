@@ -1,5 +1,6 @@
 ﻿using SocialNetwork.Business.DTOs.PostImage.Requests;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace SocialNetwork.Business.DTOs.Post.Requests
 {
@@ -9,7 +10,7 @@ namespace SocialNetwork.Business.DTOs.Post.Requests
         public string Title { get; set; } = string.Empty;
         [Required]
         public string Content { get; set; } = string.Empty;
-        [Required]
+        [JsonIgnore]
         public string AuthorId { get; set; } = string.Empty;
 
         public List<Guid> ImagesDelete { get; set; } = new();

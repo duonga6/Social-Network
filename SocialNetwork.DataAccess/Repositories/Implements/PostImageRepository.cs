@@ -14,14 +14,16 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
 
         public override async Task<ICollection<PostImage>> GetAll()
         {
-            return await _dbSet.Where(x => x.Status == 1).AsNoTracking().ToListAsync();
+            return await _dbSet.Where(x => x.Status == 1)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public override async Task<bool> Delete(Guid Id)
         {
             try
             {
-                var entity = await _dbSet.FirstOrDefaultAsync(x => x.Id == Id);
+                var entity = await _dbSet.FirstOrDefaultAsync(x => x.Id == Id && x.Status == 1);
                 if (entity == null) { return false; }
 
                 entity.Status = 0;
@@ -40,7 +42,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
             try
             {
-                var entity = await _dbSet.FindAsync(post.Id);
+                var entity = await _dbSet.FirstOrDefaultAsync(x => x.Id == post.Id && x.Status == 1);
                 if (entity == null) { return false; }
 
                 entity.Url = post.Url;

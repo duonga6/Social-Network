@@ -28,7 +28,6 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
 
             builder.HasKey(p => new
             {
-                p.ReactionId,
                 p.UserId,
                 p.CommentId
             });

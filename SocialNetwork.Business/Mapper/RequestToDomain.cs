@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using SocialNetwork.Business.DTOs.CommentReaction.Requests;
 using SocialNetwork.Business.DTOs.Post.Requests;
 using SocialNetwork.Business.DTOs.PostComment.Requests;
 using SocialNetwork.Business.DTOs.PostImage.Requests;
+using SocialNetwork.Business.DTOs.PostReaction.Requests;
 using SocialNetwork.Business.DTOs.Reaction.Requests;
 using SocialNetwork.Business.DTOs.User.Requests;
 using SocialNetwork.DataAccess.Entities;
@@ -38,6 +40,17 @@ namespace SocialNetwork.Business.Mapper
             CreateMap<UpdatePostRequest, Post>()
                 .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
 
+            CreateMap<CreateCommentRequest, PostComment>()
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(s => DateTime.UtcNow))
+                .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
+
+            CreateMap<UpdateCommentRequest, PostComment>()
+                .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
+
+            CreateMap<CreatePostReactionRequest, PostReaction>()
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(s => DateTime.UtcNow))
+                .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
+
             CreateMap<CreatePostCommentRequest, PostComment>()
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(s => DateTime.UtcNow))
                 .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
@@ -45,6 +58,9 @@ namespace SocialNetwork.Business.Mapper
             CreateMap<UpdatePostCommentRequest, PostComment>()
                 .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
 
+            CreateMap<CreateCommentReactionRequest, CommentReaction>()
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(s => DateTime.UtcNow))
+                .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
 
         }
     }

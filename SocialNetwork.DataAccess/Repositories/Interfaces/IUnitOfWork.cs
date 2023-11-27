@@ -9,6 +9,8 @@
         IPostImageRepository PostImageRepository { get; }
         IPostRepository PostRepository { get; }
         IPostCommentRepository PostCommentRepository { get;}
+        IPostReactionRepository PostReactionRepository { get; }
+        ICommentReactionRepository CommentReactionRepository { get; }
 
         Task<bool> CompleteAsync();
     }

@@ -35,7 +35,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         public override async Task<ICollection<Post>> GetAll()
         {
             return await _dbSet.Where(x => x.Status == 1)
-                .Include(x => x.Images)
+                .Include(x => x.Images.Where(i => i.Status == 1))
                 .AsSplitQuery()
                 .AsNoTracking()
                 .ToListAsync();
@@ -43,7 +43,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         
         public override async Task<bool> Delete(Guid id)
         {
-            var post = await _dbSet.FindAsync(id);
+            var post = await _dbSet.FirstOrDefaultAsync(x => x.Id == id && x.Status == 1);
             if (post == null) { return false; }
 
             post.Status = 0;
@@ -56,7 +56,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
             try
             {
-                var updatePost = await _dbSet.FirstOrDefaultAsync(x => x.Id == post.Id && x.AuthorId == post.AuthorId);
+                var updatePost = await _dbSet.FirstOrDefaultAsync(x => x.Id == post.Id && x.AuthorId == post.AuthorId && x.Status == 1);
                 if (updatePost == null)
                 {
                     return false;

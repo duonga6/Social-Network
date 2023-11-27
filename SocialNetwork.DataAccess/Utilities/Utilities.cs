@@ -10,12 +10,12 @@ namespace SocialNetwork.DataAccess.Utilities
         public static void AddDefaultReactionTable(this ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Reaction>().HasData(
-                new Reaction { Name = "Like", Code = 1 },
-                new Reaction { Name = "Love", Code = 2 },
-                new Reaction { Name = "Haha", Code = 3 },
-                new Reaction { Name = "Wow", Code = 4 },
-                new Reaction { Name = "Sad", Code = 5 },
-                new Reaction { Name = "Angry", Code = 6 }
+                new Reaction { Id = 1, Name = "Like"},
+                new Reaction { Id = 2, Name = "Love" },
+                new Reaction { Id = 3, Name = "Haha" },
+                new Reaction { Id = 4, Name = "Wow" },
+                new Reaction { Id = 5, Name = "Sad" },
+                new Reaction { Id = 6, Name = "Angry" }
             );
 
             modelBuilder.Entity<IdentityRole>().HasData(

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace SocialNetwork.DataAccess.Migrations
 {
-    public partial class InitDB : Migration
+    public partial class Init_DB : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -13,12 +13,11 @@ namespace SocialNetwork.DataAccess.Migrations
                 name: "Reactions",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Code = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(20)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -278,13 +277,15 @@ namespace SocialNetwork.DataAccess.Migrations
                 name: "PostReactions",
                 columns: table => new
                 {
-                    ReactionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PostId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ReactionId = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PostReactions", x => new { x.PostId, x.ReactionId, x.UserId });
+                    table.PrimaryKey("PK_PostReactions", x => new { x.PostId, x.UserId });
                     table.ForeignKey(
                         name: "FK_PostReaction_Post",
                         column: x => x.PostId,
@@ -306,13 +307,15 @@ namespace SocialNetwork.DataAccess.Migrations
                 name: "CommentReactions",
                 columns: table => new
                 {
-                    ReactionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CommentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ReactionId = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CommentReactions", x => new { x.ReactionId, x.UserId, x.CommentId });
+                    table.PrimaryKey("PK_CommentReactions", x => new { x.UserId, x.CommentId });
                     table.ForeignKey(
                         name: "FK_CommentReaction_Post",
                         column: x => x.CommentId,
@@ -332,15 +335,15 @@ namespace SocialNetwork.DataAccess.Migrations
 
             migrationBuilder.InsertData(
                 table: "Reactions",
-                columns: new[] { "Id", "Code", "CreatedAt", "Name", "Status", "UpdatedAt" },
+                columns: new[] { "Id", "CreatedAt", "Name", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { new Guid("233d6190-06bd-4a23-bb14-07b50e228f43"), 1, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4084), "Like", 1, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4087) },
-                    { new Guid("24613ada-36ea-4fe0-a0be-46510d957e48"), 2, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4089), "Love", 1, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4090) },
-                    { new Guid("6ca517dd-7772-4958-abec-013986ab1729"), 4, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4092), "Wow", 1, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4092) },
-                    { new Guid("70e558cf-44ec-47b0-8cdf-6db4663232a2"), 5, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4093), "Sad", 1, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4094) },
-                    { new Guid("815598c7-4633-4b06-9954-e349da888a0f"), 6, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4095), "Angry", 1, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4095) },
-                    { new Guid("cb892953-2bca-437b-b4a5-62cdfe34ebb8"), 3, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4091), "Haha", 1, new DateTime(2023, 11, 23, 3, 1, 21, 173, DateTimeKind.Utc).AddTicks(4091) }
+                    { 1, new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9136), "Like", new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9134) },
+                    { 2, new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9138), "Love", new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9138) },
+                    { 3, new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9139), "Haha", new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9138) },
+                    { 4, new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9139), "Wow", new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9139) },
+                    { 5, new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9140), "Sad", new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9140) },
+                    { 6, new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9141), "Angry", new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9140) }
                 });
 
             migrationBuilder.InsertData(
@@ -348,8 +351,8 @@ namespace SocialNetwork.DataAccess.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "460fa2e4-4a3f-4ff7-b2d9-4a7aea04b2a5", "2e65256c-4be0-4aa5-9454-8e4eb97949aa", "Administrator", "ADMINISTRATOR" },
-                    { "4ed177a7-032d-4574-8147-f2f561b89c04", "5fd0ced7-37ce-4eb0-813d-084cf064db55", "User", "USER" }
+                    { "088de2eb-26a2-49d0-945f-f85472e7752d", "fbd2a443-ea5c-480a-a856-910900f0e530", "Administrator", "ADMINISTRATOR" },
+                    { "9ee648c6-0f35-4fb8-a8cf-2b66f153e70a", "55031e76-a283-47d4-8916-63f3c003cc9f", "User", "USER" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -358,9 +361,9 @@ namespace SocialNetwork.DataAccess.Migrations
                 column: "CommentId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CommentReactions_UserId",
+                name: "IX_CommentReactions_ReactionId",
                 table: "CommentReactions",
-                column: "UserId");
+                column: "ReactionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PostComments_PostId",
