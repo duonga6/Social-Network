@@ -18,11 +18,14 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return await _dbSet.FirstAsync(x => x.Id == id);
         }
 
-        public override async Task<ICollection<Reaction>> GetAll()
+        public override async Task<ICollection<Reaction>> GetAll(bool asNoTracking = true)
         {
-            return await _dbSet
-                .AsNoTracking()
-                .ToListAsync();
+            if (asNoTracking)
+            {
+                return await _dbSet.AsNoTracking().ToListAsync();
+            }
+
+            return await _dbSet.ToListAsync();
         }
 
         public async Task<bool> Delete(int id)

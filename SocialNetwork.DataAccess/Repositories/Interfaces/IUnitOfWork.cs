@@ -11,6 +11,7 @@
         IPostCommentRepository PostCommentRepository { get;}
         IPostReactionRepository PostReactionRepository { get; }
         ICommentReactionRepository CommentReactionRepository { get; }
+        IFriendshipRepository FriendshipRepository { get; }
 
         Task<bool> CompleteAsync();
     }

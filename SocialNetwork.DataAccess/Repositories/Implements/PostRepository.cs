@@ -13,32 +13,50 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
         }
 
-        public override async Task<Post> GetById(Guid id)
+        public override async Task<Post> GetById(Guid id, bool asNoTracking = true)
         {
-            return await _dbSet.Where(x => x.Status == 1 && x.Id == id)
+            var query = _dbSet.Where(x => x.Status == 1 && x.Id == id)
                 .Include(x => x.Images.Where(i => i.Status == 1))
-                .AsSplitQuery()
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
+                .AsSplitQuery();
+
+            if (asNoTracking)
+            {
+                return await query
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync();
+            }
+
+            return await query
+                    .FirstOrDefaultAsync();
         }
 
-        public override async Task<ICollection<Post>> FindBy(Expression<Func<Post, bool>> filter = null, CancellationToken cancellationToken = default)
+        public override async Task<ICollection<Post>> FindBy(Expression<Func<Post, bool>> filter = null, bool asNoTracking = true)
         {
-            return await _dbSet.Where(filter)
+            var query = _dbSet.Where(filter)
                 .Include(x => x.Images.Where(i => i.Status == 1))
                 .OrderByDescending(x => x.CreatedAt)
-                .AsNoTracking()
-                .AsSplitQuery()
-                .ToListAsync(cancellationToken);
+                .AsSplitQuery();
+
+            if (asNoTracking)
+            {
+                return await query.AsNoTracking().ToListAsync();
+            }    
+
+            return await query.ToListAsync();
         }
 
-        public override async Task<ICollection<Post>> GetAll()
+        public override async Task<ICollection<Post>> GetAll(bool asNoTracking)
         {
-            return await _dbSet.Where(x => x.Status == 1)
+            var query = _dbSet.Where(x => x.Status == 1)
                 .Include(x => x.Images.Where(i => i.Status == 1))
-                .AsSplitQuery()
-                .AsNoTracking()
-                .ToListAsync();
+                .AsSplitQuery();
+
+            if ( asNoTracking)
+            {
+                return await query.AsNoTracking().ToListAsync();
+            }
+
+            return await query.ToListAsync();
         }
         
         public override async Task<bool> Delete(Guid id)

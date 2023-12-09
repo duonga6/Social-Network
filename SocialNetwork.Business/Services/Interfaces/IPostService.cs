@@ -7,10 +7,10 @@ namespace SocialNetwork.Business.Services.Interfaces
     public interface IPostService
     {
         Task<IResponse> GetAll();
-        Task<IResponse> GetById(Guid id);
+        Task<IResponse> GetById(string requestingUserId, Guid id);
         Task<IResponse> Create(CreatePostRequest request);
-        Task<IResponse> Update(Guid id, UpdatePostRequest request);
-        Task<IResponse> Delete(string userId, Guid postId);
+        Task<IResponse> Update(string requestingUserId, Guid id, UpdatePostRequest request);
+        Task<IResponse> Delete(string requestingUserId, Guid postId);
 
 
         Task<IResponse> GetAllComments(Guid postId);

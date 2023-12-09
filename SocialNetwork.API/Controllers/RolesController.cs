@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.Business.DTOs.Role.Request;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper.Interfaces;
+using SocialNetwork.DataAccess.Utilities.Roles;
 
 namespace SocialNetwork.API.Controllers
 {
+    [Authorize(Roles = RoleName.Administrator)]
     public class RolesController : BaseController
     {
         private readonly IRoleService _roleService;

@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.API.Utilities;
 using SocialNetwork.Business.DTOs.CommentReaction.Requests;
-using SocialNetwork.Business.DTOs.Post.Requests;
 using SocialNetwork.Business.DTOs.PostComment.Requests;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper.Interfaces;

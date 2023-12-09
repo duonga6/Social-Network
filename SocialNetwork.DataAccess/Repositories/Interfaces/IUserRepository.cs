@@ -6,5 +6,6 @@ namespace SocialNetwork.DataAccess.Repositories.Interfaces
     {
         Task<User> FindByEmail(string email);
         Task<User> FindById(string id);
+        Task<bool> Delete(string id);
     }
 }

@@ -14,6 +14,7 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 .WithMany(u => u.PostComments)
                 .HasForeignKey(p => p.UserId)
                 .HasConstraintName("FK_PostComment_User")
+                .OnDelete(DeleteBehavior.NoAction)
                 .IsRequired();
 
             builder.ToTable("PostComments");

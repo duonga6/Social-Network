@@ -32,5 +32,6 @@ namespace SocialNetwork.DataAccess.Context
         public DbSet<CommentReaction> CommentReactions { get; set; }
         public DbSet<Reaction> Reactions { get; set; }
         public DbSet<PostImage> PostImages { get; set; }
+        public DbSet<Friendship> Friendships { get; set; }
     }
 }

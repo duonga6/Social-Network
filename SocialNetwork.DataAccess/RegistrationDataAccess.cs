@@ -40,6 +40,9 @@ namespace SocialNetwork.DataAccess
                 options.User.AllowedUserNameCharacters =
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
                 options.User.RequireUniqueEmail = false;
+
+                // Sign settings
+                options.SignIn.RequireConfirmedEmail = true;
             });
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();

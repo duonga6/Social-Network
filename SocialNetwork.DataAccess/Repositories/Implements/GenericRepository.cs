@@ -11,7 +11,6 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         protected readonly ILogger _logger;
         protected AppDbContext _context;
         internal DbSet<T> _dbSet;
-
         public GenericRepository(ILogger logger, AppDbContext context)
         {
             _logger = logger;
@@ -19,48 +18,55 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             _dbSet = context.Set<T>();
         }
 
+        public virtual async Task<ICollection<T>> GetAll(bool asNoTracking = true)
+        {
+            if (asNoTracking)
+            {
+                return await _dbSet.AsNoTracking().ToListAsync();
+            }
+            return await _dbSet.ToListAsync();
+        }
+
+        public virtual async Task<ICollection<T>> FindBy(Expression<Func<T, bool>> filter = null, bool asNoTracking = true)
+        {
+            if (asNoTracking)
+            {
+                return await _dbSet.AsNoTracking().Where(filter).ToListAsync();
+            }
+            return await _dbSet.Where(filter).ToListAsync();
+        }
+
+        public virtual async Task<T> FindOneBy(Expression<Func<T, bool>> filter = null, bool asNoTracking = true)
+        {
+            if (asNoTracking)
+            {
+                return await _dbSet.AsNoTracking().FirstOrDefaultAsync(filter);
+            }
+            return await _dbSet.FirstOrDefaultAsync(filter);
+        }
+
+        public virtual Task<T> GetById(Guid id, bool asNoTracking = true)
+        {
+            
+            throw new NotImplementedException();
+        }
+
         public virtual async Task<bool> Add(T entity)
         {
-            try
-            {
-                await _dbSet.AddAsync(entity);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            await _dbSet.AddAsync(entity);
+            return true;
         }
 
-        public virtual async Task<ICollection<T>> FindBy(Expression<Func<T, bool>> filter = null, CancellationToken cancellationToken = default)
-        {
-            return await _dbSet.Where(filter).ToListAsync(cancellationToken);
-        }
-
-        public virtual async Task<T> GetById(Guid id)
-        {
-            return await _dbSet.FindAsync(id);
-        }
-
-        // Chưa triển khai
+        // No implement
         public virtual Task<bool> Update(T entity)
         {
             throw new NotImplementedException();
         }
-        // Chưa
+        // No implement
         public virtual Task<bool> Delete(Guid id)
         {
             throw new NotImplementedException();
         }
-        // Chưa
-        public virtual Task<ICollection<T>> GetAll()
-        {
-            throw new NotImplementedException();
-        }
-
-        public virtual async Task<T> FindOneBy(Expression<Func<T, bool>> filter = null, CancellationToken cancellationToken = default)
-        {
-            return await _dbSet.FirstOrDefaultAsync(filter, cancellationToken);
-        }
+        
     }
 }

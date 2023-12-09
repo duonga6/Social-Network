@@ -12,11 +12,16 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
         }
 
-        public override async Task<ICollection<PostImage>> GetAll()
+        public override async Task<ICollection<PostImage>> GetAll(bool asNoTracking = true)
         {
+            if (asNoTracking)
+            {
+                return await _dbSet.Where(x => x.Status == 1)
+                    .AsNoTracking()
+                    .ToListAsync();
+            }
             return await _dbSet.Where(x => x.Status == 1)
-                .AsNoTracking()
-                .ToListAsync();
+                    .ToListAsync();
         }
 
         public override async Task<bool> Delete(Guid Id)

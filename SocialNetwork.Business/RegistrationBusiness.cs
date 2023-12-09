@@ -20,7 +20,7 @@ namespace SocialNetwork.Business
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IPostService, PostService>();
             services.AddScoped<IPostCommentService, PostCommentService>();
-
+            services.AddScoped<IFriendshipService, FriendshipService>();
         }
     }
 }

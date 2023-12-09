@@ -1,13 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SocialNetwork.Business.DTOs.Friendship.Requests;
 using SocialNetwork.Business.DTOs.Post.Requests;
 using SocialNetwork.Business.DTOs.Token.Requests;
 using SocialNetwork.Business.DTOs.User.Requests;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper.Interfaces;
+using SocialNetwork.DataAccess.Utilities.Roles;
 
 namespace SocialNetwork.API.Controllers
 {
+    [Authorize]
     public class UsersController : BaseController
     {
         private readonly IUserService _userService;
@@ -17,82 +20,289 @@ namespace SocialNetwork.API.Controllers
             _userService = userService;
         }
 
-        [HttpPost]
-        [Route("Register")]
+        #region Auth + Info
+        /// <summary>
+        /// Register
+        /// </summary>
+        [HttpPost("Register")]
+        [AllowAnonymous]
         public async Task<IResponse> Register(RegistrationRequest request)
         {
             return await _userService.Register(request);
         }
 
-        [HttpPost]
-        [Route("Login")]
+        /// <summary>
+        /// Login
+        /// </summary>
+        [HttpPost("Login")]
+        [AllowAnonymous]
         public async Task<IResponse> Login(LoginRequest request)
         {
             return await _userService.Login(request);
         }
 
-        [HttpGet]
-        [Route("{Id}")]
-        public async Task<IResponse> GetById(string Id)
+        /// <summary>
+        /// Forgot password: return code reset
+        /// </summary>
+        [HttpPost("ForgotPassword")]
+        [AllowAnonymous]
+        public async Task<IResponse> ForgotPassword(ForgotPasswordRequest request)
         {
-            return await _userService.GetById(Id);
+            return await _userService.ForgotPassword(request);
         }
 
-        [HttpPost]
-        [Route("{Id}/Roles")]
-        public async Task<IResponse> AddRole(string Id, AddRolesToUserRequest request)
+        /// <summary>
+        /// Reset password: code from ForgotPassword
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("ResetPassword")]
+        [AllowAnonymous]
+        public async Task<IResponse> ResetPassword(ResetPasswordRequest request)
         {
-            return await _userService.AddRoles(Id, request);
+            return await _userService.ResetPassword(request);
         }
 
-        [HttpGet]
-        [Route("{Id}/Roles")]
-        public async Task<IResponse> GetRole(string Id)
+        /// <summary>
+        /// Get code confirm email
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("CodeConfirmEmail")]
+        [AllowAnonymous]
+        public async Task<IResponse> ResendConfirmEmail(ResendConfirmEmailRequest request)
         {
-            return await _userService.GetRoles(Id);
+            return await _userService.ResendConfirmEmail(request);
         }
 
-        [HttpPost]
-        [Route("RenewToken")]
+        /// <summary>
+        /// Confirm email: code from ResendConfirmEmail
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("ConfirmEmail")]
+        [AllowAnonymous]
+        public async Task<IResponse> ConfirmEmail(ConfirmEmailRequest request)
+        {
+            return await _userService.ConfirmEmail(request);
+        }
+
+        /// <summary>
+        /// New token
+        /// </summary>
+        [HttpPost("RenewToken")]
+        [AllowAnonymous]
         public async Task<IResponse> RenewToken(RenewTokenRequest token)
         {
             return await _userService.RenewToken(token);
         }
 
-        [HttpPut]
-        [Route("{Id}/Roles")]
-        public async Task<IResponse> UpdateRoles(string Id, AddRolesToUserRequest request)
+        /// <summary>
+        /// Get all user's info
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Authorize(Roles = RoleName.Administrator)]
+        public async Task<IResponse> GetAll()
         {
-            return await _userService.UpdateRole(Id, request);
+            return await _userService.GetAll();
         }
 
-        [HttpPost]
-        [Route("{Id}/Posts")]
+        /// <summary>
+        /// User info
+        /// </summary>
+        [HttpGet("{Id}")]
+        public async Task<IResponse> GetById(string Id)
+        {
+            return await _userService.GetById(UserId, Id);
+        }
+
+        /// <summary>
+        /// Update user info
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPut("{Id}")]
+        public async Task<IResponse> UpdateUser(string Id, UpdateUserInfoRequest request)
+        {
+            return await _userService.UpdateInfo(UserId, Id, request);
+        }
+
+        /// <summary>
+        /// Delete account
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        [HttpDelete("{Id}")]
+        public async Task<IResponse> DeleteUser(string Id)
+        {
+            return await _userService.DeleteUser(UserId, Id);
+        }
+
+        #endregion
+
+        #region Post
+
+        /// <summary>
+        /// User create post
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("{Id}/Posts")]
         public async Task<IResponse> CreatePost(string Id, CreatePostRequest request)
         {
-            return await _userService.CreatePost(Id, request);
+            return await _userService.CreatePost(UserId, Id, request);
         }
 
-        [HttpDelete]
-        [Route("{Id}/Posts/{postId:guid}")]
+        /// <summary>
+        /// User delete post
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="postId"></param>
+        /// <returns></returns>
+        [HttpDelete("{Id}/Posts/{postId:guid}")]
         public async Task<IResponse> DeletePost(string Id, Guid postId)
         {
-            return await _userService.DeletePost(Id, postId);
+            return await _userService.DeletePost(UserId, Id, postId);
         }
 
-        [HttpGet]
-        [Route("{Id}/Posts/{postId:guid}")]
+        /// <summary>
+        /// Get post by userId
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="postId"></param>
+        /// <returns></returns>
+        [HttpGet("{Id}/Posts/{postId:guid}")]
         public async Task<IResponse> GetPostById(string Id, Guid postId)
         {
-            return await _userService.GetPostById(Id, postId);
+            return await _userService.GetPostById(UserId, Id, postId);
         }
 
+        /// <summary>
+        /// Get all posts by userId
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
         [HttpGet("{Id}/Posts")]
         public async Task<IResponse> GetPostByUser(string Id)
         {
-            return await _userService.GetPostByUser(Id);
+            return await _userService.GetPostByUser(UserId, Id);
         }
 
+        /// <summary>
+        /// User update post
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="postId"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPut("{Id}/Posts/{postId:guid}")]
+        public async Task<IResponse> UpdatePost(string Id, Guid postId, UpdatePostRequest request)
+        {
+            return await _userService.UpdatePost(UserId, Id, postId, request);
+        }
 
+        #endregion
+
+        #region Friendship
+
+        /// <summary>
+        /// Get friendship of user
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        [HttpGet("{Id}/Friendship")]
+        public async Task<IResponse> GetFriendship(string Id)
+        {
+            return await _userService.GetFriendshipByUser(UserId, Id);
+        }
+
+        /// <summary>
+        /// Send friend invitations
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("{Id}/Friendship/AddFriend")]
+        public async Task<IResponse> AddFriend(string Id, [FromBody] BaseFriendRequest request)
+        {
+            return await _userService.AddFriend(UserId, Id, request);
+        }
+
+        /// <summary>
+        /// Unfriend
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="targetUserId"></param>
+        /// <returns></returns>
+        [HttpDelete("{Id}/Friendship/UnFriend/{targetUserId}")]
+        public async Task<IResponse> UnFriend(string Id, string targetUserId)
+        {
+            return await _userService.UnFriend(UserId, Id, targetUserId);
+        }
+
+        /// <summary>
+        /// Cancel friend request
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="targetUserId"></param>
+        /// <returns></returns>
+        [HttpDelete("{Id}/Friendship/CancelAddFriendRequest/{targetUserId}")]
+        public async Task<IResponse> CancelFriendRequest(string Id, string targetUserId)
+        {
+            return await _userService.CancelRequest(UserId, Id, targetUserId);
+        }
+
+        /// <summary>
+        /// Accept friend request
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="targetUserId"></param>
+        /// <returns></returns>
+        [HttpPut("{Id}/Friendship/AcceptFriend/{targetUserId}")]
+        public async Task<IResponse> AcceptFriend(string Id, string targetUserId)
+        {
+            return await _userService.AcceptRequest(UserId, Id, targetUserId);
+        }
+
+        /// <summary>
+        /// Refuse friend requests
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="targetUserId"></param>
+        /// <returns></returns>
+        [HttpDelete("{Id}/Friendship/RefuseFriend/{targetUserId}")]
+        public async Task<IResponse> RefuesFriend(string Id, string targetUserId)
+        {
+            return await _userService.RefuseRequest(UserId, Id, targetUserId);
+        }
+
+        /// <summary>
+        /// Block friend
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("{Id}/Friendship/BlockFriend")]
+        public async Task<IResponse> BlockFriend(string Id, [FromBody] BaseFriendRequest request)
+        {
+            return await _userService.BlockFriend(UserId, Id, request);
+        }
+
+        /// <summary>
+        /// Unblock friend
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="targetUserId"></param>
+        /// <returns></returns>
+        [HttpDelete("{Id}/Friendship/UnBlockFriend/{targetUserId}")]
+        public async Task<IResponse> UnBlockFriend(string Id, string targetUserId)
+        {
+            return await _userService.UnBlockFriend(UserId, Id, targetUserId);
+        }
+
+        #endregion
     }
 }

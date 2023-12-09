@@ -7,6 +7,7 @@ using SocialNetwork.Business.DTOs.PostReaction.Requests;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
+using SocialNetwork.DataAccess.Utilities.Roles;
 
 namespace SocialNetwork.API.Controllers
 {
@@ -22,6 +23,7 @@ namespace SocialNetwork.API.Controllers
 
         #region Post
         [HttpGet]
+        [Authorize(Roles = RoleName.Administrator)]
         public async Task<IResponse> GetAll()
         {
             return await _postService.GetAll();
@@ -30,7 +32,7 @@ namespace SocialNetwork.API.Controllers
         [HttpGet("{Id}")]
         public async Task<IResponse> GetById(Guid Id)
         {
-            return await _postService.GetById(Id);
+            return await _postService.GetById(UserId, Id);
         }
 
         [HttpPost]
@@ -56,7 +58,7 @@ namespace SocialNetwork.API.Controllers
             }
 
             request.AuthorId = userId;
-            return await _postService.Update(Id, request);
+            return await _postService.Update(UserId, Id, request);
         }
 
         [HttpDelete("{Id}")]
@@ -68,7 +70,7 @@ namespace SocialNetwork.API.Controllers
                 return new ErrorResponse(401, Messages.UnAuthorized);
             }
 
-            return await _postService.Delete(userId, Id);
+            return await _postService.Delete(UserId, Id);
         }
         #endregion
 
@@ -118,14 +120,14 @@ namespace SocialNetwork.API.Controllers
         }
 
         [HttpPost("{Id}/Reactions")]
-        public async Task<IResponse> GetReactionById(Guid Id, CreatePostReactionRequest request)
+        public async Task<IResponse> GetReactionById(Guid Id, [FromBody] CreatePostReactionRequest request)
         {
             var userId = User.GetUserId();
             return await _postService.CreateReaction(Id, userId, request);
         }
 
         [HttpPut("{Id}/Reactions/{reactionId}")]
-        public async Task<IResponse> UpdateReaction(Guid Id, int reactionId, CreatePostReactionRequest request)
+        public async Task<IResponse> UpdateReaction(Guid Id, int reactionId, [FromBody] CreatePostReactionRequest request)
         {
             var userId = User.GetUserId();
             return await _postService.UpdateReaction(Id, userId, reactionId, request);

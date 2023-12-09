@@ -12,11 +12,13 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
         }
 
-        public override async Task<ICollection<IdentityRole>> GetAll()
+        public override async Task<ICollection<IdentityRole>> GetAll(bool asNoTracking = true)
         {
-            return await _dbSet.AsNoTracking()
-                .AsSplitQuery()
-                .ToListAsync();
+            if (asNoTracking)
+            {
+                return await _dbSet.AsNoTracking().ToListAsync();
+            }
+            return await _dbSet.ToListAsync();
         }
     }
 }

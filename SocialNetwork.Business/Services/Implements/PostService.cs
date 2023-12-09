@@ -11,13 +11,16 @@ using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
+using SocialNetwork.DataAccess.Utilities.Roles;
 
 namespace SocialNetwork.Business.Services.Implements
 {
     public class PostService : BaseServices, IPostService
     {
+        private readonly UserManager<User> _userManager;    
         public PostService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<User> userManager) : base(unitOfWork, mapper)
         {
+            _userManager = userManager;
         }
 
         #region Post
@@ -26,12 +29,17 @@ namespace SocialNetwork.Business.Services.Implements
             var entity = await _unitOfWork.PostRepository.GetAll();
             return new DataResponse(_mapper.Map<List<GetPostResponse>>(entity), 200);
         }
-        public async Task<IResponse> GetById(Guid id)
+        public async Task<IResponse> GetById(string requestingUserId, Guid id)
         {
             var entity = await _unitOfWork.PostRepository.GetById(id);
             if (entity == null)
             {
                 return new ErrorResponse(404, Messages.NotFounb("Post"));
+            }
+
+            if (!await CheckPermission(requestingUserId, entity.AuthorId))
+            {
+                return new ErrorResponse(403, Messages.Forbidden);
             }
 
             return new DataResponse(_mapper.Map<GetPostResponse>(entity), 200);
@@ -55,15 +63,21 @@ namespace SocialNetwork.Business.Services.Implements
 
             return new DataResponse(_mapper.Map<GetPostResponse>(addEntity), 200, Messages.CreatedSuccessfully);
         }
-        public async Task<IResponse> Update(Guid id, UpdatePostRequest request)
+        public async Task<IResponse> Update(string requestingUserId, Guid id, UpdatePostRequest request)
         {
 
             var entityUpdate = _mapper.Map<Post>(request);
             entityUpdate.Id = id;
+            entityUpdate.AuthorId = requestingUserId;
 
             if (!await _unitOfWork.PostRepository.Update(entityUpdate))
             {
                 return new ErrorResponse(404, Messages.NotFounb("Post"));
+            }
+            
+            if (!await CheckPermission(requestingUserId, entityUpdate.AuthorId))
+            {
+                return new ErrorResponse(403, Messages.Forbidden);
             }
 
             foreach (var item in request.ImagesDelete)
@@ -93,30 +107,62 @@ namespace SocialNetwork.Business.Services.Implements
             var result = await _unitOfWork.CompleteAsync();
             if (!result)
             {
-                return new ErrorResponse(400, Messages.UpdateError);
+                return new ErrorResponse(400, Messages.STWroong);
             }
 
-            return new DataResponse(_mapper.Map<GetPostResponse>(entityUpdate), 204, Messages.UpdatedSuccessfully);
+            var updatedEntity = await _unitOfWork.PostRepository.GetById(id);
+
+            return new DataResponse(_mapper.Map<GetPostResponse>(updatedEntity), 204, Messages.UpdatedSuccessfully);
 
         }
-        public async Task<IResponse> Delete(string userId, Guid postId)
+        public async Task<IResponse> Delete(string requestingUserId, Guid postId)
         {
-            var post = await _unitOfWork.PostRepository.FindOneBy(x => x.AuthorId == userId && x.Id == postId && x.Status == 1);
+            var post = await _unitOfWork.PostRepository.GetById(postId);
             if (post == null)
             {
                 return new ErrorResponse(404, Messages.NotFounb("Post"));
             }
 
-            await _unitOfWork.PostRepository.Delete(post.Id);
-            var resut = await _unitOfWork.CompleteAsync();
-
-            if (!resut)
+            if (!await CheckPermission(requestingUserId, post.AuthorId))
             {
-                return new ErrorResponse(400, Messages.DeleteError);
+                return new ErrorResponse(403, Messages.Forbidden);
+            }
+
+            await _unitOfWork.PostRepository.Delete(post.Id);
+            var result = await _unitOfWork.CompleteAsync();
+
+            if (!result)
+            {
+                return new ErrorResponse(400, Messages.STWroong);
             }
 
             return new SuccessResponse(Messages.DeletedSuccessfully, 204);
         }
+
+        private async Task<bool> CheckPermission(string requestingUserId, string targetUserId)
+        {
+            var requestUser = await _unitOfWork.UserRepository.FindById(requestingUserId);
+            var targetUser = await _unitOfWork.UserRepository.FindById(targetUserId);
+
+            if (requestUser == null || targetUser == null)
+            {
+                return false;
+            }    
+
+            if (requestingUserId != targetUserId && !await _userManager.IsInRoleAsync(requestUser, RoleName.Administrator))
+            {
+                return false;
+            }    
+
+            if (requestingUserId != targetUserId)
+            {
+                return false;    
+            }
+
+            return true;
+        }
+
+
         #endregion
 
         #region Post Comment

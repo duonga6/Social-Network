@@ -12,15 +12,25 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
         }
 
-        public override async Task<ICollection<PostComment>> GetAll()
+        public override async Task<ICollection<PostComment>> GetAll(bool asNoTracking = true)
         {
+            if (asNoTracking)
+            {
+                return await _dbSet.Where(x => x.Status == 1)
+                    .AsNoTracking()
+                    .ToListAsync();
+            }
+
             return await _dbSet.Where(x => x.Status == 1)
-                .AsNoTracking()
-                .ToListAsync();
+                    .ToListAsync();
         }
 
-        public override async Task<PostComment> GetById(Guid id)
+        public override async Task<PostComment> GetById(Guid id, bool asNoTracking = true)
         {
+            if (asNoTracking)
+            {
+                return await _dbSet.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && x.Status == 1);
+            }
             return await _dbSet.FirstOrDefaultAsync(x => x.Id == id && x.Status == 1);
         }
 

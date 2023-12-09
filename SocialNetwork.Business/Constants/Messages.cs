@@ -17,6 +17,8 @@
         public static string NotFounb(string resource) => $"{resource} not found";
         public static string UnAuthorized => "Unauthorized";
         public static string BadRequest => "Bad Request";
+        public static string Forbidden => "Forbidden";
+        public static string STWroong => "Something went wrong";
 
         // Reaction
         public static string ReactionExist => "Name and Code are already exist";
@@ -29,6 +31,11 @@
         public static string AddRoleToUserSuccess => "Add roles to user successfully";
         public static string EmailUsed => "Email is used";
         public static string IncorrectEP => "Incorrect email or password";
+        public static string GetCodeResetPassword = "Get code reset password successfully";
+        public static string ResetPasswordSuccesfully = "Password has been reset";
+        public static string ResetPasswordError = "Reset password fail";
+        public static string ConfirmEmailSuccess = "Confirm email successfully";
+        public static string GetCodeConfirmEmailSuccess = "Get code confirm email successfully";
 
         // Role
         public static string RoleEmpty => "Roles is empty";
@@ -37,5 +44,16 @@
 
         // Post
         public static string PostNotOwner => "This user is not the owner";
+
+        // Friendship
+        public static string FriendshipExisted => "Friendship existed";
+        public static string FriendshipSent => "Send request successfully";
+        public static string FriendshipStatusInValid => "Friendship status invalid";
+        public static string FriendshipAccepted => "Friendship accepted";
+        public static string FriendshipBlocked => "User blocked";
+        public static string FriendshipUnblocked => "User unblocked";
+        public static string FriendshipCanceled => "Friendship canceled";
+        public static string FriendshipRefused => "Refused friend request";
+        public static string FriendshipUnfriended => "Unfriended";
     }
 }

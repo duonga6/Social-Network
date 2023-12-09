@@ -15,5 +15,30 @@ namespace SocialNetwork.Business.Helper
 
             return errors;
         }
+
+        public static List<string> GetErrors(this SignInResult signInResult)
+        {
+            var errors = new List<string>();
+
+            if (signInResult.IsNotAllowed)
+            {
+                errors.Add("Email not confirmed");
+            }
+            else if (signInResult.IsLockedOut)
+            {
+                errors.Add("LockedOut");
+            }
+            else if (signInResult.RequiresTwoFactor)
+            {
+                errors.Add("Require two factor");
+            }
+            else
+            {
+                errors.Add("Username or password invalid");
+            }    
+
+
+            return errors;
+        }
     }
 }

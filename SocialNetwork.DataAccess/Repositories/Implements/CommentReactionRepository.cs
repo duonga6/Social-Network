@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.DataAccess.Context;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
-using System.ComponentModel.Design;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
 {
