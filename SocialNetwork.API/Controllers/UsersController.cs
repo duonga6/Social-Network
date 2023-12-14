@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.Business.DTOs.Friendship.Requests;
+using SocialNetwork.Business.DTOs.Message.Requests;
 using SocialNetwork.Business.DTOs.Post.Requests;
 using SocialNetwork.Business.DTOs.Token.Requests;
 using SocialNetwork.Business.DTOs.User.Requests;
@@ -34,6 +35,8 @@ namespace SocialNetwork.API.Controllers
         /// <summary>
         /// Login
         /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         [HttpPost("Login")]
         [AllowAnonymous]
         public async Task<IResponse> Login(LoginRequest request)
@@ -169,7 +172,7 @@ namespace SocialNetwork.API.Controllers
         }
 
         /// <summary>
-        /// Get post by userId
+        /// Get post of user by postid
         /// </summary>
         /// <param name="Id"></param>
         /// <param name="postId"></param>
@@ -297,12 +300,54 @@ namespace SocialNetwork.API.Controllers
         /// <param name="Id"></param>
         /// <param name="targetUserId"></param>
         /// <returns></returns>
-        [HttpDelete("{Id}/Friendship/UnBlockFriend/{targetUserId}")]
+        [HttpPut("{Id}/Friendship/UnBlockFriend/{targetUserId}")]
         public async Task<IResponse> UnBlockFriend(string Id, string targetUserId)
         {
             return await _userService.UnBlockFriend(UserId, Id, targetUserId);
         }
 
         #endregion
+
+        #region Messages
+
+        /// <summary>
+        /// Get message conversation with target user
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="targetUserId"></param>
+        /// <returns></returns>
+        [HttpGet("{Id}/Messages/{targetUserId}")]
+        public async Task<IResponse> GetConversation(string Id, string targetUserId)
+        {
+            return await _userService.GetConversation(UserId, Id, targetUserId);
+        }
+
+        /// <summary>
+        /// Send message to user
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("{Id}/Messages")]
+        public async Task<IResponse> SendMessage(string Id, [FromBody] SendMessageRequest request)
+        {
+            return await _userService.SendMessage(UserId, Id, request); 
+        }
+
+        /// <summary>
+        /// Delete message
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="messageId"></param>
+        /// <returns></returns>
+        [HttpDelete("{Id}/Messages/{messageId}")]
+        public async Task<IResponse> DeleteMessage(string Id, Guid messageId)
+        {
+            return await _userService.DeleteMessage(UserId, Id, messageId);
+        }
+
+        #endregion
+
+
     }
 }

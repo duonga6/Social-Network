@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using SocialNetwork.Business.DTOs.CommentReaction.Responses;
 using SocialNetwork.Business.DTOs.Friendship.Responses;
+using SocialNetwork.Business.DTOs.Message.Responses;
 using SocialNetwork.Business.DTOs.Post.Responses;
 using SocialNetwork.Business.DTOs.PostComment.Responses;
 using SocialNetwork.Business.DTOs.PostImage.Responses;
@@ -37,6 +38,8 @@ namespace SocialNetwork.Business.Mapper
                 .ForMember(d => d.Name, o => o.MapFrom(s => s.Reaction.Name));
 
             CreateMap<Friendship, GetFriendshipResponse>();
+
+            CreateMap<Message, GetMessageResponse>();
 
         }
     }

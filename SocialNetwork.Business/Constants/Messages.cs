@@ -43,7 +43,10 @@
         public static string RoleExist => "Role already exits";
 
         // Post
-        public static string PostNotOwner => "This user is not the owner";
+        public static string PostNotOwner => "Is not the owner";
+
+        // Comment 
+        public static string CommentNotOwner => "Is not the owner";
 
         // Friendship
         public static string FriendshipExisted => "Friendship existed";
@@ -55,5 +58,10 @@
         public static string FriendshipCanceled => "Friendship canceled";
         public static string FriendshipRefused => "Refused friend request";
         public static string FriendshipUnfriended => "Unfriended";
+        public static string NotFriend => "Friends required";
+
+        // Message
+        public static string MessageSent => "Send message successfully";
+        public static string MessageDeleted => "Delete message successfully";
     }
 }

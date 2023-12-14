@@ -1,11 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SocialNetwork.DataAccess.Entities;
-using SocialNetwork.DataAccess.Utilities.Enum;
 
 namespace SocialNetwork.DataAccess.EntityConfiguration
 {
-    public class FriendshipConfiguration : IEntityTypeConfiguration<Friendship>
+    public class FriendshipConfigurations : IEntityTypeConfiguration<Friendship>
     {
         public void Configure(EntityTypeBuilder<Friendship> builder)
         {

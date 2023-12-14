@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.DataAccess.Context;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
+using SocialNetwork.DataAccess.Utilities.Enum;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
 {
@@ -42,5 +43,16 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             _dbSet.Remove(entity);
             return true;
         }
+    
+        public async Task<bool> IsFriend(string requestUserId, string targetUserId)
+        {
+            var isFriend = await _dbSet
+                .FirstOrDefaultAsync(
+                x => (x.TargetUserId == requestUserId && x.RequestUserId == targetUserId && x.FriendStatus == FriendshipStatus.Accepted)
+             || (x.TargetUserId == targetUserId && x.RequestUserId == requestUserId && x.FriendStatus == FriendshipStatus.Accepted));
+
+            return isFriend != null;
+        }
+    
     }
 }

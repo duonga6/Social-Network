@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Friendship.Requests;
+using SocialNetwork.Business.DTOs.Message.Requests;
 using SocialNetwork.Business.DTOs.Post.Requests;
 using SocialNetwork.Business.DTOs.Post.Responses;
 using SocialNetwork.Business.DTOs.Token.Requests;
@@ -13,6 +14,7 @@ using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
+using SocialNetwork.DataAccess.Utilities.Enum;
 using SocialNetwork.DataAccess.Utilities.Roles;
 
 namespace SocialNetwork.Business.Services.Implements
@@ -24,14 +26,16 @@ namespace SocialNetwork.Business.Services.Implements
         private readonly SignInManager<User> _signInManager;
         private readonly IPostService _postService;
         private readonly IFriendshipService _friendshipService;
+        private readonly IMessageService _messageService;
 
-        public UserService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<User> userManager, ITokenService tokenService, SignInManager<User> signInManager, RoleManager<IdentityRole> roleManager, IPostService postService, IFriendshipService friendshipService) : base(unitOfWork, mapper)
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<User> userManager, ITokenService tokenService, SignInManager<User> signInManager, RoleManager<IdentityRole> roleManager, IPostService postService, IFriendshipService friendshipService, IMessageService messageService) : base(unitOfWork, mapper)
         {
             _userManager = userManager;
             _tokenService = tokenService;
             _signInManager = signInManager;
             _postService = postService;
             _friendshipService = friendshipService;
+            _messageService = messageService;
         }
 
         #region Auth + User info
@@ -284,6 +288,35 @@ namespace SocialNetwork.Business.Services.Implements
             return new DataResponse(resultCode, 200, Messages.GetCodeConfirmEmailSuccess);
         }
 
+        private async Task<bool> CheckAccess(string loggedUserId, string requestUserId)
+        {
+            var requestUser = await _userManager.FindByIdAsync(requestUserId);
+            var loggedUser = await _userManager.FindByEmailAsync(loggedUserId);
+
+            if (requestUser == null || loggedUser == null)
+            {
+                return false;
+            }
+            
+            if (loggedUserId != requestUserId && !await _userManager.IsInRoleAsync(loggedUser, RoleName.Administrator))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private async Task<bool> CheckRoleValid(List<string> inputRoles)
+        {
+            var allRoles = (await _unitOfWork.RoleRepository.GetAll()).Select(r => r.Name).ToList();
+            if (inputRoles.Any(r => !allRoles.Contains(r)))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
 
         #endregion
 
@@ -292,15 +325,16 @@ namespace SocialNetwork.Business.Services.Implements
         {
             if (!await CheckAccess(loggedUserId, requestUserId))
             {
-                return new ErrorResponse(403, Messages.Forbidden);
+                return new ErrorResponse(403, Messages.BadRequest);
             }
 
             request.AuthorId = requestUserId;
             return await _postService.Create(request);
         }
+
         public async Task<IResponse> GetPostById(string loggedUserId, string requestUserId, Guid postId)
         {
-            if (!await CheckAccess(loggedUserId, requestUserId))
+            if (!await CheckAccessPost(loggedUserId, requestUserId))
             {
                 return new ErrorResponse(403, Messages.Forbidden);
             }    
@@ -316,7 +350,7 @@ namespace SocialNetwork.Business.Services.Implements
 
         public async Task<IResponse> GetPostByUser(string loggedUserId, string requestUserId)
         {
-            if (!await CheckAccess(loggedUserId, requestUserId))
+            if (!await CheckAccessPost(loggedUserId, requestUserId))
             {
                 return new ErrorResponse(403, Messages.Forbidden);
             }
@@ -359,36 +393,45 @@ namespace SocialNetwork.Business.Services.Implements
             return new SuccessResponse(Messages.DeletedSuccessfully, 204);
         }
 
-        private async Task<bool> CheckRoleValid(List<string> inputRoles)
+        private async Task<bool> CheckAccessPost(string loggedUserId, string requestUserId)
         {
-            var allRoles = (await _unitOfWork.RoleRepository.GetAll()).Select(r => r.Name).ToList();
-            if (inputRoles.Any(r => !allRoles.Contains(r)))
+            var requestUser = await _unitOfWork.UserRepository.FindById(requestUserId);
+            var loggedUser = await _unitOfWork.UserRepository.FindById(loggedUserId);
+
+            if (requestUser == null || loggedUser == null) return false;
+
+            if (loggedUserId != requestUserId)
             {
-                return false;
-            }
+                // Check admin:
+                if (!await _userManager.IsInRoleAsync(loggedUser, RoleName.Administrator))
+                {
+                    return false;
+                }    
+
+                // Check friend:
+                var isFriend = await _unitOfWork.FriendshipRepository
+                    .FindOneBy(x => x.TargetUserId ==  loggedUserId && x.RequestUserId == requestUserId && x.FriendStatus == FriendshipStatus.Accepted
+                                 || x.TargetUserId == requestUserId && x.RequestUserId == loggedUserId && x.FriendStatus == FriendshipStatus.Accepted
+                );
+
+                if (isFriend == null)
+                {
+                    return false;
+                }    
+            }    
 
             return true;
         }
 
         #endregion
 
-        private async Task<bool> CheckAccess(string requestingUserId, string targetUserId)
-        {
-            var requestingUser = await _userManager.FindByIdAsync(requestingUserId);
-            if (requestingUser == null || requestingUserId != targetUserId && !await _userManager.IsInRoleAsync(requestingUser, RoleName.Administrator))
-            {
-                return false;
-            }
-            return true;
-        }
-
         #region Friendship
 
         public async Task<IResponse> AddFriend(string loggedUserId, string requestUserId, BaseFriendRequest request)
         {
-            if (!await CheckAccess(loggedUserId, requestUserId))
+            if (CheckCompareLoggedIdRequestId(loggedUserId, requestUserId))
             {
-                return new ErrorResponse(403, Messages.Forbidden);
+                return new ErrorResponse(403, Messages.BadRequest);
             }    
 
             return await _friendshipService.AddFriendRequest(requestUserId, request);
@@ -396,9 +439,9 @@ namespace SocialNetwork.Business.Services.Implements
 
         public async Task<IResponse> UnFriend(string loggedUserId, string requestUserId, string targetUserId)
         {
-            if (!await CheckAccess(loggedUserId, requestUserId))
+            if (CheckCompareLoggedIdRequestId(loggedUserId, requestUserId))
             {
-                return new ErrorResponse(403, Messages.Forbidden);
+                return new ErrorResponse(403, Messages.BadRequest);
             }
 
             return await _friendshipService.UnFriendRequest(requestUserId, targetUserId);
@@ -406,9 +449,9 @@ namespace SocialNetwork.Business.Services.Implements
         
         public async Task<IResponse> CancelRequest(string loggedUserId, string requestUserId, string targetUserId)
         {
-            if (!await CheckAccess(loggedUserId, requestUserId))
+            if (CheckCompareLoggedIdRequestId(loggedUserId, requestUserId))
             {
-                return new ErrorResponse(403, Messages.Forbidden);
+                return new ErrorResponse(403, Messages.BadRequest);
             }
 
             return await _friendshipService.CancelRequest(requestUserId, targetUserId);
@@ -416,14 +459,18 @@ namespace SocialNetwork.Business.Services.Implements
         
         public async Task<IResponse> AcceptRequest(string loggedUserId, string requestUserId, string targetUserId)
         {
+            if (CheckCompareLoggedIdRequestId(loggedUserId, requestUserId))
+            {
+                return new ErrorResponse(403, Messages.BadRequest);
+            }
             return await _friendshipService.AcceptRequest(requestUserId, targetUserId);
         }
         
         public async Task<IResponse> RefuseRequest(string loggedUserId, string requestUserId, string targetUserId)
         {
-            if (!await CheckAccess(loggedUserId, requestUserId))
+            if (CheckCompareLoggedIdRequestId(loggedUserId, requestUserId))
             {
-                return new ErrorResponse(403, Messages.Forbidden);
+                return new ErrorResponse(403, Messages.BadRequest);
             }
 
             return await _friendshipService.RefuseRequest(requestUserId, targetUserId);
@@ -431,9 +478,9 @@ namespace SocialNetwork.Business.Services.Implements
         
         public async Task<IResponse> BlockFriend(string loggedUserId, string requestUserId, BaseFriendRequest request)
         {
-            if (!await CheckAccess(loggedUserId, requestUserId))
+            if (CheckCompareLoggedIdRequestId(loggedUserId, requestUserId))
             {
-                return new ErrorResponse(403, Messages.Forbidden);
+                return new ErrorResponse(403, Messages.BadRequest);
             }
 
             return await _friendshipService.BlockFriend(requestUserId, request);
@@ -441,9 +488,9 @@ namespace SocialNetwork.Business.Services.Implements
 
         public async Task<IResponse> UnBlockFriend(string loggedUserId, string requestUserId, string targetUserId)
         {
-            if (!await CheckAccess(loggedUserId, requestUserId))
+            if (CheckCompareLoggedIdRequestId(loggedUserId, requestUserId))
             {
-                return new ErrorResponse(403, Messages.Forbidden);
+                return new ErrorResponse(403, Messages.BadRequest);
             }
 
             return await _friendshipService.UnBlockFriend(requestUserId, targetUserId);
@@ -451,13 +498,53 @@ namespace SocialNetwork.Business.Services.Implements
 
         public async Task<IResponse> GetFriendshipByUser(string loggedUserId, string requestUserId)
         {
-            if (!await CheckAccess(loggedUserId, requestUserId))
+            if (CheckCompareLoggedIdRequestId(loggedUserId, requestUserId))
             {
-                return new ErrorResponse(403, Messages.Forbidden);
+                return new ErrorResponse(403, Messages.BadRequest);
             }
 
             return await _friendshipService.GetByUser(requestUserId);
         }
+
+        private bool CheckCompareLoggedIdRequestId(string loggedUserId, string requestUserId)
+        {
+            return loggedUserId == requestUserId;
+        }
+
+        #endregion
+
+        #region Message
+
+        public async Task<IResponse> SendMessage(string loggedUserId, string requestUserId, SendMessageRequest request)
+        {
+            if (!CheckCompareUserId(loggedUserId, requestUserId))
+            {
+                return new ErrorResponse(400, Messages.BadRequest);
+            }
+
+            return await _messageService.SendMessage(requestUserId, request);
+
+        }
+        public async Task<IResponse> GetConversation(string loggedUserId, string requestUserId, string targetUserId)
+        {
+            if (!CheckCompareUserId(loggedUserId, requestUserId))
+            {
+                return new ErrorResponse(400, Messages.BadRequest);
+            }
+
+            return await _messageService.GetAll(requestUserId, targetUserId);
+        }
+        public async Task<IResponse> DeleteMessage(string loggedUserId, string requestUserId, Guid id)
+        {
+            if (!CheckCompareUserId(loggedUserId, requestUserId))
+            {
+                return new ErrorResponse(400, Messages.BadRequest);
+            }
+
+            return await _messageService.DeleteMessage(requestUserId, id);
+        }
+
+        private bool CheckCompareUserId(string loggedUserId, string requestUserId) => loggedUserId == requestUserId; 
 
         #endregion
     }

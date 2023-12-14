@@ -64,7 +64,11 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(404, Messages.NotFounb("User"));
             }
 
-            var checkExist = await _unitOfWork.FriendshipRepository.FindOneBy(x => x.RequestUserId == requestUserId && x.TargetUserId == request.TargetUserId);
+            var checkExist = await _unitOfWork.FriendshipRepository
+                .FindOneBy(x => x.RequestUserId == requestUserId && x.TargetUserId == request.TargetUserId
+                    || x.RequestUserId == request.TargetUserId && x.TargetUserId == requestUserId);
+
+
             if (checkExist != null)
             {
                 return new ErrorResponse(400, Messages.BadRequest);
@@ -97,7 +101,8 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(404, Messages.NotFounb("User"));
             }
 
-            var entity = await _unitOfWork.FriendshipRepository.FindOneBy(x => x.RequestUserId == requestUserId && x.TargetUserId == request.TargetUserId, false);
+            var entity = await _unitOfWork.FriendshipRepository
+                .FindOneBy(x => x.RequestUserId == requestUserId && x.TargetUserId == request.TargetUserId || x.RequestUserId == request.TargetUserId && x.TargetUserId == requestUserId, false);
 
             if (entity == null)
             {
@@ -226,9 +231,9 @@ namespace SocialNetwork.Business.Services.Implements
             var entity = await _unitOfWork.FriendshipRepository
                 .FindOneBy(x => x.RequestUserId == requestUserId && x.TargetUserId == targetUserId || x.RequestUserId == targetUserId && x.TargetUserId == requestUserId);
             
-            if (entity == null || entity.TargetUserId != requestUserId)
+            if (entity == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFounb("Friendship"));
             }
 
             if (entity.FriendStatus != FriendshipStatus.Accepted)
@@ -244,7 +249,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(501, Messages.STWroong);
             }
 
-            return new SuccessResponse(Messages.FriendshipUnblocked, 204);
+            return new SuccessResponse(Messages.FriendshipUnfriended, 204);
         }
 
         private async Task<bool> CheckExistUser(string user1, string user2)

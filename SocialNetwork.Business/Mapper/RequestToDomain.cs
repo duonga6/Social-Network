@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using SocialNetwork.Business.DTOs.CommentReaction.Requests;
 using SocialNetwork.Business.DTOs.Friendship.Requests;
+using SocialNetwork.Business.DTOs.Message.Requests;
 using SocialNetwork.Business.DTOs.Post.Requests;
 using SocialNetwork.Business.DTOs.PostComment.Requests;
 using SocialNetwork.Business.DTOs.PostImage.Requests;
@@ -65,6 +66,11 @@ namespace SocialNetwork.Business.Mapper
 
             CreateMap<UpdateUserInfoRequest, User>()
                 .ForMember(d  => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
+
+            CreateMap<SendMessageRequest, Message>()
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(s => DateTime.UtcNow))
+                .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
+
         }
     }
 }

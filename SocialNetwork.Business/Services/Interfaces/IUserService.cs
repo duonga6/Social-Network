@@ -1,4 +1,5 @@
 ﻿using SocialNetwork.Business.DTOs.Friendship.Requests;
+using SocialNetwork.Business.DTOs.Message.Requests;
 using SocialNetwork.Business.DTOs.Post.Requests;
 using SocialNetwork.Business.DTOs.Token.Requests;
 using SocialNetwork.Business.DTOs.User.Requests;
@@ -40,5 +41,9 @@ namespace SocialNetwork.Business.Services.Interfaces
         Task<IResponse> BlockFriend(string loggedUserId, string requestUserId, BaseFriendRequest request);
         Task<IResponse> UnBlockFriend(string loggedUserId, string requestUserId, string targetUserId);
         Task<IResponse> GetFriendshipByUser(string loggedUserId, string requestUserId);
+
+        Task<IResponse> SendMessage(string loggedUserId, string requestUserId, SendMessageRequest request);
+        Task<IResponse> GetConversation(string loggedUserId, string requestUserId, string targetUserId);
+        Task<IResponse> DeleteMessage(string loggedUserId, string requestUserId, Guid id);
     }
 }

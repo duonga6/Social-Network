@@ -37,9 +37,9 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(404, Messages.NotFounb("Post"));
             }
 
-            if (!await CheckPermission(requestingUserId, entity.AuthorId))
+            if (!await CheckAccess(requestingUserId, entity.AuthorId))
             {
-                return new ErrorResponse(403, Messages.Forbidden);
+                return new ErrorResponse(403, Messages.NotFriend);
             }
 
             return new DataResponse(_mapper.Map<GetPostResponse>(entity), 200);
@@ -147,19 +147,41 @@ namespace SocialNetwork.Business.Services.Implements
             if (requestUser == null || targetUser == null)
             {
                 return false;
-            }    
-
-            if (requestingUserId != targetUserId && !await _userManager.IsInRoleAsync(requestUser, RoleName.Administrator))
-            {
-                return false;
-            }    
-
-            if (requestingUserId != targetUserId)
-            {
-                return false;    
             }
 
-            return true;
+            // Is owner
+            if (requestingUserId == targetUserId)
+            {
+                return true;
+            }
+
+            // Is admin
+            return await _userManager.IsInRoleAsync(requestUser, RoleName.Administrator);
+        }
+        private async Task<bool> CheckAccess(string requestingUserId, string targetUserId)
+        {
+            var requestUser = await _unitOfWork.UserRepository.FindById(requestingUserId);
+            var targetUser = await _unitOfWork.UserRepository.FindById(targetUserId);
+
+            if (requestUser == null || targetUser == null)
+            {
+                return false;
+            }
+
+            // Is owner
+            if (requestingUserId == targetUserId)
+            {
+                return true;
+            }
+
+            // Is admin
+            if (await _userManager.IsInRoleAsync(requestUser, RoleName.Administrator))
+            {
+                return true;
+            }
+
+            // Is friend
+            return await _unitOfWork.FriendshipRepository.IsFriend(requestingUserId, targetUserId);
         }
 
 

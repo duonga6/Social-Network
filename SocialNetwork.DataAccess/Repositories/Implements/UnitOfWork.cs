@@ -12,16 +12,15 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         public IUserRepository UserRepository { get; }
         public IRefreshTokenRepository RefreshTokenRepository { get; }
         public IRoleRepository RoleRepository { get; }
-
         public IPostImageRepository PostImageRepository { get; }
-
         public IPostRepository PostRepository { get; }
-
         public IPostCommentRepository PostCommentRepository { get; }
         public IPostReactionRepository PostReactionRepository { get; }
-
         public ICommentReactionRepository CommentReactionRepository { get; }
         public IFriendshipRepository FriendshipRepository { get; }
+        public IMessageRepository MessageRepository { get; }
+
+        public INotificationRepository NotificationRepository { get; }
 
         public readonly AppDbContext _context;
 
@@ -38,6 +37,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             PostReactionRepository = new PostReactionRepository(logger, context);
             CommentReactionRepository = new CommentReactionRepository(logger, context);
             FriendshipRepository = new FriendshipRepository(logger, context);
+            MessageRepository = new MessageRepository(logger, context);
         }
 
         public async Task<bool> CompleteAsync()

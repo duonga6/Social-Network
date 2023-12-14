@@ -42,7 +42,7 @@ namespace SocialNetwork.DataAccess
                 options.User.RequireUniqueEmail = false;
 
                 // Sign settings
-                options.SignIn.RequireConfirmedEmail = true;
+                options.SignIn.RequireConfirmedEmail = false;
             });
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();

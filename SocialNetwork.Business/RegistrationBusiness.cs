@@ -21,6 +21,7 @@ namespace SocialNetwork.Business
             services.AddScoped<IPostService, PostService>();
             services.AddScoped<IPostCommentService, PostCommentService>();
             services.AddScoped<IFriendshipService, FriendshipService>();
+            services.AddScoped<IMessageService, MessageService>();
         }
     }
 }
