@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Post.Requests;
 using SocialNetwork.Business.DTOs.Post.Responses;
@@ -11,15 +12,23 @@ using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
+using SocialNetwork.DataAccess.Utilities.Enum;
 using SocialNetwork.DataAccess.Utilities.Roles;
 
 namespace SocialNetwork.Business.Services.Implements
 {
-    public class PostService : BaseServices, IPostService
+    public class PostService : BaseServices<PostService>, IPostService
     {
-        private readonly UserManager<User> _userManager;    
-        public PostService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<User> userManager) : base(unitOfWork, mapper)
+        private readonly UserManager<User> _userManager;
+        private readonly INotificationService _notificationService;
+
+        public PostService(IUnitOfWork unitOfWork,
+                           IMapper mapper,
+                           ILogger<PostService> logger,
+                           INotificationService notificationService,
+                           UserManager<User> userManager) : base(unitOfWork, mapper, logger)
         {
+            _notificationService = notificationService;
             _userManager = userManager;
         }
 
@@ -31,18 +40,18 @@ namespace SocialNetwork.Business.Services.Implements
         }
         public async Task<IResponse> GetById(string requestingUserId, Guid id)
         {
-            var entity = await _unitOfWork.PostRepository.GetById(id);
-            if (entity == null)
+            var post = await _unitOfWork.PostRepository.GetById(id);
+            if (post == null)
             {
                 return new ErrorResponse(404, Messages.NotFounb("Post"));
             }
 
-            if (!await CheckAccess(requestingUserId, entity.AuthorId))
+            if (!await _unitOfWork.FriendshipRepository.IsFriend(requestingUserId, post.AuthorId))
             {
                 return new ErrorResponse(403, Messages.NotFriend);
             }
 
-            return new DataResponse(_mapper.Map<GetPostResponse>(entity), 200);
+            return new DataResponse(_mapper.Map<GetPostResponse>(post), 200);
         }
         public async Task<IResponse> Create(CreatePostRequest request)
         {
@@ -61,21 +70,22 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
+            await _notificationService.CreateNotification(addEntity.AuthorId, "", TypeNotification.Post);
+
             return new DataResponse(_mapper.Map<GetPostResponse>(addEntity), 200, Messages.CreatedSuccessfully);
         }
         public async Task<IResponse> Update(string requestingUserId, Guid id, UpdatePostRequest request)
         {
+            var postUpdate = _mapper.Map<Post>(request);
+            postUpdate.Id = id;
+            postUpdate.AuthorId = requestingUserId;
 
-            var entityUpdate = _mapper.Map<Post>(request);
-            entityUpdate.Id = id;
-            entityUpdate.AuthorId = requestingUserId;
-
-            if (!await _unitOfWork.PostRepository.Update(entityUpdate))
+            if (!await _unitOfWork.PostRepository.Update(postUpdate))
             {
                 return new ErrorResponse(404, Messages.NotFounb("Post"));
             }
             
-            if (!await CheckPermission(requestingUserId, entityUpdate.AuthorId))
+            if (!await CheckPermission(requestingUserId, postUpdate.AuthorId))
             {
                 return new ErrorResponse(403, Messages.Forbidden);
             }
@@ -100,14 +110,14 @@ namespace SocialNetwork.Business.Services.Implements
             foreach (var item in request.ImagesAdd)
             {
                 var addImage = _mapper.Map<PostImage>(item);
-                addImage.PostId = entityUpdate.Id;
+                addImage.PostId = postUpdate.Id;
                 await _unitOfWork.PostImageRepository.Add(addImage);
             }
 
             var result = await _unitOfWork.CompleteAsync();
             if (!result)
             {
-                return new ErrorResponse(400, Messages.STWroong);
+                return new ErrorResponse(400, Messages.UpdateError);
             }
 
             var updatedEntity = await _unitOfWork.PostRepository.GetById(id);
@@ -133,12 +143,11 @@ namespace SocialNetwork.Business.Services.Implements
 
             if (!result)
             {
-                return new ErrorResponse(400, Messages.STWroong);
+                return new ErrorResponse(400, Messages.DeleteError);
             }
 
             return new SuccessResponse(Messages.DeletedSuccessfully, 204);
         }
-
         private async Task<bool> CheckPermission(string requestingUserId, string targetUserId)
         {
             var requestUser = await _unitOfWork.UserRepository.FindById(requestingUserId);
@@ -158,7 +167,149 @@ namespace SocialNetwork.Business.Services.Implements
             // Is admin
             return await _userManager.IsInRoleAsync(requestUser, RoleName.Administrator);
         }
-        private async Task<bool> CheckAccess(string requestingUserId, string targetUserId)
+
+
+        #endregion
+
+        #region Post Comment
+        public async Task<IResponse> GetAllComments(string requestUserId, Guid postId)
+        {
+            var post = await _unitOfWork.PostRepository.GetById(postId);
+
+            if (post == null) return new ErrorResponse(404, Messages.NotFound);
+
+            if (!await CheckPermissionWithFriendAccess(requestUserId, post.AuthorId))
+            {
+                return new ErrorResponse(400, Messages.NotFriend);
+            }
+
+            var result = await _unitOfWork.PostCommentRepository.GetByPost(postId);
+            return new DataResponse(_mapper.Map<List<GetPostCommentReponse>>(result), 200);
+        }
+        public async Task<IResponse> GetCommentById(string requestUserId, Guid postId, Guid commentId)
+        {
+            var post = await _unitOfWork.PostRepository.GetById(postId);
+
+            if (post == null) return new ErrorResponse(404, Messages.NotFound);
+
+            if (!await CheckPermissionWithFriendAccess(requestUserId, post.AuthorId))
+            {
+                return new ErrorResponse(400, Messages.NotFriend);
+            }
+
+            var result = await _unitOfWork.PostCommentRepository.FindOneBy(x => x.PostId == postId && x.Id == commentId && x.Status == 1);
+            if (result == null)
+            {
+                return new ErrorResponse(404, Messages.NotFound);
+            }
+
+            return new DataResponse(_mapper.Map<GetPostCommentReponse>(result), 200);
+        }
+        public async Task<IResponse> CreateComment(string requestUserId, Guid postId, CreateCommentRequest request)
+        {
+            var post = await _unitOfWork.PostRepository.GetById(postId);
+
+            if (post == null) return new ErrorResponse(404, Messages.NotFound);
+
+            if (!await CheckPermissionWithFriendAccess(requestUserId, post.AuthorId))
+            {
+                return new ErrorResponse(400, Messages.NotFriend);
+            }
+
+            var addEntity = _mapper.Map<PostComment>(request);
+            addEntity.PostId = postId;
+            addEntity.UserId = requestUserId;
+
+            await _unitOfWork.PostCommentRepository.Add(addEntity);
+            var result = await _unitOfWork.CompleteAsync();
+
+            if (!result)
+            {
+                return new ErrorResponse(400, Messages.AddError);
+            }
+
+            await _notificationService.CreateNotification(requestUserId, post.AuthorId, TypeNotification.PostComment);
+
+            return new DataResponse(_mapper.Map<GetPostCommentReponse>(addEntity), 200, Messages.CreatedSuccessfully);
+
+        }
+        public async Task<IResponse> DeleteComment(string requestUserId, Guid postId, Guid commentId)
+        {
+            var comment = await _unitOfWork.PostCommentRepository.GetById(commentId);
+
+            if (comment == null)
+            {
+                return new ErrorResponse(404, Messages.NotFound);
+            }
+
+            if (comment.UserId != requestUserId)
+            {
+                return new ErrorResponse(400, Messages.BadRequest);
+            }
+
+            await _unitOfWork.PostCommentRepository.Delete(comment.Id);
+            var result = await _unitOfWork.CompleteAsync();
+
+            if (!result)
+            {
+                return new ErrorResponse(400, Messages.DeleteError);
+            }
+
+            return new SuccessResponse(Messages.DeletedSuccessfully, 204);
+
+        }
+        public async Task<IResponse> UpdateComment(string requestUserId, Guid postId, Guid commentId, UpdateCommentRequest request)
+        {
+            var entity = await _unitOfWork.PostCommentRepository.GetById(commentId, false);
+            if (entity == null)
+            {
+                return new ErrorResponse(404, Messages.NotFound);
+            }
+
+            if (!await CheckOwnerOrAdmin(requestUserId, entity.UserId))
+            {
+                return new ErrorResponse(400, Messages.BadRequest);
+            }
+
+            entity.Content = request.Content;
+
+            await _unitOfWork.PostCommentRepository.Update(entity);
+            var result = await _unitOfWork.CompleteAsync();
+
+            if (!result)
+            {
+                return new ErrorResponse(400, Messages.UpdateError);
+            }
+
+            return new DataResponse(_mapper.Map<GetPostCommentReponse>(entity), 204);
+        }
+
+        private async Task<bool> CheckPermissionWithFriendAccess(string requestingUserId, string targetUserId)
+        {
+            var requestUser = await _unitOfWork.UserRepository.FindById(requestingUserId);
+            var targetUser = await _unitOfWork.UserRepository.FindById(targetUserId);
+
+            if (requestUser == null || targetUser == null)
+            {
+                return false;
+            }
+
+            // Is owner
+            if (requestingUserId == targetUserId)
+            {
+                return true;
+            }
+
+            // Is friend
+            if (await _unitOfWork.FriendshipRepository.IsFriend(requestingUserId, targetUserId))
+            {
+                return true;
+            }
+
+            // Is admin
+            return await _userManager.IsInRoleAsync(requestUser, RoleName.Administrator);
+        }
+        private async Task<bool> CheckOwnerOrAdmin(string requestingUserId, string targetUserId)
         {
             var requestUser = await _unitOfWork.UserRepository.FindById(requestingUserId);
             var targetUser = await _unitOfWork.UserRepository.FindById(targetUserId);
@@ -175,149 +326,69 @@ namespace SocialNetwork.Business.Services.Implements
             }
 
             // Is admin
-            if (await _userManager.IsInRoleAsync(requestUser, RoleName.Administrator))
-            {
-                return true;
-            }
-
-            // Is friend
-            return await _unitOfWork.FriendshipRepository.IsFriend(requestingUserId, targetUserId);
-        }
-
-
-        #endregion
-
-        #region Post Comment
-        public async Task<IResponse> GetAllComments(Guid postId)
-        {
-            var result = await _unitOfWork.PostCommentRepository.FindBy(x => x.PostId == postId && x.Status == 1);
-            return new DataResponse(_mapper.Map<List<GetPostCommentReponse>>(result), 200);
-        }
-        public async Task<IResponse> GetCommentById(Guid postId, Guid commentId)
-        {
-            var result = await _unitOfWork.PostCommentRepository.FindOneBy(x => x.PostId == postId && x.Id == commentId);
-            if (result == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound);
-            }
-
-            return new DataResponse(_mapper.Map<GetPostCommentReponse>(result), 200);
-        }
-        public async Task<IResponse> CreateComment(Guid postId, string userId, CreateCommentRequest request)
-        {
-            var post = await _unitOfWork.PostRepository.GetById(postId);
-            if (post == null)
-            {
-                return new ErrorResponse(404, Messages.NotFounb("Post"));
-            } 
-
-            var addEntity = _mapper.Map<PostComment>(request);
-            addEntity.PostId = postId;
-            addEntity.UserId = userId;
-
-            await _unitOfWork.PostCommentRepository.Add(addEntity);
-            var result = await _unitOfWork.CompleteAsync();
-
-            if (!result)
-            {
-                return new ErrorResponse(400, Messages.AddError);
-            }    
-
-            return new DataResponse(_mapper.Map<GetPostCommentReponse>(addEntity), 200, Messages.CreatedSuccessfully);
-
-        }
-        public async Task<IResponse> DeleteComment(Guid postId, Guid commentId, string userId)
-        {
-            var entity = await _unitOfWork.PostCommentRepository.FindOneBy(x => x.Id == commentId && x.PostId == postId && x.UserId == userId && x.Status == 1);
-            if (entity == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound);
-            }
-
-            if (entity.UserId != userId)
-            {
-                return new ErrorResponse(400, Messages.BadRequest);
-            }
-
-            await _unitOfWork.PostCommentRepository.Delete(entity.Id);
-            var result = await _unitOfWork.CompleteAsync();
-
-            if (!result)
-            {
-                return new ErrorResponse(400, Messages.DeleteError);
-            }
-
-            return new SuccessResponse(Messages.DeletedSuccessfully, 204);
-
-        }
-        public async Task<IResponse> UpdateComment(Guid postId, Guid commentId, string userId, UpdateCommentRequest request)
-        {
-            var entity = await _unitOfWork.PostCommentRepository.FindOneBy(x => x.Id == commentId && x.PostId == postId && x.UserId == userId && x.Status == 1);
-            if (entity == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound);
-            }
-
-            if (entity.UserId != userId)
-            {
-                return new ErrorResponse(400, Messages.BadRequest);
-            }
-
-            var updateEntity = _mapper.Map<PostComment>(request);
-            updateEntity.PostId = postId;
-            updateEntity.Id = commentId;
-            updateEntity.UserId = userId;
-
-            if (!await _unitOfWork.PostCommentRepository.Update(updateEntity))
-            {
-                return new ErrorResponse(404, Messages.NotFound);
-            }
-
-            var result = await _unitOfWork.CompleteAsync();
-            if (!result)
-            {
-                return new ErrorResponse(400, Messages.UpdateError);
-            }
-
-            return new DataResponse(_mapper.Map<GetPostCommentReponse>(updateEntity), 204);
+            return await _userManager.IsInRoleAsync(requestUser, RoleName.Administrator);
         }
 
         #endregion
 
         #region Post Reaction
-        public async Task<IResponse> GetAllReactions(Guid postId)
-        {    
-            var result = await _unitOfWork.PostReactionRepository.GetByPost(postId);
 
-            return new DataResponse(_mapper.Map<List<GetPostReactionResponse>>(result), 200);
-        }
-
-        public async Task<IResponse> GetReactionById(Guid postId, string userId, int reactionId)
+        public async Task<IResponse> GetAllReactions(string requestUserId, Guid postId)
         {
-            if (!await CheckExitsPost(postId, userId))
+            var post = await _unitOfWork.PostRepository.GetById(postId);
+
+            if (post == null)
+            {
+                return new ErrorResponse(404, Messages.NotFounb("Post"));
+            }    
+
+            if (!await CheckPermissionWithFriendAccess(requestUserId, post.AuthorId))
+            {
+                return new ErrorResponse(400, Messages.NotFriend);
+            }
+
+            var reactions = await _unitOfWork.PostReactionRepository.GetByPost(postId);
+
+            return new DataResponse(_mapper.Map<List<GetPostReactionResponse>>(reactions), 200);
+        }
+        public async Task<IResponse> GetReactionById(string requestUserId, Guid postId, int reactionId)
+        {
+            var post = await _unitOfWork.PostRepository.GetById(postId);
+            if (post == null)
             {
                 return new ErrorResponse(404, Messages.NotFounb("Post"));
             }
 
-            var result = await _unitOfWork.PostReactionRepository.GetById(postId, userId, reactionId);
-            if (result == null)
+            if (!await CheckPermissionWithFriendAccess(requestUserId, post.AuthorId))
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(400, Messages.NotFriend);
+            }    
+
+            var reaction = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId, reactionId);
+
+            if (reaction == null)
+            {
+                return new ErrorResponse(404, Messages.NotFounb("Reaction"));
             } 
 
-            return new DataResponse(_mapper.Map<GetPostReactionResponse>(result), 200);
+            return new DataResponse(_mapper.Map<GetPostReactionResponse>(reaction), 200);
                 
         }
-
-        public async Task<IResponse> CreateReaction(Guid postId, string userId, CreatePostReactionRequest request)
+        public async Task<IResponse> CreateReaction(string requestUserId, Guid postId, CreatePostReactionRequest request)
         {
-            if (!await CheckExitsPost(postId, userId))
+            var post = await _unitOfWork.PostRepository.GetById(postId);
+            if (post == null)
             {
                 return new ErrorResponse(404, Messages.NotFounb("Post"));
-            }
+            }    
+
+            if (!await CheckPermissionWithFriendAccess(requestUserId, post.AuthorId))
+            {
+                return new ErrorResponse(400, Messages.NotFriend);
+            }    
 
             var entity = _mapper.Map<PostReaction>(request);
-            entity.UserId = userId;
+            entity.UserId = requestUserId;
             entity.PostId = postId;
 
             if (!await _unitOfWork.PostReactionRepository.Add(entity))
@@ -332,21 +403,22 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            var entityAdded = await _unitOfWork.PostReactionRepository.GetById(postId, userId, entity.ReactionId);
+            await _notificationService.CreateNotification(requestUserId, post.AuthorId, TypeNotification.PostReaction);
+
+            var entityAdded = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId, entity.ReactionId);
 
             return new DataResponse(_mapper.Map<GetPostReactionResponse>(entityAdded), 201, Messages.CreatedSuccessfully);
         }
-
-        public async Task<IResponse> UpdateReaction(Guid postId, string userId, int reactionId, CreatePostReactionRequest request)
+        public async Task<IResponse> UpdateReaction(string requestUserId, Guid postId,int reactionId, CreatePostReactionRequest request)
         {
-            var checkExits = await _unitOfWork.PostReactionRepository.GetById(postId, userId, reactionId);
+            var checkExits = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId, reactionId);
             if (checkExits == null)
             {
                 return new ErrorResponse(404, Messages.NotFound);
             }    
 
             var entity = _mapper.Map<PostReaction>(request);
-            entity.UserId = userId;
+            entity.UserId = requestUserId;
             entity.PostId = postId;
 
             if (!await _unitOfWork.PostReactionRepository.Update(entity))
@@ -360,20 +432,19 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.UpdateError);
             }
 
-            var entityAdded = await _unitOfWork.PostReactionRepository.GetById(postId, userId, entity.ReactionId);
+            var entityAdded = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId, entity.ReactionId);
 
             return new DataResponse(_mapper.Map<GetPostReactionResponse>(entityAdded), 204, Messages.UpdatedSuccessfully);
         }
-
-        public async Task<IResponse> DeleteReaction(Guid postId, string userId, int reactionId)
+        public async Task<IResponse> DeleteReaction(string requestUserId, Guid postId,int reactionId)
         {
-            var entity = await _unitOfWork.PostReactionRepository.GetById(postId, userId, reactionId);
+            var entity = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId, reactionId);
             if (entity == null)
             {
                 return new ErrorResponse(404, Messages.NotFound);
             }
 
-            await _unitOfWork.PostReactionRepository.Delete(postId, userId, reactionId);
+            await _unitOfWork.PostReactionRepository.Delete(postId, requestUserId, reactionId);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -383,13 +454,8 @@ namespace SocialNetwork.Business.Services.Implements
 
             return new SuccessResponse(Messages.DeletedSuccessfully, 204);
         }
+        
         #endregion
-
-        private async Task<bool> CheckExitsPost(Guid postId, string userId)
-        {
-            var user = await _unitOfWork.PostRepository.FindOneBy(x => x.Id == postId && x.AuthorId == userId);
-
-            return user != null;
-        }
+        
     }
 }

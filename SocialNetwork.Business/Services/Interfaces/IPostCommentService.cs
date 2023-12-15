@@ -13,10 +13,10 @@ namespace SocialNetwork.Business.Services.Interfaces
         Task<IResponse> Delete(string requestUserId, Guid id);
 
         Task<IResponse> GetReactions(string requestUserId, Guid postId);
-        Task<IResponse> GetReactionById(Guid commentId, string userId, int reactionId);
-        Task<IResponse> CreateReaction(Guid commentId, string userId, CreateCommentReactionRequest request);
-        Task<IResponse> UpdateReaction(Guid commentId, string userId, CreateCommentReactionRequest request);
-        Task<IResponse> DeleteReaction(Guid commentId, string userId, int reactionId);
+        Task<IResponse> GetReactionById(string requestUserId, Guid commentId, int reactionId);
+        Task<IResponse> CreateReaction(string requestUserId, Guid commentId, CreateCommentReactionRequest request);
+        Task<IResponse> UpdateReaction(string requestUserId, Guid commentId, CreateCommentReactionRequest request);
+        Task<IResponse> DeleteReaction(string requestUserId, Guid commentId, int reactionId);
 
     }
 }

@@ -102,7 +102,7 @@ namespace SocialNetwork.API.Controllers
         public async Task<IResponse> CreateReaction(Guid Id, [FromBody] CreateCommentReactionRequest request)
         {
             var userId = User.GetUserId();
-            return await _postCommentService.CreateReaction(Id, userId, request);
+            return await _postCommentService.CreateReaction(userId, Id, request);
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace SocialNetwork.API.Controllers
         public async Task<IResponse> UpdateReaction(Guid Id, [FromBody] CreateCommentReactionRequest request)
         {
             var userId = User.GetUserId();
-            return await _postCommentService.UpdateReaction(Id, userId, request);
+            return await _postCommentService.UpdateReaction(userId, Id, request);
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace SocialNetwork.API.Controllers
         public async Task<IResponse> DeleteReaction(Guid Id, int reactionId)
         {
             var userId = User.GetUserId();
-            return await _postCommentService.DeleteReaction(Id, userId, reactionId);
+            return await _postCommentService.DeleteReaction(userId, Id, reactionId);
         }
 
         #endregion

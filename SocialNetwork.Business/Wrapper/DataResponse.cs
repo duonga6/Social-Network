@@ -11,20 +11,20 @@ namespace SocialNetwork.Business.Wrapper
 
         public bool Success { get; } = true;
 
-        public int StatusCode { get; }
+        public int Status { get; }
 
         public DataResponse(object data, int statusCode)
         {
             Data = data;
             Message = Messages.GetSuccessfully;
-            StatusCode = statusCode;
+            Status = statusCode;
         }
 
         public DataResponse(object data, int statusCode, string message)
         {
             Data = data;
             Message = message;
-            StatusCode = statusCode;
+            Status = statusCode;
         }
     }
 }

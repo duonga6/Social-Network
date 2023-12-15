@@ -19,7 +19,6 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         public ICommentReactionRepository CommentReactionRepository { get; }
         public IFriendshipRepository FriendshipRepository { get; }
         public IMessageRepository MessageRepository { get; }
-
         public INotificationRepository NotificationRepository { get; }
 
         public readonly AppDbContext _context;
@@ -38,6 +37,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             CommentReactionRepository = new CommentReactionRepository(logger, context);
             FriendshipRepository = new FriendshipRepository(logger, context);
             MessageRepository = new MessageRepository(logger, context);
+            NotificationRepository = new NotificationRepository(logger, context);
         }
 
         public async Task<bool> CompleteAsync()

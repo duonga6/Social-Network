@@ -1,18 +1,19 @@
 ﻿using AutoMapper;
+using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Message.Requests;
 using SocialNetwork.Business.DTOs.Message.Responses;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
-using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
 
 namespace SocialNetwork.Business.Services.Implements
 {
-    public class MessageService : BaseServices, IMessageService
+    public class MessageService : BaseServices<MessageService>, IMessageService
     {
-        public MessageService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
+
+        public MessageService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<MessageService> logger) : base(unitOfWork, mapper, logger)
         {
         }
 
@@ -62,7 +63,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.NotFriend);
             }
 
-            var addEntity = _mapper.Map<Message>(request);
+            var addEntity = _mapper.Map<DataAccess.Entities.MessageService>(request);
             addEntity.SenderId = requestUserId;
 
             await _unitOfWork.MessageRepository.Add(addEntity);

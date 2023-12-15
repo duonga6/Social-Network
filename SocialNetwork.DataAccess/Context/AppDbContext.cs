@@ -33,7 +33,7 @@ namespace SocialNetwork.DataAccess.Context
         public DbSet<Reaction> Reactions { get; set; }
         public DbSet<PostImage> PostImages { get; set; }
         public DbSet<Friendship> Friendships { get; set; }
-        public DbSet<Message> Messages { get; set; }
-        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<MessageService> Messages { get; set; }
+        public DbSet<NotificationService> Notifications { get; set; }
     }
 }

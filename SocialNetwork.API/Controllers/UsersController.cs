@@ -348,6 +348,44 @@ namespace SocialNetwork.API.Controllers
 
         #endregion
 
+        #region Notification
 
+        /// <summary>
+        /// Get notifications
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        [HttpGet("{Id}/Notifications")]
+        public async Task<IResponse> GetNotifications(string Id)
+        {
+            return await _userService.GetNotifications(UserId, Id);
+        }
+
+        /// <summary>
+        /// Get notification by Id
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="notificationId"></param>
+        /// <returns></returns>
+        [HttpGet("{Id}/Notifications/{notificationId}")]
+        public async Task<IResponse> GetNotificationById(string Id, Guid notificationId)
+        {
+            return await _userService.GetNotificationsById(UserId, Id, notificationId);
+        }
+
+        /// <summary>
+        /// Seen notification
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="notificationId"></param>
+        /// <returns></returns>
+        [HttpPut("{Id}/Notifications/{notificationId}")]
+        public async Task<IResponse> SeenNotification(string Id, Guid notificationId)
+        {
+            return await _userService.SeenNotifications(UserId, Id, notificationId);
+        }
+
+
+        #endregion
     }
 }

@@ -45,5 +45,9 @@ namespace SocialNetwork.Business.Services.Interfaces
         Task<IResponse> SendMessage(string loggedUserId, string requestUserId, SendMessageRequest request);
         Task<IResponse> GetConversation(string loggedUserId, string requestUserId, string targetUserId);
         Task<IResponse> DeleteMessage(string loggedUserId, string requestUserId, Guid id);
+
+        Task<IResponse> GetNotifications(string loggedUserId, string requestUserId);
+        Task<IResponse> GetNotificationsById(string loggedUserId, string requestUserId, Guid id);
+        Task<IResponse> SeenNotifications(string loggedUserId, string requestUserId, Guid id);
     }
 }

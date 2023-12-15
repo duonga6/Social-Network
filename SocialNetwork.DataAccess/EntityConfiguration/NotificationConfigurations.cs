@@ -4,9 +4,9 @@ using SocialNetwork.DataAccess.Entities;
 
 namespace SocialNetwork.DataAccess.EntityConfiguration
 {
-    public class NotificationConfigurations : IEntityTypeConfiguration<Notification>
+    public class NotificationConfigurations : IEntityTypeConfiguration<NotificationService>
     {
-        public void Configure(EntityTypeBuilder<Notification> builder)
+        public void Configure(EntityTypeBuilder<NotificationService> builder)
         {
             builder.Property(n => n.Content)
                 .IsRequired();

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Friendship.Requests;
 using SocialNetwork.Business.DTOs.Friendship.Responses;
@@ -11,9 +12,9 @@ using SocialNetwork.DataAccess.Utilities.Enum;
 
 namespace SocialNetwork.Business.Services.Implements
 {
-    public class FriendshipService : BaseServices, IFriendshipService
+    public class FriendshipService : BaseServices<FriendshipService>, IFriendshipService
     {
-        public FriendshipService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
+        public FriendshipService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<FriendshipService> logger) : base(unitOfWork, mapper, logger)
         {
         }
 

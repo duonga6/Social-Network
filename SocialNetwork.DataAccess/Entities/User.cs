@@ -23,8 +23,8 @@ namespace SocialNetwork.DataAccess.Entities
         public virtual ICollection<RefreshToken> RefreshTokens { get; set; }
         public virtual ICollection<Friendship> Friendships1 { get; set; }
         public virtual ICollection<Friendship> Friendships2 { get; set; }
-        public virtual ICollection<Message> MessagesSent { set; get; }
-        public virtual ICollection<Message> MessageReceived { set; get; }
-        public virtual ICollection<Notification> Notifications { set; get; }
+        public virtual ICollection<MessageService> MessagesSent { set; get; }
+        public virtual ICollection<MessageService> MessageReceived { set; get; }
+        public virtual ICollection<NotificationService> Notifications { set; get; }
     }
 }

@@ -38,7 +38,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
             try
             {
-                var entityUpdate = await _dbSet.FirstOrDefaultAsync(x => x.Id == entity.Id && x.PostId == entity.PostId && x.UserId == entity.UserId && x.Status == 1);
+                var entityUpdate = await _dbSet.FirstOrDefaultAsync(x => x.Id == entity.Id && x.Status == 1);
                 if (entityUpdate == null) 
                 {
                     return false;
@@ -71,6 +71,16 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 _logger.LogError(ex, "{Repo} error function Delete", typeof(PostCommentRepository));
                 throw;
             }
+        }
+
+        public async Task<ICollection<PostComment>> GetByPost(Guid postId)
+        {
+            var comments = await _dbSet.AsNoTracking()
+                .Where(x => x.PostId == postId && x.Status == 1)
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync();
+
+            return comments;
         }
     }
 }

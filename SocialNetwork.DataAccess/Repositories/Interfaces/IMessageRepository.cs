@@ -2,8 +2,8 @@
 
 namespace SocialNetwork.DataAccess.Repositories.Interfaces
 {
-    public interface IMessageRepository : IGenericRepository<Message>
+    public interface IMessageRepository : IGenericRepository<MessageService>
     {
-        Task<ICollection<Message>> GetConversation(string senderId, string receiverId);
+        Task<ICollection<MessageService>> GetConversation(string senderId, string receiverId);
     }
 }

@@ -30,4 +30,9 @@
     <ProjectReference Include="..\SocialNetwork.Business\SocialNetwork.Business.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Hubs\" />
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
 </Project>

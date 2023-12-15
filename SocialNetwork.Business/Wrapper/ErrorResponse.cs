@@ -6,17 +6,17 @@ namespace SocialNetwork.Business.Wrapper
     {
         public bool Success { get; } = false;
         public List<string> Errors { get; } = new();
-        public int StatusCode { get; }
+        public int Status { get; }
 
         public ErrorResponse(int StatusCode, string Error)
         {
-            this.StatusCode = StatusCode;
+            this.Status = StatusCode;
             Errors.Add(Error);
         }
 
         public ErrorResponse(int StatusCode, List<string> Error)
         {
-            this.StatusCode = StatusCode;
+            this.Status = StatusCode;
             Errors = Error;
         }
 

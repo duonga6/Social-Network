@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.CommentReaction.Requests;
 using SocialNetwork.Business.DTOs.CommentReaction.Responses;
@@ -10,23 +11,30 @@ using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
+using SocialNetwork.DataAccess.Utilities.Enum;
 using SocialNetwork.DataAccess.Utilities.Roles;
 
 namespace SocialNetwork.Business.Services.Implements
 {
-    public class PostCommentService : BaseServices, IPostCommentService
+    public class PostCommentService : BaseServices<PostCommentService>, IPostCommentService
     {
         private readonly UserManager<User> _userManager;
-        public PostCommentService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<User> userManager) : base(unitOfWork, mapper)
+        private readonly INotificationService _notificationService;
+
+        public PostCommentService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<PostCommentService> logger, UserManager<User> userManager, INotificationService notificationService) : base(unitOfWork, mapper, logger)
         {
             _userManager = userManager;
+            _notificationService = notificationService;
         }
 
         #region Comment
         public async Task<IResponse> Create(string requestUserId, CreatePostCommentRequest request)
         {
             var post = await _unitOfWork.PostRepository.GetById(request.PostId);
-            if (post == null) { return new ErrorResponse(404, Messages.NotFounb("Post")); }
+            if (post == null) 
+            { 
+                return new ErrorResponse(404, Messages.NotFounb("Post")); 
+            }
 
             if (!await CheckAccessPost(requestUserId, post.AuthorId))
             {
@@ -45,6 +53,8 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
+            await _notificationService.CreateNotification(requestUserId, post.AuthorId, TypeNotification.PostComment);
+
             return new DataResponse(_mapper.Map<GetPostCommentReponse>(addComment), 200, Messages.CreatedSuccessfully);
         }
 
@@ -57,16 +67,12 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(404, Messages.NotFound);
             }    
 
-            if (comment.UserId != requestUserId)
+            if (!await CheckOwnerComment(requestUserId, comment.UserId))
             {
                 return new ErrorResponse(400, Messages.CommentNotOwner);
-            }    
-
-            if (!await _unitOfWork.PostCommentRepository.Delete(id))
-            {
-                return new ErrorResponse(404, Messages.NotFounb("Comment"));
             }
 
+            await _unitOfWork.PostCommentRepository.Delete(id);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -135,6 +141,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             if (requestUser == null || targetUser == null) return false;
 
+            // Is owner
             if (requestUserId == targetUserId)
             {
                 return true;
@@ -161,12 +168,7 @@ namespace SocialNetwork.Business.Services.Implements
             }
 
             // Is admin
-            if (await _userManager.IsInRoleAsync(requestUser, RoleName.Administrator))
-            {
-                return true;
-            }
-
-            return false;
+            return await _userManager.IsInRoleAsync(requestUser, RoleName.Administrator);
         }
 
 
@@ -198,9 +200,9 @@ namespace SocialNetwork.Business.Services.Implements
             return new DataResponse(_mapper.Map<List<GetCommentReactionResponse>>(result), 200);
         }
 
-        public async Task<IResponse> GetReactionById(Guid commentId, string userId, int reactionId)
+        public async Task<IResponse> GetReactionById(string requestUserId, Guid commentId, int reactionId)
         {
-            var entity = await _unitOfWork.CommentReactionRepository.GetById(commentId, userId, reactionId);
+            var entity = await _unitOfWork.CommentReactionRepository.GetById(commentId, requestUserId, reactionId);
             
             if (entity == null)
             {
@@ -211,16 +213,22 @@ namespace SocialNetwork.Business.Services.Implements
 
         }
 
-        public async Task<IResponse> CreateReaction(Guid commentId, string userId, CreateCommentReactionRequest request)
+        public async Task<IResponse> CreateReaction(string requestUserId, Guid commentId, CreateCommentReactionRequest request)
         {
-            if (await CheckExitCommentReaction(commentId, userId))
+            var comment = await _unitOfWork.PostCommentRepository.GetById(commentId);
+            if (comment == null)
+            {
+                return new ErrorResponse(404, Messages.NotFounb("Comment"));
+            }    
+
+            if (await CheckExitCommentReaction(commentId, requestUserId))
             {
                 return new ErrorResponse(400, Messages.CommentReactionExist);
             }    
 
             var addEntity = _mapper.Map<CommentReaction>(request);
             addEntity.CommentId = commentId;
-            addEntity.UserId = userId;
+            addEntity.UserId = requestUserId;
 
             await _unitOfWork.CommentReactionRepository.Add(addEntity);
             var result = await _unitOfWork.CompleteAsync();
@@ -230,24 +238,23 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            var addedEntity = await _unitOfWork.CommentReactionRepository.GetById(commentId, userId, addEntity.ReactionId);
+            var addedEntity = await _unitOfWork.CommentReactionRepository.GetById(commentId, requestUserId, addEntity.ReactionId);
+
+            await _notificationService.CreateNotification(requestUserId, comment.UserId, TypeNotification.PostCommentReaction);
 
             return new DataResponse(_mapper.Map<GetCommentReactionResponse>(addedEntity), 204, Messages.CreatedSuccessfully);
         }
 
-        public async Task<IResponse> UpdateReaction(Guid commentId, string userId, CreateCommentReactionRequest request)
+        public async Task<IResponse> UpdateReaction(string requestUserId, Guid commentId, CreateCommentReactionRequest request)
         {
-            var checkExits = await _unitOfWork.CommentReactionRepository.GetById(commentId, userId, request.ReactionId);
-            if (checkExits == null)
+            var reaction = await _unitOfWork.CommentReactionRepository.GetById(commentId, requestUserId, request.ReactionId);
+            if (reaction == null)
             {
                 return new ErrorResponse(404, Messages.NotFound);
             }
 
-            var updateEntity = _mapper.Map<CommentReaction>(request);
-            updateEntity.CommentId = commentId;
-            updateEntity.UserId = userId;
+            _mapper.Map(request, reaction);
 
-            await _unitOfWork.CommentReactionRepository.Update(updateEntity);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -255,20 +262,18 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            var updatedEntity = await _unitOfWork.CommentReactionRepository.GetById(commentId, userId, updateEntity.ReactionId);
-
-            return new DataResponse(_mapper.Map<GetCommentReactionResponse>(updatedEntity), 204, Messages.UpdatedSuccessfully);
+            return new DataResponse(_mapper.Map<GetCommentReactionResponse>(reaction), 204, Messages.UpdatedSuccessfully);
         }
 
-        public async Task<IResponse> DeleteReaction(Guid commentId, string userId, int reactionId)
+        public async Task<IResponse> DeleteReaction(string requestUserId, Guid commentId, int reactionId)
         {
-            var entity = await _unitOfWork.CommentReactionRepository.GetById(commentId, userId, reactionId);
-            if (entity == null)
+            var reaction = await _unitOfWork.CommentReactionRepository.GetById(commentId, requestUserId, reactionId);
+            if (reaction == null)
             {
                 return new ErrorResponse(404, Messages.NotFound);
             }
 
-            await _unitOfWork.CommentReactionRepository.Delete(commentId, userId, entity.ReactionId);
+            await _unitOfWork.CommentReactionRepository.Delete(commentId, requestUserId, reaction.ReactionId);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)

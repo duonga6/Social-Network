@@ -110,7 +110,7 @@ namespace SocialNetwork.API.Controllers
         [HttpGet("{Id}/Comments")]
         public async Task<IResponse> GetAllComment(Guid Id)
         {
-            return await _postService.GetAllComments(Id);
+            return await _postService.GetAllComments(UserId, Id);
         }
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace SocialNetwork.API.Controllers
         [HttpGet("{Id}/Comments/{commentId}")]
         public async Task<IResponse> GetComment(Guid Id, Guid commentId) 
         { 
-            return await _postService.GetCommentById(Id, commentId);
+            return await _postService.GetCommentById(UserId, Id, commentId);
         }
 
         /// <summary>
@@ -136,7 +136,7 @@ namespace SocialNetwork.API.Controllers
         {
             var userId = User.GetUserId();
 
-            return await _postService.CreateComment(Id, userId, request);
+            return await _postService.CreateComment(UserId, Id, request);
         }
 
         /// <summary>
@@ -151,7 +151,7 @@ namespace SocialNetwork.API.Controllers
         {
             var userId = User.GetUserId();
 
-            return await _postService.UpdateComment(Id, commentId, userId, request);
+            return await _postService.UpdateComment(UserId, Id, commentId, request);
         }
 
         /// <summary>
@@ -165,7 +165,7 @@ namespace SocialNetwork.API.Controllers
         {
             var userId = User.GetUserId();
 
-            return await _postService.DeleteComment(Id, commentId, userId);
+            return await _postService.DeleteComment(UserId, Id, commentId);
         }
         #endregion
 
@@ -179,20 +179,19 @@ namespace SocialNetwork.API.Controllers
         [HttpGet("{Id}/Reactions")]
         public async Task<IResponse> GetAllReactions(Guid Id)
         {
-            return await _postService.GetAllReactions(Id);
+            return await _postService.GetAllReactions(UserId, Id);
         }
 
         /// <summary>
-        /// Get reaction by Id
+        /// Create post reaction
         /// </summary>
         /// <param name="Id"></param>
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("{Id}/Reactions")]
-        public async Task<IResponse> GetReactionById(Guid Id, [FromBody] CreatePostReactionRequest request)
+        public async Task<IResponse> CreatePostReaction(Guid Id, [FromBody] CreatePostReactionRequest request)
         {
-            var userId = User.GetUserId();
-            return await _postService.CreateReaction(Id, userId, request);
+            return await _postService.CreateReaction(UserId, Id, request);
         }
 
         /// <summary>
@@ -203,10 +202,9 @@ namespace SocialNetwork.API.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPut("{Id}/Reactions/{reactionId}")]
-        public async Task<IResponse> UpdateReaction(Guid Id, int reactionId, [FromBody] CreatePostReactionRequest request)
+        public async Task<IResponse> UpdatePostReaction(Guid Id, int reactionId, [FromBody] CreatePostReactionRequest request)
         {
-            var userId = User.GetUserId();
-            return await _postService.UpdateReaction(Id, userId, reactionId, request);
+            return await _postService.UpdateReaction(UserId, Id, reactionId, request);
         }
 
         /// <summary>
@@ -216,10 +214,9 @@ namespace SocialNetwork.API.Controllers
         /// <param name="reactionId"></param>
         /// <returns></returns>
         [HttpDelete("{Id}/Reactions/{reactionId}")]
-        public async Task<IResponse> DeleteReaction(Guid Id, int reactionId)
+        public async Task<IResponse> DeletePostReaction(Guid Id, int reactionId)
         {
-            var userId = User.GetUserId();
-            return await _postService.DeleteReaction(Id, userId, reactionId);
+            return await _postService.DeleteReaction(UserId, Id, reactionId);
         }
         #endregion
     }

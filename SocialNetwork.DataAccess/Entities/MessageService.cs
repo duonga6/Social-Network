@@ -3,7 +3,7 @@ using SocialNetwork.DataAccess.Utilities.Enum;
 
 namespace SocialNetwork.DataAccess.Entities
 {
-    public class Message : BaseEntity
+    public class MessageService : BaseEntity
     {
         public string SenderId { get; set; }
         public string ReceiverId { get; set; }

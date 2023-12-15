@@ -6,13 +6,13 @@ using SocialNetwork.DataAccess.Repositories.Interfaces;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
 {
-    public class MessageRepository : GenericRepository<Message>, IMessageRepository
+    public class MessageRepository : GenericRepository<MessageService>, IMessageRepository
     {
         public MessageRepository(ILogger logger, AppDbContext context) : base(logger, context)
         {
         }
 
-        public override async Task<Message> GetById(Guid id, bool asNoTracking = true)
+        public override async Task<MessageService> GetById(Guid id, bool asNoTracking = true)
         {
             if (asNoTracking)
             {
@@ -36,7 +36,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return true;
         }
 
-        public async Task<ICollection<Message>> GetConversation(string senderId, string receiverId)
+        public async Task<ICollection<MessageService>> GetConversation(string senderId, string receiverId)
         {
             var messages = await _dbSet
                 .Where(x => (x.SenderId == senderId && x.ReceiverId == receiverId || x.SenderId == receiverId && x.ReceiverId == senderId) && x.Status == 1)

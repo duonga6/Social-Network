@@ -67,7 +67,7 @@ namespace SocialNetwork.Business.Mapper
             CreateMap<UpdateUserInfoRequest, User>()
                 .ForMember(d  => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
 
-            CreateMap<SendMessageRequest, Message>()
+            CreateMap<SendMessageRequest, MessageService>()
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(s => DateTime.UtcNow))
                 .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
 

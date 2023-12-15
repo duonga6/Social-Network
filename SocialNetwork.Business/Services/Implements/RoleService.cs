@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Role.Request;
 using SocialNetwork.Business.DTOs.Role.Responses;
@@ -11,11 +12,11 @@ using SocialNetwork.DataAccess.Repositories.Interfaces;
 
 namespace SocialNetwork.Business.Services.Implements
 {
-    public class RoleService : BaseServices, IRoleService
+    public class RoleService : BaseServices<RoleService>, IRoleService
     {
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        public RoleService(IUnitOfWork unitOfWork, IMapper mapper, RoleManager<IdentityRole> roleManager) : base(unitOfWork, mapper)
+        public RoleService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<RoleService> logger, RoleManager<IdentityRole> roleManager) : base(unitOfWork, mapper, logger)
         {
             _roleManager = roleManager;
         }

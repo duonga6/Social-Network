@@ -27,12 +27,12 @@
 
         // User
         public static string LoginSuccessfully => "Login successfully";
-        public static string RegistrationSucessfully => "Registration successfully";
+        public static string RegistrationSuccessfully => "Registration successfully";
         public static string AddRoleToUserSuccess => "Add roles to user successfully";
         public static string EmailUsed => "Email is used";
         public static string IncorrectEP => "Incorrect email or password";
         public static string GetCodeResetPassword = "Get code reset password successfully";
-        public static string ResetPasswordSuccesfully = "Password has been reset";
+        public static string ResetPasswordSuccessfully = "Password has been reset";
         public static string ResetPasswordError = "Reset password fail";
         public static string ConfirmEmailSuccess = "Confirm email successfully";
         public static string GetCodeConfirmEmailSuccess = "Get code confirm email successfully";
@@ -63,5 +63,9 @@
         // Message
         public static string MessageSent => "Send message successfully";
         public static string MessageDeleted => "Delete message successfully";
+        public static string MessageSeen => "Seen message";
+
+        // Notification
+        public static string NotiHBSeen => "Notification has been seen";
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Reaction.Requests;
 using SocialNetwork.Business.DTOs.Reaction.Response;
@@ -10,17 +11,19 @@ using SocialNetwork.DataAccess.Repositories.Interfaces;
 
 namespace SocialNetwork.Business.Services.Implements
 {
-    public class ReactionService : BaseServices, IReactionService
+    public class ReactionService : BaseServices<ReactionService>, IReactionService
     {
-        public ReactionService(IUnitOfWork unitOfWork, IMapper mapper) : base(unitOfWork, mapper)
+        public ReactionService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<ReactionService> logger) : base(unitOfWork, mapper, logger)
         {
         }
 
         public async Task<IResponse> Add(CreateReactionRequest entity)
         {
-            var checkEntity = await _unitOfWork.ReactionRepository.FindBy(x => x.Name == entity.Name);
-            if (checkEntity.Count > 0)
+            var checkExist = await _unitOfWork.ReactionRepository.FindBy(x => x.Name == entity.Name);
+            if (checkExist.Count > 0)
+            {
                 return new ErrorResponse(400, Messages.ReactionExist);
+            }    
 
             var addEntity = _mapper.Map<Reaction>(entity);
 
@@ -28,23 +31,27 @@ namespace SocialNetwork.Business.Services.Implements
             var result = await _unitOfWork.CompleteAsync();
             
             if (!result)
+            {
                 return new ErrorResponse(400, Messages.AddError);
-
-            var reusltEntity = _mapper.Map<GetReactionReponse>(addEntity);
-            return new DataResponse(reusltEntity, 201);
+            }
+            return new DataResponse(_mapper.Map<GetReactionReponse>(addEntity), 201);
         }
 
         public async Task<IResponse> Delete(int id)
         {
             var entity = await _unitOfWork.ReactionRepository.GetById(id);
             if (entity == null)
+            {
                 return new ErrorResponse(404, Messages.NotFound);
+            }
 
             await _unitOfWork.ReactionRepository.Delete(id);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
+            {
                 return new ErrorResponse(400, Messages.DeleteError);
+            }
 
             return new SuccessResponse(Messages.DeletedSuccessfully, 204);
         }
@@ -52,26 +59,27 @@ namespace SocialNetwork.Business.Services.Implements
         public async Task<IResponse> GetAll()
         {
             var entity = await _unitOfWork.ReactionRepository.GetAll();
-            var reusltEntity = _mapper.Map<List<GetReactionReponse>>(entity);
-            return new DataResponse(reusltEntity, 200);
+            return new DataResponse(_mapper.Map<List<GetReactionReponse>>(entity), 200);
         }
 
         public async Task<IResponse> GetById(int id)
         {
             var entity = await _unitOfWork.ReactionRepository.GetById(id);
             if (entity == null)
+            {
                 return new ErrorResponse(404, Messages.NotFound);
+            }
 
-            var reusltEntity = _mapper.Map<GetReactionReponse>(entity);
-
-            return new DataResponse(reusltEntity, 200);
+            return new DataResponse(_mapper.Map<GetReactionReponse>(entity), 200);
         }
 
         public async Task<IResponse> Update(int Id, UpdateReactionRequest entity)
         {
             var findEntity = await _unitOfWork.ReactionRepository.GetById(Id);
             if (findEntity == null)
+            {
                 return new ErrorResponse(404, Messages.NotFound);
+            }
 
             if (entity.Name == findEntity.Name)
             {
@@ -85,7 +93,9 @@ namespace SocialNetwork.Business.Services.Implements
             var result = await _unitOfWork.CompleteAsync();
             
             if (!result)
+            {
                 return new ErrorResponse(400, Messages.UpdateError);
+            }
 
             return new DataResponse(_mapper.Map<GetReactionReponse>(updateEntity), 200);
             

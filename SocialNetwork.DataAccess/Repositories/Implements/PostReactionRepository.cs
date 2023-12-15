@@ -14,7 +14,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
 
         public override async Task<bool> Add(PostReaction entity)
         {
-            if (await _dbSet.AnyAsync(x => x.PostId == entity.PostId && x.UserId == entity.UserId))
+            if (await _dbSet.AsNoTracking().AnyAsync(x => x.PostId == entity.PostId && x.UserId == entity.UserId))
             {
                 return false;
             }
@@ -25,12 +25,16 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
 
         public async Task<ICollection<PostReaction>> GetByPost(Guid id)
         {
-            return await _dbSet.Where(x => x.PostId == id).Include(x => x.Reaction).ToListAsync();
+            return await _dbSet
+                .AsNoTracking()
+                .Where(x => x.PostId == id)
+                .Include(x => x.Reaction)
+                .ToListAsync();
         }
 
         public async Task<ICollection<PostReaction>> GetByUser(string id)
         {
-            return await _dbSet.Where(x => x.UserId == id).Include(x => x.Reaction).ToListAsync();
+            return await _dbSet.AsNoTracking().Where(x => x.UserId == id).Include(x => x.Reaction).ToListAsync();
         }
 
         public async Task<PostReaction> GetById(Guid postId, string userId, int reactionId)

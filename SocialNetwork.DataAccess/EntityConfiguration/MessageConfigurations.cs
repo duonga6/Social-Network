@@ -4,9 +4,9 @@ using SocialNetwork.DataAccess.Entities;
 
 namespace SocialNetwork.DataAccess.EntityConfiguration
 {
-    internal class MessageConfigurations : IEntityTypeConfiguration<Message>
+    internal class MessageConfigurations : IEntityTypeConfiguration<MessageService>
     {
-        public void Configure(EntityTypeBuilder<Message> builder)
+        public void Configure(EntityTypeBuilder<MessageService> builder)
         {
             builder.HasOne(m => m.Sender)
                 .WithMany(u => u.MessagesSent)

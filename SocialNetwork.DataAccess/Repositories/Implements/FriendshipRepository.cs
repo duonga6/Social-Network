@@ -53,6 +53,15 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
 
             return isFriend != null;
         }
-    
+
+        public async Task<ICollection<Friendship>> GetAllFriends(string userId)
+        {
+            var friends = await _dbSet.Where(x => (x.TargetUserId == userId || x.RequestUserId == userId) && x.FriendStatus == FriendshipStatus.Accepted)
+                                        .AsNoTracking()
+                                        .ToListAsync();
+
+            return friends;
+        }
+
     }
 }

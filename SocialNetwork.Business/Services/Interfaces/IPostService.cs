@@ -13,16 +13,16 @@ namespace SocialNetwork.Business.Services.Interfaces
         Task<IResponse> Delete(string requestingUserId, Guid postId);
 
 
-        Task<IResponse> GetAllComments(Guid postId);
-        Task<IResponse> GetCommentById(Guid postId, Guid commentId);
-        Task<IResponse> CreateComment(Guid postId, string userId, CreateCommentRequest request);
-        Task<IResponse> UpdateComment(Guid postId, Guid commentId, string userId, UpdateCommentRequest request);
-        Task<IResponse> DeleteComment(Guid postId, Guid commentId, string userId);
+        Task<IResponse> GetAllComments(string requestUserId, Guid postId);
+        Task<IResponse> GetCommentById(string requestUserId, Guid postId, Guid commentId);
+        Task<IResponse> CreateComment(string requestUserId, Guid postId, CreateCommentRequest request);
+        Task<IResponse> UpdateComment(string requestUserId, Guid postId, Guid commentId, UpdateCommentRequest request);
+        Task<IResponse> DeleteComment(string requestUserId, Guid postId, Guid commentId);
 
-        Task<IResponse> GetAllReactions(Guid postId);
-        Task<IResponse> GetReactionById(Guid postId, string userId, int reactionId);
-        Task<IResponse> CreateReaction(Guid postId, string userId, CreatePostReactionRequest request);
-        Task<IResponse> UpdateReaction(Guid postId, string userId,int reactionId, CreatePostReactionRequest request);
-        Task<IResponse> DeleteReaction(Guid postId, string userId, int reactionId);
+        Task<IResponse> GetAllReactions(string requestUserId, Guid postId);
+        Task<IResponse> GetReactionById(string requestUserId, Guid postId,int reactionId);
+        Task<IResponse> CreateReaction(string requestUserId, Guid postId, CreatePostReactionRequest request);
+        Task<IResponse> UpdateReaction(string requestUserId, Guid postId,int reactionId, CreatePostReactionRequest request);
+        Task<IResponse> DeleteReaction(string requestUserId, Guid postId,int reactionId);
     }
 }
