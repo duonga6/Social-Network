@@ -8,10 +8,13 @@ namespace SocialNetwork.DataAccess.Entities
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Address { get; set; }
+        public string AvatarUrl { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public DateTime DateOfBirth { get; set; }
         public int Status { set; get; } = 1;
+
+        public string GetFullName() => $"{FirstName} {LastName}";
 
         [NotMapped]
         public string Password { set; get; }
@@ -23,8 +26,9 @@ namespace SocialNetwork.DataAccess.Entities
         public virtual ICollection<RefreshToken> RefreshTokens { get; set; }
         public virtual ICollection<Friendship> Friendships1 { get; set; }
         public virtual ICollection<Friendship> Friendships2 { get; set; }
-        public virtual ICollection<MessageService> MessagesSent { set; get; }
-        public virtual ICollection<MessageService> MessageReceived { set; get; }
-        public virtual ICollection<NotificationService> Notifications { set; get; }
+        public virtual ICollection<Message> MessagesSent { set; get; }
+        public virtual ICollection<Message> MessageReceived { set; get; }
+        public virtual ICollection<Notification> NotificationsSend { set; get; }
+        public virtual ICollection<Notification> NotificationsReceive { set; get; }
     }
 }

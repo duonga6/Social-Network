@@ -19,6 +19,7 @@
         public static string BadRequest => "Bad Request";
         public static string Forbidden => "Forbidden";
         public static string STWroong => "Something went wrong";
+        public static string OutOfPage => "The page number is out of page range";
 
         // Reaction
         public static string ReactionExist => "Name and Code are already exist";
@@ -36,6 +37,7 @@
         public static string ResetPasswordError = "Reset password fail";
         public static string ConfirmEmailSuccess = "Confirm email successfully";
         public static string GetCodeConfirmEmailSuccess = "Get code confirm email successfully";
+        public static string ChangePasswordSuccessfully = "Change password successfully";
 
         // Role
         public static string RoleEmpty => "Roles is empty";

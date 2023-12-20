@@ -10,7 +10,7 @@
         Angry = 6,
     }
 
-    public static class ReationOption
+    public static class ReactionType
     {
         public static string Like = "Like";
         public static string Love = "Love";

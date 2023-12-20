@@ -39,7 +39,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            return new DataResponse(_mapper.Map<GetRoleResponse>(newRole), 201, Messages.CreatedSuccessfully);
+            return new DataResponse<GetRoleResponse>(_mapper.Map<GetRoleResponse>(newRole), 201, Messages.CreatedSuccessfully);
         }
 
         public async Task<IResponse> Delete(string Id)
@@ -63,7 +63,7 @@ namespace SocialNetwork.Business.Services.Implements
         {
             var roles = await _unitOfWork.RoleRepository.GetAll();
 
-            return new DataResponse(_mapper.Map<List<GetRoleResponse>>(roles), 200);
+            return new DataResponse<List<GetRoleResponse>>(_mapper.Map<List<GetRoleResponse>>(roles), 200);
         }
 
         public async Task<IResponse> GetById(string id)
@@ -74,7 +74,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(404, Messages.NotFound);
             }
 
-            return new DataResponse(_mapper.Map<GetRoleResponse>(role), 200);
+            return new DataResponse<GetRoleResponse>(_mapper.Map<GetRoleResponse>(role), 200);
         }
 
         public async Task<IResponse> Update(string Id, UpdateRoleRequest request)
@@ -94,7 +94,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, result.GetErrors());
             }
 
-            return new DataResponse(_mapper.Map<GetRoleResponse>(updateRole), 204, Messages.UpdatedSuccessfully);
+            return new DataResponse<GetRoleResponse>(_mapper.Map<GetRoleResponse>(updateRole), 204, Messages.UpdatedSuccessfully);
         }
     }
 }

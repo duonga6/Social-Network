@@ -5,10 +5,16 @@ namespace SocialNetwork.Business.DTOs.Friendship.Responses
     public class GetFriendshipResponse
     {
         public Guid Id { set; get; }
-        public string RequestUserId { set; get; } = string.Empty;
-        public string TargetUserId { set; get; } = string.Empty;
-        public string CreatedAt { set; get; } = string.Empty;
+        public UserRespone RequestUser { set; get; } = null!;
+        public UserRespone TargetUser { set; get; } = null!;
         public string UpdatedAt { set; get; } = string.Empty;
         public FriendshipStatus FriendStatus { set; get; }
+    }
+
+    public class UserRespone
+    {
+        public string Id { set; get; } = string.Empty;
+        public string FullName { set; get; } = string.Empty;
+        public string AvatarUrl { set; get; } = string.Empty;
     }
 }

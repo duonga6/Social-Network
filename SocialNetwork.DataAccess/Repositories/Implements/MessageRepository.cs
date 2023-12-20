@@ -3,16 +3,17 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.DataAccess.Context;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
+using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
 {
-    public class MessageRepository : GenericRepository<MessageService>, IMessageRepository
+    public class MessageRepository : GenericRepository<Message>, IMessageRepository
     {
         public MessageRepository(ILogger logger, AppDbContext context) : base(logger, context)
         {
         }
 
-        public override async Task<MessageService> GetById(Guid id, bool asNoTracking = true)
+        public override async Task<Message> GetById(Guid id, bool asNoTracking = true)
         {
             if (asNoTracking)
             {
@@ -36,7 +37,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return true;
         }
 
-        public async Task<ICollection<MessageService>> GetConversation(string senderId, string receiverId)
+        public async Task<ICollection<Message>> GetConversation(string senderId, string receiverId)
         {
             var messages = await _dbSet
                 .Where(x => (x.SenderId == senderId && x.ReceiverId == receiverId || x.SenderId == receiverId && x.ReceiverId == senderId) && x.Status == 1)
@@ -44,6 +45,31 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .AsNoTracking()
                 .ToListAsync();
             return messages;
+        }
+
+        public virtual async Task<ICollection<Message>> GetPaged(int pageSize, int pageNumber, Expression<Func<Message, bool>> filter = null, Expression<Func<Message, object>> orderBy = null, bool isDesc = true)
+        {
+            var query = _dbSet
+                .AsNoTracking()
+                .Where(filter)
+                .Include(x => x.Sender)
+                .Include(x => x.Receiver)
+                .AsSplitQuery();
+
+            if (isDesc)
+            {
+                query = query.OrderByDescending(orderBy);
+            }
+            else
+            {
+                query = query.OrderBy(orderBy);
+
+            }
+
+            return await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
         }
     }
 }

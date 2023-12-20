@@ -5,8 +5,9 @@ namespace SocialNetwork.Business.Services.Interfaces
 {
     public interface IMessageService
     {
-        Task<IResponse> GetAll(string requestUserId, string targetUserId);
+        Task<IResponse> GetByUser(string requestUserId, string targetUserId, string? searchString, int pageSize, int pageNumber);
         Task<IResponse> SendMessage(string requestUserId, SendMessageRequest request);
         Task<IResponse> DeleteMessage(string requestUserId, Guid id);
+        Task<IResponse> GetById(string requestUserId, Guid id);
     }
 }

@@ -37,7 +37,6 @@ namespace SocialNetwork.Business.Helper
                 errors.Add("Username or password invalid");
             }    
 
-
             return errors;
         }
     }

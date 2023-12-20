@@ -3,9 +3,9 @@ using SocialNetwork.Business.Wrapper.Interfaces;
 
 namespace SocialNetwork.Business.Wrapper
 {
-    public class DataResponse : IDataResponse
+    public class DataResponse<T> : IDataResponse<T>
     {
-        public object Data { get; }
+        public T Data { get; }
 
         public string Message { get; }
 
@@ -13,14 +13,14 @@ namespace SocialNetwork.Business.Wrapper
 
         public int Status { get; }
 
-        public DataResponse(object data, int statusCode)
+        public DataResponse(T data, int statusCode)
         {
             Data = data;
             Message = Messages.GetSuccessfully;
             Status = statusCode;
         }
 
-        public DataResponse(object data, int statusCode, string message)
+        public DataResponse(T data, int statusCode, string message)
         {
             Data = data;
             Message = message;

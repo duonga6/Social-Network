@@ -45,16 +45,17 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return await _dbSet.FirstOrDefaultAsync(filter);
         }
 
-        public virtual Task<T> GetById(Guid id, bool asNoTracking = true)
-        {
-            
-            throw new NotImplementedException();
-        }
-
         public virtual async Task<bool> Add(T entity)
         {
             await _dbSet.AddAsync(entity);
             return true;
+        }
+
+        // No implement
+        public virtual Task<T> GetById(Guid id, bool asNoTracking = true)
+        {
+
+            throw new NotImplementedException();
         }
 
         // No implement
@@ -67,6 +68,35 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
             throw new NotImplementedException();
         }
-        
+
+        public virtual async Task<ICollection<T>> GetPaged(int pageSize, int pageNumber, Expression<Func<T, bool>> filter = null, Expression<Func<T, object>> orderBy = null, bool isDesc = true)
+        {
+            var query = _dbSet
+                .AsNoTracking()
+                .Where(filter);
+
+            if (isDesc)
+            {
+                query = query.OrderByDescending(orderBy);
+            }
+            else
+            {
+                query = query.OrderBy(orderBy);
+
+            }
+
+            return await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+        public async Task<int> Count(Expression<Func<T, bool>> filter = null)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Where(filter)
+                .CountAsync();
+        }
+
     }
 }

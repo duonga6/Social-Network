@@ -1,10 +1,15 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SocialNetwork.Business.DTOs.User.Requests
 {
+    /// <summary>
+    /// Login model
+    /// </summary>
     public class LoginRequest
     {
+        /// <summary>
+        /// Email address
+        /// </summary>
         [EmailAddress]
         [Required]
         public string Email { get; set; } = string.Empty;

@@ -4,11 +4,13 @@ using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Friendship.Requests;
 using SocialNetwork.Business.DTOs.Friendship.Responses;
 using SocialNetwork.Business.Services.Interfaces;
+using SocialNetwork.Business.Utilities.Enum;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
 using SocialNetwork.DataAccess.Utilities.Enum;
+using System.Linq.Expressions;
 
 namespace SocialNetwork.Business.Services.Implements
 {
@@ -18,11 +20,99 @@ namespace SocialNetwork.Business.Services.Implements
         {
         }
 
-        public async Task<IResponse> GetByUser(string userId)
+        public async Task<IResponse> GetByUser(string requestUserId, string? searchString, int pageSize, int pageNumber, FriendType type)
         {
-            var entities = await _unitOfWork.FriendshipRepository.FindBy(x => x.RequestUserId == userId || x.TargetUserId == userId);
 
-            return new DataResponse(_mapper.Map<List<GetFriendshipResponse>>(entities), 200);
+            Expression<Func<Friendship, bool>>? filter;
+
+            switch (type)
+            {
+                case FriendType.All:
+                    if (searchString == null)
+                    {
+                        filter = x => (x.RequestUserId == requestUserId || x.TargetUserId == requestUserId);
+                    }   
+                    else
+                    {
+                        filter = x =>
+                            (x.RequestUserId == requestUserId || x.TargetUserId == requestUserId) &&
+                            (x.RequestUserId == requestUserId ? (x.TargetUser.FirstName + " " + x.TargetUser.LastName).Contains(searchString) : (x.RequestUser.FirstName + " " + x.RequestUser.LastName).Contains(searchString));
+                    }    
+                    break;
+                case FriendType.PendingFromMe:
+                    if (searchString == null)
+                    {
+                        filter = x => x.RequestUserId == requestUserId && x.FriendStatus == FriendshipStatus.Pending;
+                    }   
+                    else
+                    {
+                        filter = x => x.RequestUserId == requestUserId && x.FriendStatus == FriendshipStatus.Pending &&
+                            (x.RequestUserId == requestUserId ? (x.TargetUser.FirstName + " " + x.TargetUser.LastName).Contains(searchString) : (x.RequestUser.FirstName + " " + x.RequestUser.LastName).Contains(searchString));
+
+                    }
+                    break;
+                case FriendType.PendingFromOther :
+                    if (searchString == null)
+                    {
+                        filter = x => x.TargetUserId == requestUserId && x.FriendStatus == FriendshipStatus.Pending;
+                    }
+                    else
+                    {
+                        filter = x => x.TargetUserId == requestUserId && x.FriendStatus == FriendshipStatus.Pending &&
+                            (x.RequestUserId == requestUserId ? (x.TargetUser.FirstName + " " + x.TargetUser.LastName).Contains(searchString) : (x.RequestUser.FirstName + " " + x.RequestUser.LastName).Contains(searchString));
+                    }
+                    break;
+                case FriendType.Accepted:
+                    if (searchString == null)
+                    {
+                        filter = x => (x.RequestUserId == requestUserId || x.TargetUserId == requestUserId) && x.FriendStatus == FriendshipStatus.Accepted;
+                    }
+                    else
+                    {
+                        filter = x => (x.RequestUserId == requestUserId || x.TargetUserId == requestUserId) && x.FriendStatus == FriendshipStatus.Accepted &&
+                            (x.RequestUserId == requestUserId ? (x.TargetUser.FirstName + " " + x.TargetUser.LastName).Contains(searchString) : (x.RequestUser.FirstName + " " + x.RequestUser.LastName).Contains(searchString));
+                    }
+                    break;
+                case FriendType.Blocked:
+                    if (searchString == null)
+                    {
+                        filter = x => x.RequestUserId == requestUserId && x.FriendStatus == FriendshipStatus.Blocked;
+                    }
+                    else
+                    {
+                        filter = x => x.RequestUserId == requestUserId && x.FriendStatus == FriendshipStatus.Blocked &&
+                        (x.RequestUserId == requestUserId ? (x.TargetUser.FirstName + " " + x.TargetUser.LastName).Contains(searchString) : (x.RequestUser.FirstName + " " + x.RequestUser.LastName).Contains(searchString));
+                    }
+                    break;
+                default:
+                    filter = null;
+                    break;
+            }
+
+            int totalItems = await _unitOfWork.FriendshipRepository.Count(filter);
+            int pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
+
+
+            if (pageCount < pageNumber && pageCount != 0)
+            {
+                return new ErrorResponse(400, Messages.OutOfPage);
+            }
+
+            var friendships = await _unitOfWork.FriendshipRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
+
+            return new PagedResponse<List<GetFriendshipResponse>>(_mapper.Map<List<GetFriendshipResponse>>(friendships), totalItems, 200);
+        }
+
+        public async Task<IResponse> GetById(string requestUserId, Guid id)
+        {
+            var friendship = await _unitOfWork.FriendshipRepository.GetById(id);
+
+            if (friendship.RequestUserId != requestUserId && friendship.TargetUserId != requestUserId)
+            {
+                return new ErrorResponse(404, Messages.NotFound);
+            }
+
+            return new DataResponse<GetFriendshipResponse>(_mapper.Map<GetFriendshipResponse>(friendship), 200);
         }
 
         public async Task<IResponse> AcceptRequest(string requestUserId, string targetUserId)
@@ -46,6 +136,7 @@ namespace SocialNetwork.Business.Services.Implements
             }
 
             entity.FriendStatus = FriendshipStatus.Accepted;
+            entity.UpdatedAt = DateTime.UtcNow;
 
             await _unitOfWork.FriendshipRepository.Update(entity);
             var result = await _unitOfWork.CompleteAsync();
@@ -92,7 +183,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(501, Messages.STWroong);
             }
 
-            return new DataResponse(_mapper.Map<GetFriendshipResponse>(newFriendShip), 200, Messages.FriendshipSent);
+            return new DataResponse<GetFriendshipResponse>(_mapper.Map<GetFriendshipResponse>(newFriendShip), 200, Messages.FriendshipSent);
         }
 
         public async Task<IResponse> BlockFriend(string requestUserId, BaseFriendRequest request)

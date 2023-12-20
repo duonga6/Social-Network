@@ -2,10 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.API.Utilities;
 using SocialNetwork.Business.DTOs.CommentReaction.Requests;
+using SocialNetwork.Business.DTOs.CommentReaction.Responses;
 using SocialNetwork.Business.DTOs.PostComment.Requests;
+using SocialNetwork.Business.DTOs.PostComment.Responses;
 using SocialNetwork.Business.Services.Interfaces;
+using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
 using SocialNetwork.DataAccess.Utilities.Roles;
+using System.ComponentModel.DataAnnotations;
 
 namespace SocialNetwork.API.Controllers
 {
@@ -22,56 +26,64 @@ namespace SocialNetwork.API.Controllers
         #region Comment
 
         /// <summary>
-        /// Get all comment in DB (admin only)
+        /// Get all comment of post
         /// </summary>
+        /// <param name="postId">Id of post</param>
+        /// <param name="searchString">Key word search</param>
+        /// <param name="pageSize">Item count per page</param>
+        /// <param name="pageNumber">Current page</param>
         /// <returns></returns>
         [HttpGet]
-        [Authorize(Roles = RoleName.Administrator)]
-        public async Task<IResponse> GetAll()
+        [ProducesResponseType(typeof(PagedResponse<List<GetPostCommentResponse>>), 200)]
+        public async Task<IResponse> GetAll([FromQuery, Required] Guid postId, [FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
-            return await _postCommentService.GetAll();
+            return await _postCommentService.GetAll(UserId, searchString, pageSize, pageNumber, postId);
         }
 
         /// <summary>
-        /// Get comment by Id (post owner || post owner's friend || admin)
+        /// Get comment by Id (post owner || post owner's friend)
         /// </summary>
         /// <param name="Id"></param>
         /// <returns></returns>
         [HttpGet("{Id}")]
+        [ProducesResponseType(typeof(DataResponse<GetPostCommentResponse>), 200)]
         public async Task<IResponse> GetById(Guid Id) 
         {
             return await _postCommentService.GetById(UserId, Id);
         }
 
         /// <summary>
-        /// Create comment (post owner || post owner's friend || admin)
+        /// Create comment (post owner || post owner's friend)
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(typeof(DataResponse<GetPostCommentResponse>), 200)]
         public async Task<IResponse> Create([FromBody] CreatePostCommentRequest request)
         {
             return await _postCommentService.Create(UserId, request);
         }
 
         /// <summary>
-        /// Update comment (post owner || post owner's friend || admin)
+        /// Update comment (owner comment)
         /// </summary>
         /// <param name="Id"></param>
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPut("{Id}")]
+        [ProducesResponseType(typeof(DataResponse<GetPostCommentResponse>), 200)]
         public async Task<IResponse> Update(Guid Id, [FromBody] UpdatePostCommentRequest request)
         {
             return await _postCommentService.Update(UserId, Id, request);
         }
 
         /// <summary>
-        /// Delete comment (post owner || post owner's friend || admin)
+        /// Delete comment (comment owner)
         /// </summary>
         /// <param name="Id"></param>
         /// <returns></returns>
         [HttpDelete("{Id}")]
+        [ProducesResponseType(typeof(SuccessResponse), 200)]
         public async Task<IResponse> Delete(Guid Id)
         {
             return await _postCommentService.Delete(UserId, Id);
@@ -82,14 +94,17 @@ namespace SocialNetwork.API.Controllers
         #region Reaction
 
         /// <summary>
-        /// Get reaction of comment (post owner || post owner's friend || admin)
+        /// Get reaction of comment (post owner || post owner's friend)
         /// </summary>
         /// <param name="Id"></param>
+        /// <param name="pageSize">Item count per page</param>
+        /// <param name="pageNumber">Current Page</param>
         /// <returns></returns>
         [HttpGet("{Id}/Reactions")]
-        public async Task<IResponse> GetAllReactions(Guid Id)
+        [ProducesResponseType(typeof(PagedResponse<List<GetCommentReactionResponse>>), 200)]
+        public async Task<IResponse> GetAllReactions(Guid Id, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
-            return await _postCommentService.GetReactions(UserId, Id);
+            return await _postCommentService.GetReactions(UserId, Id, pageSize, pageNumber);
         }
 
         /// <summary>
@@ -99,10 +114,10 @@ namespace SocialNetwork.API.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("{Id}/Reactions")]
+        [ProducesResponseType(typeof(DataResponse<GetCommentReactionResponse>), 200)]
         public async Task<IResponse> CreateReaction(Guid Id, [FromBody] CreateCommentReactionRequest request)
         {
-            var userId = User.GetUserId();
-            return await _postCommentService.CreateReaction(userId, Id, request);
+            return await _postCommentService.CreateReaction(UserId, Id, request);
         }
 
         /// <summary>
@@ -112,6 +127,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPut("{Id}/Reactions/{reactionId}")]
+        [ProducesResponseType(typeof(DataResponse<GetCommentReactionResponse>), 200)]
         public async Task<IResponse> UpdateReaction(Guid Id, [FromBody] CreateCommentReactionRequest request)
         {
             var userId = User.GetUserId();
@@ -125,6 +141,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="reactionId"></param>
         /// <returns></returns>
         [HttpDelete("{Id}/Reactions/{reactionId}")]
+        [ProducesResponseType(typeof(SuccessResponse), 200)]
         public async Task<IResponse> DeleteReaction(Guid Id, int reactionId)
         {
             var userId = User.GetUserId();

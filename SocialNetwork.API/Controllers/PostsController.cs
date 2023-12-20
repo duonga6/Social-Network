@@ -3,11 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.API.Utilities;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Post.Requests;
+using SocialNetwork.Business.DTOs.Post.Responses;
+using SocialNetwork.Business.DTOs.PostComment.Responses;
 using SocialNetwork.Business.DTOs.PostReaction.Requests;
+using SocialNetwork.Business.DTOs.PostReaction.Responses;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
 using SocialNetwork.DataAccess.Utilities.Roles;
+using System.ComponentModel.DataAnnotations;
 
 namespace SocialNetwork.API.Controllers
 {
@@ -24,14 +28,17 @@ namespace SocialNetwork.API.Controllers
         #region Post
 
         /// <summary>
-        /// Get all post (admin)
+        /// Get all post (owner, friend's). Admin get all user's post
         /// </summary>
+        /// <param name="searchString">Key word search</param>
+        /// <param name="pageSize">Item count per page</param>
+        /// <param name="pageNumber">Current page</param>
         /// <returns></returns>
         [HttpGet]
-        [Authorize(Roles = RoleName.Administrator)]
-        public async Task<IResponse> GetAll()
+        [ProducesResponseType(typeof(PagedResponse<List<GetPostResponse>>), 200)]
+        public async Task<IResponse> GetAll([FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
-            return await _postService.GetAll();
+            return await _postService.GetAll(UserId, searchString, pageSize, pageNumber);
         }
 
         /// <summary>
@@ -40,6 +47,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="Id"></param>
         /// <returns></returns>
         [HttpGet("{Id}")]
+        [ProducesResponseType(typeof(DataResponse<GetPostResponse>), 200)]
         public async Task<IResponse> GetById(Guid Id)
         {
             return await _postService.GetById(UserId, Id);
@@ -51,6 +59,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(typeof(DataResponse<GetPostResponse>), 200)]
         public async Task<IResponse> Create([FromBody]CreatePostRequest request)
         {
             var userId = User.GetUserId();
@@ -70,6 +79,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPut("{Id}")]
+        [ProducesResponseType(typeof(DataResponse<GetPostResponse>), 200)]
         public async Task<IResponse> Update(Guid Id, [FromBody] UpdatePostRequest request)
         {
             var userId = User.GetUserId();
@@ -88,6 +98,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="Id"></param>
         /// <returns></returns>
         [HttpDelete("{Id}")]
+        [ProducesResponseType(typeof(SuccessResponse), 200)]
         public async Task<IResponse> Delete(Guid Id)
         {
             var userId = User.GetUserId();
@@ -99,18 +110,22 @@ namespace SocialNetwork.API.Controllers
             return await _postService.Delete(UserId, Id);
         }
         #endregion
-
+        
         #region Post Comment
 
         /// <summary>
         /// Get all comment of post
         /// </summary>
-        /// <param name="Id"></param>
+        /// <param name="Id">Id of post</param>
+        /// <param name="searchString">Key word search</param>
+        /// <param name="pageSize">Item count per page</param>
+        /// <param name="pageNumber">Current page</param>
         /// <returns></returns>
         [HttpGet("{Id}/Comments")]
-        public async Task<IResponse> GetAllComment(Guid Id)
+        [ProducesResponseType(typeof(PagedResponse<List<GetPostCommentResponse>>), 200)]
+        public async Task<IResponse> GetComment(Guid Id,[FromQuery] string? searchString,[FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
-            return await _postService.GetAllComments(UserId, Id);
+            return await _postService.GetComments(UserId, Id, searchString, pageSize, pageNumber);
         }
 
         /// <summary>
@@ -120,6 +135,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="commentId"></param>
         /// <returns></returns>
         [HttpGet("{Id}/Comments/{commentId}")]
+        [ProducesResponseType(typeof(DataResponse<GetPostCommentResponse>), 200)]
         public async Task<IResponse> GetComment(Guid Id, Guid commentId) 
         { 
             return await _postService.GetCommentById(UserId, Id, commentId);
@@ -132,6 +148,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("{Id}/Comments")]
+        [ProducesResponseType(typeof(DataResponse<GetPostCommentResponse>), 200)]
         public async Task<IResponse> CreateComment(Guid Id, [FromBody] CreateCommentRequest request)
         {
             var userId = User.GetUserId();
@@ -147,6 +164,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPut("{Id}/Comments/{commentId}")]
+        [ProducesResponseType(typeof(DataResponse<GetPostCommentResponse>), 200)]
         public async Task<IResponse> UpdateComment(Guid Id, Guid commentId, [FromBody] UpdateCommentRequest request)
         {
             var userId = User.GetUserId();
@@ -161,6 +179,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="commentId"></param>
         /// <returns></returns>
         [HttpDelete("{Id}/Comments/{commentId}")]
+        [ProducesResponseType(typeof(SuccessResponse), 200)]
         public async Task<IResponse> DeleteComment(Guid Id, Guid commentId)
         {
             var userId = User.GetUserId();
@@ -175,11 +194,14 @@ namespace SocialNetwork.API.Controllers
         /// Get all reaction of post
         /// </summary>
         /// <param name="Id"></param>
+        /// <param name="pageSize">Item count per page</param>
+        /// <param name="pageNumber">Current page</param>
         /// <returns></returns>
         [HttpGet("{Id}/Reactions")]
-        public async Task<IResponse> GetAllReactions(Guid Id)
+        [ProducesResponseType(typeof(PagedResponse<List<GetPostReactionResponse>>), 200)]
+        public async Task<IResponse> GetAllReactions(Guid Id,[FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
-            return await _postService.GetAllReactions(UserId, Id);
+            return await _postService.GetAllReactions(UserId, Id, pageSize, pageNumber);
         }
 
         /// <summary>
@@ -189,6 +211,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("{Id}/Reactions")]
+        [ProducesResponseType(typeof(DataResponse<GetPostReactionResponse>), 200)]
         public async Task<IResponse> CreatePostReaction(Guid Id, [FromBody] CreatePostReactionRequest request)
         {
             return await _postService.CreateReaction(UserId, Id, request);
@@ -202,6 +225,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPut("{Id}/Reactions/{reactionId}")]
+        [ProducesResponseType(typeof(DataResponse<GetPostReactionResponse>), 200)]
         public async Task<IResponse> UpdatePostReaction(Guid Id, int reactionId, [FromBody] CreatePostReactionRequest request)
         {
             return await _postService.UpdateReaction(UserId, Id, reactionId, request);
@@ -214,6 +238,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="reactionId"></param>
         /// <returns></returns>
         [HttpDelete("{Id}/Reactions/{reactionId}")]
+        [ProducesResponseType(typeof(SuccessResponse), 200)]
         public async Task<IResponse> DeletePostReaction(Guid Id, int reactionId)
         {
             return await _postService.DeleteReaction(UserId, Id, reactionId);

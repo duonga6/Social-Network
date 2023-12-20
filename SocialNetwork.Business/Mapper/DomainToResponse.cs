@@ -28,21 +28,47 @@ namespace SocialNetwork.Business.Mapper
             CreateMap<PostImage, GetPostImageResponse>();
 
             CreateMap<Post, GetPostResponse>()
-                .ForMember(d => d.Images, o => o.MapFrom(s => s.Images));
+                .ForMember(d => d.Images, o => o.MapFrom(s => s.Images))
+                .ForPath(d => d.Author.Id, o => o.MapFrom(s => s.Author.Id))
+                .ForPath(d => d.Author.FullName, o => o.MapFrom(s => s.Author.GetFullName()))
+                .ForPath(d => d.Author.AvatarUrl, o => o.MapFrom(s => s.Author.AvatarUrl));
 
-            CreateMap<PostComment, GetPostCommentReponse>();
+            CreateMap<PostComment, GetPostCommentResponse>()
+                .ForPath(d => d.User.Id, o => o.MapFrom(s => s.User.Id))
+                .ForPath(d => d.User.FullName, o => o.MapFrom(s => s.User.GetFullName()))
+                .ForPath(d => d.User.AvatarUrl, o => o.MapFrom(s => s.User.AvatarUrl));
 
             CreateMap<PostReaction, GetPostReactionResponse>()
-                .ForMember(d => d.Name, o => o.MapFrom(s => s.Reaction.Name));
+                .ForMember(d => d.Name, o => o.MapFrom(s => s.Reaction.Name))
+                .ForPath(d => d.User.Id, o => o.MapFrom(s => s.User.Id))
+                .ForPath(d => d.User.FullName, o => o.MapFrom(s => s.User.GetFullName()))
+                .ForPath(d => d.User.AvatarUrl, o => o.MapFrom(s => s.User.AvatarUrl));
 
             CreateMap<CommentReaction, GetCommentReactionResponse>()
-                .ForMember(d => d.Name, o => o.MapFrom(s => s.Reaction.Name));
+                .ForMember(d => d.Name, o => o.MapFrom(s => s.Reaction.Name))
+                .ForPath(d => d.User.Id, o => o.MapFrom(s => s.User.Id))
+                .ForPath(d => d.User.FullName, o => o.MapFrom(s => s.User.GetFullName()))
+                .ForPath(d => d.User.AvatarUrl, o => o.MapFrom(s => s.User.AvatarUrl));
 
-            CreateMap<Friendship, GetFriendshipResponse>();
+            CreateMap<Friendship, GetFriendshipResponse>()
+                .ForPath(x => x.RequestUser.Id, o => o.MapFrom(s => s.RequestUser.Id))
+                .ForPath(x => x.RequestUser.FullName, o => o.MapFrom(s => s.RequestUser.GetFullName()))
+                .ForPath(x => x.RequestUser.AvatarUrl, o => o.MapFrom(s => s.RequestUser.AvatarUrl))
+                .ForPath(x => x.TargetUser.Id, o => o.MapFrom(s => s.TargetUser.Id))
+                .ForPath(x => x.TargetUser.FullName, o => o.MapFrom(s => s.TargetUser.GetFullName()))
+                .ForPath(x => x.TargetUser.AvatarUrl, o => o.MapFrom(s => s.TargetUser.AvatarUrl));
 
-            CreateMap<MessageService, GetMessageResponse>();
+            CreateMap<Message, GetMessageResponse>()
+                .ForPath(x => x.Sender.Id, o => o.MapFrom(s => s.Sender.Id))
+                .ForPath(x => x.Sender.FullName, o => o.MapFrom(s => s.Sender.GetFullName()))
+                .ForPath(x => x.Sender.AvatarUrl, o => o.MapFrom(s => s.Sender.AvatarUrl))
+                .ForPath(x => x.Receiver.Id, o => o.MapFrom(s => s.Receiver.Id))
+                .ForPath(x => x.Receiver.FullName, o => o.MapFrom(s => s.Receiver.GetFullName()))
+                .ForPath(x => x.Receiver.AvatarUrl, o => o.MapFrom(s => s.Receiver.AvatarUrl));
 
-            CreateMap<NotificationService, GetNotificationResponse>();
+            CreateMap<Notification, GetNotificationResponse>()
+                .ForPath(x => x.FromUser.Id, o => o.MapFrom(s => s.FromUser.Id))
+                .ForPath(x => x.FromUser.AvatarUrl, o => o.MapFrom(s => s.FromUser.AvatarUrl));
 
         }
     }

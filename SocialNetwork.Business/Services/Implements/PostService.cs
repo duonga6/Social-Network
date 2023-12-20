@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using LinqKit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
@@ -14,6 +15,7 @@ using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
 using SocialNetwork.DataAccess.Utilities.Enum;
 using SocialNetwork.DataAccess.Utilities.Roles;
+using System.Linq.Expressions;
 
 namespace SocialNetwork.Business.Services.Implements
 {
@@ -21,23 +23,74 @@ namespace SocialNetwork.Business.Services.Implements
     {
         private readonly UserManager<User> _userManager;
         private readonly INotificationService _notificationService;
+        private readonly IPostCommentService _postCommentService;
 
         public PostService(IUnitOfWork unitOfWork,
                            IMapper mapper,
                            ILogger<PostService> logger,
                            INotificationService notificationService,
-                           UserManager<User> userManager) : base(unitOfWork, mapper, logger)
+                           UserManager<User> userManager,
+                           IPostCommentService postCommentService) : base(unitOfWork, mapper, logger)
         {
             _notificationService = notificationService;
             _userManager = userManager;
+            _postCommentService = postCommentService;
         }
 
         #region Post
-        public async Task<IResponse> GetAll()
+        public async Task<IResponse> GetAll(string requestUserId, string? searchString, int pageSize, int pageNumber)
         {
-            var entity = await _unitOfWork.PostRepository.GetAll();
-            return new DataResponse(_mapper.Map<List<GetPostResponse>>(entity), 200);
+            if (await _unitOfWork.UserRepository.FindById(requestUserId) == null)
+            {
+                return new ErrorResponse(404, Messages.NotFounb("User"));
+            }
+
+            Expression<Func<Post, bool>> filter;
+            Expression<Func<Post, bool>> active = x => x.Status == 1;
+            Expression<Func<Post, bool>> search = x => x.Title.Contains(searchString!) || x.Content.Contains(searchString!) || (x.Author.FirstName + x.Author.LastName).Contains(searchString!);
+            Expression<Func<Post, bool>> isFriend = x => 
+            (x.Author.Friendships1.Any(m => (m.RequestUserId == requestUserId || m.TargetUserId == requestUserId) && m.FriendStatus == FriendshipStatus.Accepted) || 
+            x.Author.Friendships2.Any(m => (m.RequestUserId == requestUserId || m.TargetUserId == requestUserId) && m.FriendStatus == FriendshipStatus.Accepted));
+
+            if (await CheckAdmin(requestUserId))
+            {
+                if (searchString == null)
+                {
+                    filter = active;
+                }
+                else
+                {
+                    filter = active.And(search);
+                }
+            }   
+            else
+            {
+
+                if (searchString == null)
+                {
+                    filter = active.And(isFriend);
+                }
+                else
+                {
+                    filter = active.And(isFriend).And(search);
+                }    
+            }
+
+            int totalItems = await _unitOfWork.PostRepository.Count(filter);
+            int pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            if (pageNumber > pageCount && pageCount != 0)
+            {
+                return new ErrorResponse(400, Messages.OutOfPage);
+            }    
+
+            var posts = await _unitOfWork.PostRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
+            var postsResponse = _mapper.Map<List<GetPostResponse>>(posts);
+
+
+            return new PagedResponse<List<GetPostResponse>>(postsResponse, totalItems, 200);
         }
+      
         public async Task<IResponse> GetById(string requestingUserId, Guid id)
         {
             var post = await _unitOfWork.PostRepository.GetById(id);
@@ -51,8 +104,9 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(403, Messages.NotFriend);
             }
 
-            return new DataResponse(_mapper.Map<GetPostResponse>(post), 200);
+            return new DataResponse<GetPostResponse>(_mapper.Map<GetPostResponse>(post), 200);
         }
+     
         public async Task<IResponse> Create(CreatePostRequest request)
         {
             var user = await _unitOfWork.UserRepository.FindById(request.AuthorId);
@@ -72,8 +126,9 @@ namespace SocialNetwork.Business.Services.Implements
 
             await _notificationService.CreateNotification(addEntity.AuthorId, "", TypeNotification.Post);
 
-            return new DataResponse(_mapper.Map<GetPostResponse>(addEntity), 200, Messages.CreatedSuccessfully);
+            return new DataResponse<GetPostResponse>(_mapper.Map<GetPostResponse>(addEntity), 200, Messages.CreatedSuccessfully);
         }
+     
         public async Task<IResponse> Update(string requestingUserId, Guid id, UpdatePostRequest request)
         {
             var postUpdate = _mapper.Map<Post>(request);
@@ -122,9 +177,10 @@ namespace SocialNetwork.Business.Services.Implements
 
             var updatedEntity = await _unitOfWork.PostRepository.GetById(id);
 
-            return new DataResponse(_mapper.Map<GetPostResponse>(updatedEntity), 204, Messages.UpdatedSuccessfully);
+            return new DataResponse<GetPostResponse>(_mapper.Map<GetPostResponse>(updatedEntity), 204, Messages.UpdatedSuccessfully);
 
         }
+     
         public async Task<IResponse> Delete(string requestingUserId, Guid postId)
         {
             var post = await _unitOfWork.PostRepository.GetById(postId);
@@ -148,6 +204,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             return new SuccessResponse(Messages.DeletedSuccessfully, 204);
         }
+     
         private async Task<bool> CheckPermission(string requestingUserId, string targetUserId)
         {
             var requestUser = await _unitOfWork.UserRepository.FindById(requestingUserId);
@@ -168,24 +225,22 @@ namespace SocialNetwork.Business.Services.Implements
             return await _userManager.IsInRoleAsync(requestUser, RoleName.Administrator);
         }
 
+        private async Task<bool> CheckAdmin(string requestUserId)
+        {
+            var user = await _unitOfWork.UserRepository.FindById(requestUserId);
+            if (user == null) return false;
+
+            return await _userManager.IsInRoleAsync(user, RoleName.Administrator);
+        }
 
         #endregion
 
         #region Post Comment
-        public async Task<IResponse> GetAllComments(string requestUserId, Guid postId)
+        public async Task<IResponse> GetComments(string requestUserId, Guid postId, string? searchString, int pageSize, int pageNumber)
         {
-            var post = await _unitOfWork.PostRepository.GetById(postId);
-
-            if (post == null) return new ErrorResponse(404, Messages.NotFound);
-
-            if (!await CheckPermissionWithFriendAccess(requestUserId, post.AuthorId))
-            {
-                return new ErrorResponse(400, Messages.NotFriend);
-            }
-
-            var result = await _unitOfWork.PostCommentRepository.GetByPost(postId);
-            return new DataResponse(_mapper.Map<List<GetPostCommentReponse>>(result), 200);
+            return await _postCommentService.GetAll(requestUserId, searchString, pageSize, pageNumber, postId);
         }
+        
         public async Task<IResponse> GetCommentById(string requestUserId, Guid postId, Guid commentId)
         {
             var post = await _unitOfWork.PostRepository.GetById(postId);
@@ -203,8 +258,9 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(404, Messages.NotFound);
             }
 
-            return new DataResponse(_mapper.Map<GetPostCommentReponse>(result), 200);
+            return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(result), 200);
         }
+        
         public async Task<IResponse> CreateComment(string requestUserId, Guid postId, CreateCommentRequest request)
         {
             var post = await _unitOfWork.PostRepository.GetById(postId);
@@ -230,9 +286,10 @@ namespace SocialNetwork.Business.Services.Implements
 
             await _notificationService.CreateNotification(requestUserId, post.AuthorId, TypeNotification.PostComment);
 
-            return new DataResponse(_mapper.Map<GetPostCommentReponse>(addEntity), 200, Messages.CreatedSuccessfully);
+            return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(addEntity), 200, Messages.CreatedSuccessfully);
 
         }
+        
         public async Task<IResponse> DeleteComment(string requestUserId, Guid postId, Guid commentId)
         {
             var comment = await _unitOfWork.PostCommentRepository.GetById(commentId);
@@ -258,6 +315,7 @@ namespace SocialNetwork.Business.Services.Implements
             return new SuccessResponse(Messages.DeletedSuccessfully, 204);
 
         }
+        
         public async Task<IResponse> UpdateComment(string requestUserId, Guid postId, Guid commentId, UpdateCommentRequest request)
         {
             var entity = await _unitOfWork.PostCommentRepository.GetById(commentId, false);
@@ -281,7 +339,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.UpdateError);
             }
 
-            return new DataResponse(_mapper.Map<GetPostCommentReponse>(entity), 204);
+            return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(entity), 204);
         }
 
         private async Task<bool> CheckPermissionWithFriendAccess(string requestingUserId, string targetUserId)
@@ -309,6 +367,7 @@ namespace SocialNetwork.Business.Services.Implements
             // Is admin
             return await _userManager.IsInRoleAsync(requestUser, RoleName.Administrator);
         }
+        
         private async Task<bool> CheckOwnerOrAdmin(string requestingUserId, string targetUserId)
         {
             var requestUser = await _unitOfWork.UserRepository.FindById(requestingUserId);
@@ -333,7 +392,7 @@ namespace SocialNetwork.Business.Services.Implements
 
         #region Post Reaction
 
-        public async Task<IResponse> GetAllReactions(string requestUserId, Guid postId)
+        public async Task<IResponse> GetAllReactions(string requestUserId, Guid postId, int pageSize, int pageNumber)
         {
             var post = await _unitOfWork.PostRepository.GetById(postId);
 
@@ -347,10 +406,19 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.NotFriend);
             }
 
-            var reactions = await _unitOfWork.PostReactionRepository.GetByPost(postId);
+            int totalItems = await _unitOfWork.PostReactionRepository.Count(x => x.PostId == postId);
+            int pageCount = (int)Math.Ceiling((double) totalItems / pageSize);
 
-            return new DataResponse(_mapper.Map<List<GetPostReactionResponse>>(reactions), 200);
+            if (pageNumber > pageCount && pageCount != 0)
+            {
+                return new ErrorResponse(400, Messages.OutOfPage);
+            }    
+
+            var reactions = await _unitOfWork.PostReactionRepository.GetPaged(pageSize, pageNumber, x => x.PostId == postId, x => x.CreatedAt);
+
+            return new PagedResponse<List<GetPostReactionResponse>>(_mapper.Map<List<GetPostReactionResponse>>(reactions), totalItems, 200);
         }
+       
         public async Task<IResponse> GetReactionById(string requestUserId, Guid postId, int reactionId)
         {
             var post = await _unitOfWork.PostRepository.GetById(postId);
@@ -371,9 +439,10 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(404, Messages.NotFounb("Reaction"));
             } 
 
-            return new DataResponse(_mapper.Map<GetPostReactionResponse>(reaction), 200);
+            return new DataResponse<GetPostReactionResponse>(_mapper.Map<GetPostReactionResponse>(reaction), 200);
                 
         }
+       
         public async Task<IResponse> CreateReaction(string requestUserId, Guid postId, CreatePostReactionRequest request)
         {
             var post = await _unitOfWork.PostRepository.GetById(postId);
@@ -407,8 +476,9 @@ namespace SocialNetwork.Business.Services.Implements
 
             var entityAdded = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId, entity.ReactionId);
 
-            return new DataResponse(_mapper.Map<GetPostReactionResponse>(entityAdded), 201, Messages.CreatedSuccessfully);
+            return new DataResponse<GetPostReactionResponse>(_mapper.Map<GetPostReactionResponse>(entityAdded), 201, Messages.CreatedSuccessfully);
         }
+       
         public async Task<IResponse> UpdateReaction(string requestUserId, Guid postId,int reactionId, CreatePostReactionRequest request)
         {
             var checkExits = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId, reactionId);
@@ -434,8 +504,9 @@ namespace SocialNetwork.Business.Services.Implements
 
             var entityAdded = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId, entity.ReactionId);
 
-            return new DataResponse(_mapper.Map<GetPostReactionResponse>(entityAdded), 204, Messages.UpdatedSuccessfully);
+            return new DataResponse<GetPostReactionResponse>(_mapper.Map<GetPostReactionResponse>(entityAdded), 204, Messages.UpdatedSuccessfully);
         }
+     
         public async Task<IResponse> DeleteReaction(string requestUserId, Guid postId,int reactionId)
         {
             var entity = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId, reactionId);

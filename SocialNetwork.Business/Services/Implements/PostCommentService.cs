@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using LinqKit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
@@ -7,12 +8,14 @@ using SocialNetwork.Business.DTOs.CommentReaction.Responses;
 using SocialNetwork.Business.DTOs.PostComment.Requests;
 using SocialNetwork.Business.DTOs.PostComment.Responses;
 using SocialNetwork.Business.Services.Interfaces;
+using SocialNetwork.Business.Utilities.Enum;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
 using SocialNetwork.DataAccess.Utilities.Enum;
 using SocialNetwork.DataAccess.Utilities.Roles;
+using System.Linq.Expressions;
 
 namespace SocialNetwork.Business.Services.Implements
 {
@@ -55,7 +58,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             await _notificationService.CreateNotification(requestUserId, post.AuthorId, TypeNotification.PostComment);
 
-            return new DataResponse(_mapper.Map<GetPostCommentReponse>(addComment), 200, Messages.CreatedSuccessfully);
+            return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(addComment), 200, Messages.CreatedSuccessfully);
         }
 
         public async Task<IResponse> Delete(string requestUserId, Guid id)
@@ -83,10 +86,38 @@ namespace SocialNetwork.Business.Services.Implements
             return new SuccessResponse(Messages.DeletedSuccessfully, 204);
         }
 
-        public async Task<IResponse> GetAll()
+        public async Task<IResponse> GetAll(string requestUserId, string? searchString, int pageSize, int pageNumber, Guid postId)
         {
-            var entity = await _unitOfWork.PostCommentRepository.GetAll();
-            return new DataResponse(_mapper.Map<List<GetPostCommentReponse>>(entity), 200);
+            var post = await _unitOfWork.PostRepository.GetById(postId);
+            if (post == null)
+            {
+                return new ErrorResponse(404, Messages.NotFounb("Post"));
+            }    
+
+            if (!await CheckAccessPost(requestUserId, post.AuthorId))
+            {
+                return new ErrorResponse(400, Messages.NotFriend);
+            }    
+
+            Expression<Func<PostComment, bool>> filter = x => x.Status == 1 && x.PostId == postId;
+            
+            if (searchString != null)
+            {
+                filter = filter.And(x => x.Content.Contains(searchString));
+            }
+
+            int totalItems = await _unitOfWork.PostCommentRepository.Count(filter);
+            int pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            if (pageNumber > pageCount && pageCount != 0)
+            {
+                return new ErrorResponse(400, Messages.OutOfPage);
+            }    
+
+            var comments = await _unitOfWork.PostCommentRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
+            var commentsResponse = _mapper.Map<List<GetPostCommentResponse>>(comments);
+
+            return new PagedResponse<List<GetPostCommentResponse>>(commentsResponse, 200, totalItems);
         }
 
         public async Task<IResponse> GetById(string requestUserId, Guid id)
@@ -103,7 +134,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.NotFriend);
             }    
 
-            return new DataResponse(_mapper.Map<GetPostCommentReponse>(comment), 200);
+            return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(comment), 200);
 
         }
 
@@ -130,7 +161,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.UpdateError);
             }
 
-            return new DataResponse(_mapper.Map<GetPostCommentReponse>(comment), 204, Messages.UpdatedSuccessfully);
+            return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(comment), 204, Messages.UpdatedSuccessfully);
 
         }
 
@@ -147,15 +178,18 @@ namespace SocialNetwork.Business.Services.Implements
                 return true;
             }
 
-            // Is admin
-            if (await _userManager.IsInRoleAsync(targetUser, RoleName.Administrator))
+
+            // Is friend
+            if ( await _unitOfWork.FriendshipRepository.IsFriend(requestUserId, targetUserId))
             {
                 return true;
             }
 
-            // Is friend
-            return await _unitOfWork.FriendshipRepository.IsFriend(requestUserId, targetUserId);
+            // Is admin
+            return await _userManager.IsInRoleAsync(targetUser, RoleName.Administrator);
+
         }
+        
         private async Task<bool> CheckOwnerComment(string requestUserId, string authorCommentId)
         {
             var requestUser = await _unitOfWork.UserRepository.FindById(requestUserId);
@@ -176,7 +210,7 @@ namespace SocialNetwork.Business.Services.Implements
 
         #region Comment Reaction
 
-        public async Task<IResponse> GetReactions(string requestUserId, Guid commentId)
+        public async Task<IResponse> GetReactions(string requestUserId, Guid commentId, int pageSize, int pageNumber)
         {
             var comment = await _unitOfWork.PostCommentRepository.GetById(commentId);
             if (comment == null)
@@ -195,9 +229,20 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(404, Messages.NotFriend);
             }
 
-            var result = await _unitOfWork.CommentReactionRepository.GetByComment(commentId);
+            Expression<Func<CommentReaction, bool>> filter = x => x.CommentId == commentId;
 
-            return new DataResponse(_mapper.Map<List<GetCommentReactionResponse>>(result), 200);
+            int totalItems = await _unitOfWork.CommentReactionRepository.Count(filter);
+            int pageCount = (int)Math.Ceiling((double) totalItems / pageSize);
+
+            if (pageNumber > pageCount && pageCount != 0)
+            {
+                return new ErrorResponse(400, Messages.OutOfPage);
+            }    
+
+            var commentReactions = await _unitOfWork.CommentReactionRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
+            var commentReactionsResult = _mapper.Map<List<GetCommentReactionResponse>>(commentReactions);
+
+            return new PagedResponse<List<GetCommentReactionResponse>>(commentReactionsResult, totalItems, 200);
         }
 
         public async Task<IResponse> GetReactionById(string requestUserId, Guid commentId, int reactionId)
@@ -209,7 +254,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(404, Messages.NotFound);
             }    
 
-            return new DataResponse(_mapper.Map<GetCommentReactionResponse>(entity), 200);
+            return new DataResponse<GetCommentReactionResponse>(_mapper.Map<GetCommentReactionResponse>(entity), 200);
 
         }
 
@@ -242,7 +287,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             await _notificationService.CreateNotification(requestUserId, comment.UserId, TypeNotification.PostCommentReaction);
 
-            return new DataResponse(_mapper.Map<GetCommentReactionResponse>(addedEntity), 204, Messages.CreatedSuccessfully);
+            return new DataResponse<GetCommentReactionResponse>(_mapper.Map<GetCommentReactionResponse>(addedEntity), 204, Messages.CreatedSuccessfully);
         }
 
         public async Task<IResponse> UpdateReaction(string requestUserId, Guid commentId, CreateCommentReactionRequest request)
@@ -262,7 +307,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            return new DataResponse(_mapper.Map<GetCommentReactionResponse>(reaction), 204, Messages.UpdatedSuccessfully);
+            return new DataResponse<GetCommentReactionResponse>(_mapper.Map<GetCommentReactionResponse>(reaction), 204, Messages.UpdatedSuccessfully);
         }
 
         public async Task<IResponse> DeleteReaction(string requestUserId, Guid commentId, int reactionId)

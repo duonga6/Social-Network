@@ -1,8 +1,7 @@
 ﻿namespace SocialNetwork.Business.Wrapper.Interfaces
 {
-    public interface IDataResponse<T> : IResponse
+    internal interface IPagedResponse<T> : IResponse
     {
         T Data { get; }
-        string Message { get; }
     }
 }

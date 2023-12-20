@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SocialNetwork.DataAccess.Context;
 
@@ -11,9 +12,10 @@ using SocialNetwork.DataAccess.Context;
 namespace SocialNetwork.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231216171820_add-user-avatar")]
+    partial class adduseravatar
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,15 +53,15 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "95d35b23-9f38-446e-adae-afc208e10d01",
-                            ConcurrencyStamp = "480422ca-8825-4457-9831-f9b00ba58ab1",
+                            Id = "ccc3b31b-fd2d-49c4-acca-4728482e7d19",
+                            ConcurrencyStamp = "c7564a99-f6ba-490a-93b7-889ba7a50e9e",
                             Name = "Administrator",
                             NormalizedName = "ADMINISTRATOR"
                         },
                         new
                         {
-                            Id = "99d7e20f-5a45-4fb0-ae27-1d7dec2982b0",
-                            ConcurrencyStamp = "98c87404-3467-4c76-bb89-57c6e1a149dd",
+                            Id = "46084d55-95d3-45d1-a3fd-4ae7dcc82b0b",
+                            ConcurrencyStamp = "0adc8f5e-c902-4ae5-91f6-23c78ad4fd58",
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -232,7 +234,7 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.ToTable("Friendships");
                 });
 
-            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Message", b =>
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.MessageService", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -271,7 +273,7 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.ToTable("Messages");
                 });
 
-            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Notification", b =>
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.NotificationService", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -284,28 +286,22 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("FromUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<bool>("Seen")
                         .HasColumnType("bit");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<string>("TargetUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("FromUserId");
-
-                    b.HasIndex("TargetUserId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Notifications");
                 });
@@ -464,44 +460,44 @@ namespace SocialNetwork.DataAccess.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2023, 12, 17, 7, 25, 13, 233, DateTimeKind.Utc).AddTicks(6228),
+                            CreatedAt = new DateTime(2023, 12, 16, 17, 18, 20, 328, DateTimeKind.Utc).AddTicks(6255),
                             Name = "Like",
-                            UpdatedAt = new DateTime(2023, 12, 17, 7, 25, 13, 233, DateTimeKind.Utc).AddTicks(6227)
+                            UpdatedAt = new DateTime(2023, 12, 16, 17, 18, 20, 328, DateTimeKind.Utc).AddTicks(6254)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2023, 12, 17, 7, 25, 13, 233, DateTimeKind.Utc).AddTicks(6230),
+                            CreatedAt = new DateTime(2023, 12, 16, 17, 18, 20, 328, DateTimeKind.Utc).AddTicks(6257),
                             Name = "Love",
-                            UpdatedAt = new DateTime(2023, 12, 17, 7, 25, 13, 233, DateTimeKind.Utc).AddTicks(6229)
+                            UpdatedAt = new DateTime(2023, 12, 16, 17, 18, 20, 328, DateTimeKind.Utc).AddTicks(6257)
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2023, 12, 17, 7, 25, 13, 233, DateTimeKind.Utc).AddTicks(6230),
+                            CreatedAt = new DateTime(2023, 12, 16, 17, 18, 20, 328, DateTimeKind.Utc).AddTicks(6258),
                             Name = "Haha",
-                            UpdatedAt = new DateTime(2023, 12, 17, 7, 25, 13, 233, DateTimeKind.Utc).AddTicks(6230)
+                            UpdatedAt = new DateTime(2023, 12, 16, 17, 18, 20, 328, DateTimeKind.Utc).AddTicks(6258)
                         },
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2023, 12, 17, 7, 25, 13, 233, DateTimeKind.Utc).AddTicks(6231),
+                            CreatedAt = new DateTime(2023, 12, 16, 17, 18, 20, 328, DateTimeKind.Utc).AddTicks(6259),
                             Name = "Wow",
-                            UpdatedAt = new DateTime(2023, 12, 17, 7, 25, 13, 233, DateTimeKind.Utc).AddTicks(6231)
+                            UpdatedAt = new DateTime(2023, 12, 16, 17, 18, 20, 328, DateTimeKind.Utc).AddTicks(6259)
                         },
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2023, 12, 17, 7, 25, 13, 233, DateTimeKind.Utc).AddTicks(6232),
+                            CreatedAt = new DateTime(2023, 12, 16, 17, 18, 20, 328, DateTimeKind.Utc).AddTicks(6260),
                             Name = "Sad",
-                            UpdatedAt = new DateTime(2023, 12, 17, 7, 25, 13, 233, DateTimeKind.Utc).AddTicks(6232)
+                            UpdatedAt = new DateTime(2023, 12, 16, 17, 18, 20, 328, DateTimeKind.Utc).AddTicks(6259)
                         },
                         new
                         {
                             Id = 6,
-                            CreatedAt = new DateTime(2023, 12, 17, 7, 25, 13, 233, DateTimeKind.Utc).AddTicks(6233),
+                            CreatedAt = new DateTime(2023, 12, 16, 17, 18, 20, 328, DateTimeKind.Utc).AddTicks(6260),
                             Name = "Angry",
-                            UpdatedAt = new DateTime(2023, 12, 17, 7, 25, 13, 233, DateTimeKind.Utc).AddTicks(6232)
+                            UpdatedAt = new DateTime(2023, 12, 16, 17, 18, 20, 328, DateTimeKind.Utc).AddTicks(6260)
                         });
                 });
 
@@ -737,7 +733,7 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.Navigation("TargetUser");
                 });
 
-            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Message", b =>
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.MessageService", b =>
                 {
                     b.HasOne("SocialNetwork.DataAccess.Entities.User", "Receiver")
                         .WithMany("MessageReceived")
@@ -756,23 +752,15 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.Navigation("Sender");
                 });
 
-            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Notification", b =>
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.NotificationService", b =>
                 {
-                    b.HasOne("SocialNetwork.DataAccess.Entities.User", "FromUser")
-                        .WithMany("NotificationsReceive")
-                        .HasForeignKey("FromUserId")
+                    b.HasOne("SocialNetwork.DataAccess.Entities.User", "User")
+                        .WithMany("Notifications")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("SocialNetwork.DataAccess.Entities.User", "TargetUser")
-                        .WithMany("NotificationsSend")
-                        .HasForeignKey("TargetUserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("FromUser");
-
-                    b.Navigation("TargetUser");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Post", b =>
@@ -892,9 +880,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.Navigation("MessagesSent");
 
-                    b.Navigation("NotificationsReceive");
-
-                    b.Navigation("NotificationsSend");
+                    b.Navigation("Notifications");
 
                     b.Navigation("PostComments");
 

@@ -2,9 +2,9 @@
 
 namespace SocialNetwork.DataAccess.Repositories.Interfaces
 {
-    public interface INotificationRepository : IGenericRepository<NotificationService>
+    public interface INotificationRepository : IGenericRepository<Notification>
     {
         Task<bool> Seen(Guid Id);
-        Task<ICollection<NotificationService>> GetUserNotifications(string userId);
+        Task<ICollection<Notification>> GetUserNotifications(string userId);
     }
 }

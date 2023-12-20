@@ -5,8 +5,10 @@ using SocialNetwork.Business.DTOs.Notification.Responses;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
+using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
 using SocialNetwork.DataAccess.Utilities.Enum;
+using System.Linq.Expressions;
 
 namespace SocialNetwork.Business.Services.Implements
 {
@@ -26,23 +28,28 @@ namespace SocialNetwork.Business.Services.Implements
             var fromUser = await _unitOfWork.UserRepository.FindById(fromUserId);
             var toUser = await _unitOfWork.UserRepository.FindById(toUserId);
 
+            if (fromUser == null || toUser == null)
+            {
+                return false;
+            }
+
             switch (type)
             {
                 case TypeNotification.Post:
                     {
-                        if (fromUser == null) return false;
-                        string content = @$"""{fromUser.FirstName} {fromUser.LastName}"" đã đăng một bài viết.";
+                        string content = @$"""{fromUser.GetFullName()}"" đã đăng một bài viết.";
 
-                        var friendOfFromUser = await _unitOfWork.FriendshipRepository.GetAllFriends(fromUserId);
+                        var friendOfFromUser = await _unitOfWork.FriendshipRepository.GetAllFriendship(fromUserId);
                         foreach (var item in friendOfFromUser)
                         {
                             if (item.TargetUserId != fromUserId)
                             {
-                                var notification = new DataAccess.Entities.NotificationService
+                                var notification = new DataAccess.Entities.Notification
                                 {
                                     Content = content,
                                     Seen = false,
-                                    UserId = item.TargetUserId,
+                                    TargetUserId = item.TargetUserId,
+                                    FromUserId = fromUserId,
                                 };
 
                                 await _unitOfWork.NotificationRepository.Add(notification);
@@ -55,14 +62,14 @@ namespace SocialNetwork.Business.Services.Implements
                     }
                 case TypeNotification.PostComment:
                     {
-                        if (fromUser == null || toUser == null) return false;
-                        string content = @$"""{fromUser.FirstName} {fromUser.LastName}"" đã đã bình luận về bài viết của bạn.";
+                        string content = @$"""{fromUser.GetFullName()}"" đã đã bình luận về bài viết của bạn.";
 
-                        var notification = new DataAccess.Entities.NotificationService
+                        var notification = new DataAccess.Entities.Notification
                         {
                             Content = content,
                             Seen = false,
-                            UserId = toUserId,
+                            TargetUserId = toUserId,
+                            FromUserId = fromUserId,
                         };
 
                         await _unitOfWork.NotificationRepository.Add(notification);
@@ -72,14 +79,14 @@ namespace SocialNetwork.Business.Services.Implements
                     }
                 case TypeNotification.PostCommentReaction:
                     {
-                        if (fromUser == null || toUser == null) return false;
-                        string content = @$"""{fromUser.FirstName} {fromUser.LastName}"" đã bày tỏ cảm xúc về bình luận của bạn.";
+                        string content = @$"""{fromUser.GetFullName()}"" đã bày tỏ cảm xúc về bình luận của bạn.";
 
-                        var notification = new DataAccess.Entities.NotificationService
+                        var notification = new DataAccess.Entities.Notification
                         {
                             Content = content,
                             Seen = false,
-                            UserId = toUserId,
+                            TargetUserId = toUserId,
+                            FromUserId = fromUserId,
                         };
 
                         await _unitOfWork.NotificationRepository.Add(notification);
@@ -89,14 +96,13 @@ namespace SocialNetwork.Business.Services.Implements
                     }
                 case TypeNotification.FriendRequest:
                     {
-                        if (fromUser == null || toUser == null) return false;
-                        string content = @$"""{fromUser.FirstName} {fromUser.LastName}"" đã gửi cho bạn lời mời kết bạn.";
+                        string content = @$"""{fromUser.GetFullName()}"" đã gửi cho bạn lời mời kết bạn.";
 
-                        var notification = new DataAccess.Entities.NotificationService
+                        var notification = new DataAccess.Entities.Notification
                         {
                             Content = content,
                             Seen = false,
-                            UserId = toUserId,
+                            TargetUserId = toUserId,
                         };
 
                         await _unitOfWork.NotificationRepository.Add(notification);
@@ -106,14 +112,13 @@ namespace SocialNetwork.Business.Services.Implements
                     }
                 case TypeNotification.PostReaction:
                     {
-                        if (fromUser == null || toUser == null) return false;
-                        string content = @$"""{fromUser.FirstName} {fromUser.LastName}"" đã bày tỏ cảm xúc về bài viết của bạn.";
+                        string content = @$"""{fromUser.GetFullName()}"" đã bày tỏ cảm xúc về bài viết của bạn.";
 
-                        var notification = new DataAccess.Entities.NotificationService
+                        var notification = new DataAccess.Entities.Notification
                         {
                             Content = content,
                             Seen = false,
-                            UserId = toUserId,
+                            TargetUserId = toUserId,
                         };
 
                         await _unitOfWork.NotificationRepository.Add(notification);
@@ -126,16 +131,37 @@ namespace SocialNetwork.Business.Services.Implements
             }
         }
 
-        public async Task<IResponse> GetNotifications(string userId)
+        public async Task<IResponse> GetNotifications(string userId, string? searchString, int pageSize, int pageNumber)
         {
-            var notifications = await _unitOfWork.NotificationRepository.GetUserNotifications(userId);
-            return new DataResponse(_mapper.Map<List<GetNotificationResponse>>(notifications), 200);
+            Expression<Func<Notification, bool>> filter;
+
+            if (searchString != null)
+            {
+                filter = x => x.TargetUser.Id == userId && x.Content.Contains(searchString);
+            }
+            else
+            {
+                filter = x => x.TargetUser.Id == userId;
+            }    
+
+            int totalItems = await _unitOfWork.NotificationRepository.Count(filter);
+            int pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            if (pageCount < pageNumber && pageCount != 0)
+            {
+                return new ErrorResponse(400, Messages.OutOfPage);
+            }
+
+            var notifications = await _unitOfWork.NotificationRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
+            var notificationsResult = _mapper.Map<List<GetNotificationResponse>>(notifications);
+
+            return new PagedResponse<List<GetNotificationResponse>>(notificationsResult, totalItems, 200);
         }
 
         public async Task<IResponse> SeenNotification(string userId, Guid id)
         {
             var notification = await _unitOfWork.NotificationRepository.GetById(id);
-            if (notification.UserId != userId) return new ErrorResponse(404, Messages.NotFound);
+            if (notification.TargetUserId != userId) return new ErrorResponse(404, Messages.NotFound);
 
             if (notification.Seen)
             {
@@ -158,12 +184,12 @@ namespace SocialNetwork.Business.Services.Implements
         {
             var notification = await _unitOfWork.NotificationRepository.GetById(id);
 
-            if (notification == null || notification.UserId != userId)
+            if (notification == null || notification.TargetUserId != userId)
             {
                 return new ErrorResponse(404, Messages.NotFound);
             }
 
-            return new DataResponse(_mapper.Map<GetNotificationResponse>(notification), 200);
+            return new DataResponse<GetNotificationResponse>(_mapper.Map<GetNotificationResponse>(notification), 200);
 
         }
     }

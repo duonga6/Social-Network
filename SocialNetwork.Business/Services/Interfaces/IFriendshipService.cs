@@ -1,4 +1,5 @@
 ﻿using SocialNetwork.Business.DTOs.Friendship.Requests;
+using SocialNetwork.Business.Utilities.Enum;
 using SocialNetwork.Business.Wrapper.Interfaces;
 
 namespace SocialNetwork.Business.Services.Interfaces
@@ -12,6 +13,7 @@ namespace SocialNetwork.Business.Services.Interfaces
         Task<IResponse> RefuseRequest(string requestUserId, string targetUserId);
         Task<IResponse> BlockFriend(string requestUserId, BaseFriendRequest request);
         Task<IResponse> UnBlockFriend(string requestUserId, string targetUserId);
-        Task<IResponse> GetByUser(string userId);
+        Task<IResponse> GetByUser(string requestUserId, string? searchString, int pageSize, int pageNumber, FriendType type);
+        Task<IResponse> GetById(string requestUserId, Guid id);
     }
 }

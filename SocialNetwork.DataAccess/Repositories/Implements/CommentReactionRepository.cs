@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.DataAccess.Context;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
+using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
 {
@@ -55,6 +56,32 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return await _dbSet.AsNoTracking()
                 .Where(x => x.CommentId == commentId)
                 .Include(x => x.Reaction)
+                .ToListAsync();
+        }
+
+
+        public override async Task<ICollection<CommentReaction>> GetPaged(int pageSize, int pageNumber, Expression<Func<CommentReaction, bool>> filter = null, Expression<Func<CommentReaction, object>> orderBy = null, bool isDesc = true)
+        {
+            var query = _dbSet
+                .AsNoTracking()
+                .Where(filter)
+                .Include(x => x.User)
+                .Include(x => x.Reaction)
+                .AsSplitQuery();
+
+            if (isDesc)
+            {
+                query = query.OrderByDescending(orderBy);
+            }
+            else
+            {
+                query = query.OrderBy(orderBy);
+
+            }
+
+            return await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
         }
     }
