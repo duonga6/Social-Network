@@ -1,0 +1,20 @@
+version: '3.4'
+
+services:
+  socialnetwork.api:
+    build:
+      context: .
+      dockerfile: SocialNetwork.API/Dockerfile
+    container_name: app.api
+    ports:
+      - 9999:9999
+    restart: always
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - 1111:1111
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./proxy.conf:/etc/nginx/proxy.conf:ro

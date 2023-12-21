@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SocialNetwork.Business", "S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SocialNetwork.DataAccess", "SocialNetwork.DataAccess\SocialNetwork.DataAccess.csproj", "{86291941-4799-400E-9472-BC45FCC02C0F}"
 EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{B27E2884-8DF3-4300-B4D3-49A0D28E878D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{86291941-4799-400E-9472-BC45FCC02C0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86291941-4799-400E-9472-BC45FCC02C0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86291941-4799-400E-9472-BC45FCC02C0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B27E2884-8DF3-4300-B4D3-49A0D28E878D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B27E2884-8DF3-4300-B4D3-49A0D28E878D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B27E2884-8DF3-4300-B4D3-49A0D28E878D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B27E2884-8DF3-4300-B4D3-49A0D28E878D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

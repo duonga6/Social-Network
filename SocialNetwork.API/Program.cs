@@ -1,17 +1,12 @@
-﻿using SocialNetwork.DataAccess;
-using SocialNetwork.Business;
-using SocialNetwork.API.Extensions;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using System.Reflection;
-using Swashbuckle.AspNetCore.SwaggerGen;
+using SocialNetwork.API.Extensions;
+using SocialNetwork.Business;
+using SocialNetwork.DataAccess;
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddCors(p => p.AddPolicy("Cors", build =>
-{
-    build.AllowAnyOrigin()
-    .AllowAnyMethod()
-    .AllowAnyHeader();
-}));
+builder.Services.AddCors();
+
 
 // Add services to the container.
 
@@ -68,20 +63,30 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Social Network API");
-    });
-}
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI(c =>
+//    {
+//        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Social Network API");
+//    });
+//}
 
-app.UseCors("Cors");
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Social Network API");
+});
+
+
+app.UseCors(options =>
+{
+    options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
+});
 
 app.UseStaticFiles();
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();

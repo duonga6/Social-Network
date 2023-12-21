@@ -478,7 +478,6 @@ namespace SocialNetwork.API.Controllers
             return await _userService.SeenNotifications(UserId, Id, notificationId);
         }
 
-
         #endregion
     }
 }
