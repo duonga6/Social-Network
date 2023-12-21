@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using SocialNetwork.API.Extensions;
 using SocialNetwork.Business;
 using SocialNetwork.DataAccess;
+using SocialNetwork.DataAccess.Context;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors();
@@ -92,5 +94,14 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+using (var scopeService = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
+{
+    var _context = scopeService.ServiceProvider.GetService<AppDbContext>();
+    if (_context != null && _context.Database.GetPendingMigrations().Any())
+    {
+        _context.Database.Migrate();
+    }
+}
 
 app.Run();

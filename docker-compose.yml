@@ -12,7 +12,7 @@ services:
 
   nginx:
     image: nginx:latest
-    container_name: nginx
+    container_name: nginx.api
     ports:
       - 1111:1111
     volumes:
