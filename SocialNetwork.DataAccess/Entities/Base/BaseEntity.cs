@@ -1,8 +1,8 @@
 ﻿namespace SocialNetwork.DataAccess.Entities.Base
 {
-    public class BaseEntity
+    public class BaseEntity<TKey>
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
+        public TKey Id { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public int Status { get; set; } = 1;

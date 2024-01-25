@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Role.Request;
@@ -47,7 +48,7 @@ namespace SocialNetwork.Business.Services.Implements
             var role = await _roleManager.FindByIdAsync(Id);
             if (role == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }    
 
             var result = await _roleManager.DeleteAsync(role);
@@ -61,7 +62,7 @@ namespace SocialNetwork.Business.Services.Implements
 
         public async Task<IResponse> GetAll()
         {
-            var roles = await _unitOfWork.RoleRepository.GetAll();
+            var roles = await _roleManager.Roles.ToListAsync();
 
             return new DataResponse<List<GetRoleResponse>>(_mapper.Map<List<GetRoleResponse>>(roles), 200);
         }
@@ -71,7 +72,7 @@ namespace SocialNetwork.Business.Services.Implements
             var role = await _roleManager.FindByIdAsync(id);
             if (role == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }
 
             return new DataResponse<GetRoleResponse>(_mapper.Map<GetRoleResponse>(role), 200);
@@ -82,7 +83,7 @@ namespace SocialNetwork.Business.Services.Implements
             var updateRole = await _roleManager.FindByIdAsync(Id);
             if (updateRole == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }
 
             updateRole.Name = request.RoleName;

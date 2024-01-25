@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
 {
-    public class MessageRepository : GenericRepository<Message>, IMessageRepository
+    public class MessageRepository : GenericRepository<Message, Guid>, IMessageRepository
     {
         public MessageRepository(ILogger logger, AppDbContext context) : base(logger, context)
         {
@@ -23,20 +23,6 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        public override async Task<bool> Delete(Guid id)
-        {
-            var entity = await _dbSet.FindAsync(id);
-            if (entity == null)
-            {
-                return false;
-            }
-
-            entity.Status = 0;
-            entity.UpdatedAt = DateTime.UtcNow;
-
-            return true;
-        }
-
         public async Task<ICollection<Message>> GetConversation(string senderId, string receiverId)
         {
             var messages = await _dbSet
@@ -47,7 +33,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return messages;
         }
 
-        public virtual async Task<ICollection<Message>> GetPaged(int pageSize, int pageNumber, Expression<Func<Message, bool>> filter = null, Expression<Func<Message, object>> orderBy = null, bool isDesc = true)
+        public override async Task<ICollection<Message>> GetPaged(int pageSize, int pageNumber, Expression<Func<Message, bool>> filter = null, Expression<Func<Message, object>> orderBy = null, bool isDesc = true)
         {
             var query = _dbSet
                 .AsNoTracking()

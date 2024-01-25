@@ -11,7 +11,6 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
             builder.HasOne(p => p.Author)
                 .WithMany(a => a.Posts)
                 .HasForeignKey(p => p.AuthorId)
-                .HasConstraintName("FK_Post_User")
                 .OnDelete(DeleteBehavior.NoAction)
                 .IsRequired();
 
@@ -23,7 +22,6 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 .HasColumnType("nvarchar(MAX)")
                 .IsRequired();
 
-            builder.ToTable("Posts");
         }
     }
 }

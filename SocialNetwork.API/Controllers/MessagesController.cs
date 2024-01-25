@@ -67,7 +67,7 @@ namespace SocialNetwork.API.Controllers
         [ProducesResponseType(typeof(SuccessResponse), 200)]
         public async Task<IResponse> DeleteMessage(Guid Id)
         {
-            return await _messageService.DeleteMessage(UserId, Id);
+            return await _messageService.RevokeMessage(UserId, Id);
         }
 
     }

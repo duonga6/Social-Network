@@ -6,7 +6,7 @@ using SocialNetwork.DataAccess.Repositories.Interfaces;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
 {
-    public class PostImageRepository : GenericRepository<PostImage>, IPostImageRepository
+    public class PostImageRepository : GenericRepository<PostImage, Guid>, IPostImageRepository
     {
         public PostImageRepository(ILogger logger, AppDbContext context) : base(logger, context)
         {
@@ -22,25 +22,6 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             }
             return await _dbSet.Where(x => x.Status == 1)
                     .ToListAsync();
-        }
-
-        public override async Task<bool> Delete(Guid Id)
-        {
-            try
-            {
-                var entity = await _dbSet.FirstOrDefaultAsync(x => x.Id == Id && x.Status == 1);
-                if (entity == null) { return false; }
-
-                entity.Status = 0;
-                entity.UpdatedAt = DateTime.UtcNow;
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "{Repo} error function Delete", typeof(PostImageRepository));
-                throw;
-            }
         }
 
         public override async Task<bool> Update(PostImage post)

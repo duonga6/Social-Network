@@ -5,10 +5,26 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace SocialNetwork.DataAccess.Migrations
 {
-    public partial class Init_DB : Migration
+    public partial class recreatedb : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "MessageTypes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MessageTypes", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Reactions",
                 columns: table => new
@@ -16,8 +32,9 @@ namespace SocialNetwork.DataAccess.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(20)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -46,9 +63,12 @@ namespace SocialNetwork.DataAccess.Migrations
                     FirstName = table.Column<string>(type: "nvarchar(50)", nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(50)", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Gender = table.Column<int>(type: "int", nullable: false),
+                    AvatarUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -91,6 +111,95 @@ namespace SocialNetwork.DataAccess.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Friendships",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RequestUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    TargetUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    FriendStatus = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Friendships", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Friendships_Users_RequestUserId",
+                        column: x => x.RequestUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Friendships_Users_TargetUserId",
+                        column: x => x.TargetUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Messages",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SenderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ReceiverId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    MessageTypeId = table.Column<int>(type: "int", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsRevoked = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Messages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Messages_MessageTypes_MessageTypeId",
+                        column: x => x.MessageTypeId,
+                        principalTable: "MessageTypes",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Messages_Users_ReceiverId",
+                        column: x => x.ReceiverId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Messages_Users_SenderId",
+                        column: x => x.SenderId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TargetUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    FromUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Seen = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Notifications_Users_FromUserId",
+                        column: x => x.FromUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Notifications_Users_TargetUserId",
+                        column: x => x.TargetUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Posts",
                 columns: table => new
                 {
@@ -113,28 +222,28 @@ namespace SocialNetwork.DataAccess.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "RefreshTokens",
+                name: "RefreshToken",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Token = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     JwtId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     IsUsed = table.Column<bool>(type: "bit", nullable: false),
                     IsRevoked = table.Column<bool>(type: "bit", nullable: false),
+                    ExpiredAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ExpiredAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
+                    table.PrimaryKey("PK_RefreshToken", x => x.Id);
                     table.ForeignKey(
                         name: "FK_RefreshToken_User",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -241,8 +350,7 @@ namespace SocialNetwork.DataAccess.Migrations
                         name: "FK_PostComment_User",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_PostComments_Posts_PostId",
                         column: x => x.PostId,
@@ -269,8 +377,7 @@ namespace SocialNetwork.DataAccess.Migrations
                         name: "FK_PostImage_Image",
                         column: x => x.PostId,
                         principalTable: "Posts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -280,8 +387,10 @@ namespace SocialNetwork.DataAccess.Migrations
                     PostId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ReactionId = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -310,8 +419,10 @@ namespace SocialNetwork.DataAccess.Migrations
                     CommentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ReactionId = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -335,15 +446,15 @@ namespace SocialNetwork.DataAccess.Migrations
 
             migrationBuilder.InsertData(
                 table: "Reactions",
-                columns: new[] { "Id", "CreatedAt", "Name", "UpdatedAt" },
+                columns: new[] { "Id", "CreatedAt", "Name", "Status", "UpdatedAt" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9136), "Like", new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9134) },
-                    { 2, new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9138), "Love", new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9138) },
-                    { 3, new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9139), "Haha", new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9138) },
-                    { 4, new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9139), "Wow", new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9139) },
-                    { 5, new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9140), "Sad", new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9140) },
-                    { 6, new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9141), "Angry", new DateTime(2023, 11, 27, 14, 10, 31, 864, DateTimeKind.Utc).AddTicks(9140) }
+                    { 1, new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5553), "Like", 1, new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5556) },
+                    { 2, new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5562), "Love", 1, new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5563) },
+                    { 3, new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5630), "Haha", 1, new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5630) },
+                    { 4, new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5632), "Wow", 1, new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5633) },
+                    { 5, new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5634), "Sad", 1, new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5635) },
+                    { 6, new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5639), "Angry", 1, new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5639) }
                 });
 
             migrationBuilder.InsertData(
@@ -351,8 +462,8 @@ namespace SocialNetwork.DataAccess.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "088de2eb-26a2-49d0-945f-f85472e7752d", "fbd2a443-ea5c-480a-a856-910900f0e530", "Administrator", "ADMINISTRATOR" },
-                    { "9ee648c6-0f35-4fb8-a8cf-2b66f153e70a", "55031e76-a283-47d4-8916-63f3c003cc9f", "User", "USER" }
+                    { "4fbeab8d-c6e2-41d4-9309-b967115bad10", "b963d637-6402-48f6-950c-5be8387395cb", "User", "USER" },
+                    { "8a1f7449-b8d2-4992-8fe2-874ff293927d", "9d10d7ed-f882-4df9-94bc-7fd77a7fc45a", "Administrator", "ADMINISTRATOR" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -364,6 +475,41 @@ namespace SocialNetwork.DataAccess.Migrations
                 name: "IX_CommentReactions_ReactionId",
                 table: "CommentReactions",
                 column: "ReactionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Friendships_RequestUserId",
+                table: "Friendships",
+                column: "RequestUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Friendships_TargetUserId",
+                table: "Friendships",
+                column: "TargetUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_MessageTypeId",
+                table: "Messages",
+                column: "MessageTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_ReceiverId",
+                table: "Messages",
+                column: "ReceiverId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Messages_SenderId",
+                table: "Messages",
+                column: "SenderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_FromUserId",
+                table: "Notifications",
+                column: "FromUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_TargetUserId",
+                table: "Notifications",
+                column: "TargetUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PostComments_PostId",
@@ -396,14 +542,8 @@ namespace SocialNetwork.DataAccess.Migrations
                 column: "AuthorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Reactions_Name",
-                table: "Reactions",
-                column: "Name",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RefreshTokens_UserId",
-                table: "RefreshTokens",
+                name: "IX_RefreshToken_UserId",
+                table: "RefreshToken",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -452,13 +592,22 @@ namespace SocialNetwork.DataAccess.Migrations
                 name: "CommentReactions");
 
             migrationBuilder.DropTable(
+                name: "Friendships");
+
+            migrationBuilder.DropTable(
+                name: "Messages");
+
+            migrationBuilder.DropTable(
+                name: "Notifications");
+
+            migrationBuilder.DropTable(
                 name: "PostImages");
 
             migrationBuilder.DropTable(
                 name: "PostReactions");
 
             migrationBuilder.DropTable(
-                name: "RefreshTokens");
+                name: "RefreshToken");
 
             migrationBuilder.DropTable(
                 name: "RoleClaims");
@@ -477,6 +626,9 @@ namespace SocialNetwork.DataAccess.Migrations
 
             migrationBuilder.DropTable(
                 name: "PostComments");
+
+            migrationBuilder.DropTable(
+                name: "MessageTypes");
 
             migrationBuilder.DropTable(
                 name: "Reactions");

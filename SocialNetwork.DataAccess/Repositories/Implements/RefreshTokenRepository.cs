@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
 {
-    public class RefreshTokenRepository : GenericRepository<RefreshToken>, IRefreshTokenRepository
+    public class RefreshTokenRepository : GenericRepository<RefreshToken, Guid>, IRefreshTokenRepository
     {
         public RefreshTokenRepository(ILogger logger, AppDbContext context) : base(logger, context)
         {

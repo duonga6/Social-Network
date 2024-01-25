@@ -1,8 +1,9 @@
 ﻿namespace SocialNetwork.DataAccess.Utilities.Enum
 {
-    public enum MessageType
+    public enum MessageEnum
     {
         Text = 0,
-        Media = 1
+        Image = 1,
+        Video = 2,
     }
 }

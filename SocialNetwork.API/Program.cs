@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using SocialNetwork.API.Extensions;
+using SocialNetwork.API.Infrastructure.Extensions;
 using SocialNetwork.Business;
 using SocialNetwork.DataAccess;
 using SocialNetwork.DataAccess.Context;
@@ -88,7 +88,7 @@ app.UseCors(options =>
 
 app.UseStaticFiles();
 
-//app.UseHttpsRedirection();
+app.UseCustomExceptionMiddleware();
 
 app.UseAuthentication();
 app.UseAuthorization();

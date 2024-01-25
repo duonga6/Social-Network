@@ -12,8 +12,8 @@ using SocialNetwork.DataAccess.Context;
 namespace SocialNetwork.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20231209140737_update-user")]
-    partial class updateuser
+    [Migration("20240122160031_re-create-db")]
+    partial class recreatedb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -53,15 +53,15 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "74750a9b-e5a2-44b5-ba1b-9e438443c093",
-                            ConcurrencyStamp = "c20279aa-21f7-4549-8b2c-25a46006fa0e",
+                            Id = "8a1f7449-b8d2-4992-8fe2-874ff293927d",
+                            ConcurrencyStamp = "9d10d7ed-f882-4df9-94bc-7fd77a7fc45a",
                             Name = "Administrator",
                             NormalizedName = "ADMINISTRATOR"
                         },
                         new
                         {
-                            Id = "1e2be407-a045-49fb-8378-c0816d762a78",
-                            ConcurrencyStamp = "09afc23e-e431-422d-a028-ef2dc7009f44",
+                            Id = "4fbeab8d-c6e2-41d4-9309-b967115bad10",
+                            ConcurrencyStamp = "b963d637-6402-48f6-950c-5be8387395cb",
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -184,7 +184,13 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("ReactionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -196,7 +202,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("ReactionId");
 
-                    b.ToTable("CommentReactions", (string)null);
+                    b.ToTable("CommentReactions");
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Friendship", b =>
@@ -234,6 +240,116 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.ToTable("Friendships");
                 });
 
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Message", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MessageTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReceiverId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MessageTypeId");
+
+                    b.HasIndex("ReceiverId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.MessageType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MessageTypes");
+                });
+
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FromUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("Seen")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TargetUserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FromUserId");
+
+                    b.HasIndex("TargetUserId");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Post", b =>
                 {
                     b.Property<Guid>("Id")
@@ -265,7 +381,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("AuthorId");
 
-                    b.ToTable("Posts", (string)null);
+                    b.ToTable("Posts");
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostComment", b =>
@@ -300,7 +416,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PostComments", (string)null);
+                    b.ToTable("PostComments");
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostImage", b =>
@@ -330,7 +446,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("PostImages", (string)null);
+                    b.ToTable("PostImages");
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostReaction", b =>
@@ -344,7 +460,13 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("ReactionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -356,7 +478,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PostReactions", (string)null);
+                    b.ToTable("PostReactions");
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Reaction", b =>
@@ -374,68 +496,72 @@ namespace SocialNetwork.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Reactions", (string)null);
+                    b.ToTable("Reactions");
 
                     b.HasData(
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2023, 12, 9, 14, 7, 36, 804, DateTimeKind.Utc).AddTicks(1645),
+                            CreatedAt = new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5553),
                             Name = "Like",
-                            UpdatedAt = new DateTime(2023, 12, 9, 14, 7, 36, 804, DateTimeKind.Utc).AddTicks(1642)
+                            Status = 1,
+                            UpdatedAt = new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5556)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2023, 12, 9, 14, 7, 36, 804, DateTimeKind.Utc).AddTicks(1646),
+                            CreatedAt = new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5562),
                             Name = "Love",
-                            UpdatedAt = new DateTime(2023, 12, 9, 14, 7, 36, 804, DateTimeKind.Utc).AddTicks(1646)
+                            Status = 1,
+                            UpdatedAt = new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5563)
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2023, 12, 9, 14, 7, 36, 804, DateTimeKind.Utc).AddTicks(1647),
+                            CreatedAt = new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5630),
                             Name = "Haha",
-                            UpdatedAt = new DateTime(2023, 12, 9, 14, 7, 36, 804, DateTimeKind.Utc).AddTicks(1647)
+                            Status = 1,
+                            UpdatedAt = new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5630)
                         },
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2023, 12, 9, 14, 7, 36, 804, DateTimeKind.Utc).AddTicks(1648),
+                            CreatedAt = new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5632),
                             Name = "Wow",
-                            UpdatedAt = new DateTime(2023, 12, 9, 14, 7, 36, 804, DateTimeKind.Utc).AddTicks(1648)
+                            Status = 1,
+                            UpdatedAt = new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5633)
                         },
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2023, 12, 9, 14, 7, 36, 804, DateTimeKind.Utc).AddTicks(1649),
+                            CreatedAt = new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5634),
                             Name = "Sad",
-                            UpdatedAt = new DateTime(2023, 12, 9, 14, 7, 36, 804, DateTimeKind.Utc).AddTicks(1648)
+                            Status = 1,
+                            UpdatedAt = new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5635)
                         },
                         new
                         {
                             Id = 6,
-                            CreatedAt = new DateTime(2023, 12, 9, 14, 7, 36, 804, DateTimeKind.Utc).AddTicks(1649),
+                            CreatedAt = new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5639),
                             Name = "Angry",
-                            UpdatedAt = new DateTime(2023, 12, 9, 14, 7, 36, 804, DateTimeKind.Utc).AddTicks(1649)
+                            Status = 1,
+                            UpdatedAt = new DateTime(2024, 1, 22, 16, 0, 30, 666, DateTimeKind.Utc).AddTicks(5639)
                         });
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.RefreshToken", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -454,10 +580,16 @@ namespace SocialNetwork.DataAccess.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -467,7 +599,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens", (string)null);
+                    b.ToTable("RefreshToken");
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.User", b =>
@@ -479,6 +611,9 @@ namespace SocialNetwork.DataAccess.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AvatarUrl")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -501,6 +636,9 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -658,6 +796,52 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.Navigation("TargetUser");
                 });
 
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Message", b =>
+                {
+                    b.HasOne("SocialNetwork.DataAccess.Entities.MessageType", "MessageType")
+                        .WithMany("Messages")
+                        .HasForeignKey("MessageTypeId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("SocialNetwork.DataAccess.Entities.User", "Receiver")
+                        .WithMany("MessageReceived")
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("SocialNetwork.DataAccess.Entities.User", "Sender")
+                        .WithMany("MessagesSent")
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("MessageType");
+
+                    b.Navigation("Receiver");
+
+                    b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Notification", b =>
+                {
+                    b.HasOne("SocialNetwork.DataAccess.Entities.User", "FromUser")
+                        .WithMany("NotificationsReceive")
+                        .HasForeignKey("FromUserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("SocialNetwork.DataAccess.Entities.User", "TargetUser")
+                        .WithMany("NotificationsSend")
+                        .HasForeignKey("TargetUserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("FromUser");
+
+                    b.Navigation("TargetUser");
+                });
+
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Post", b =>
                 {
                     b.HasOne("SocialNetwork.DataAccess.Entities.User", "Author")
@@ -744,6 +928,11 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.MessageType", b =>
+                {
+                    b.Navigation("Messages");
+                });
+
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Post", b =>
                 {
                     b.Navigation("Images");
@@ -770,6 +959,14 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.Navigation("Friendships1");
 
                     b.Navigation("Friendships2");
+
+                    b.Navigation("MessageReceived");
+
+                    b.Navigation("MessagesSent");
+
+                    b.Navigation("NotificationsReceive");
+
+                    b.Navigation("NotificationsSend");
 
                     b.Navigation("PostComments");
 

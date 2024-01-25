@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Friendship.Requests;
@@ -17,7 +18,6 @@ using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
-using SocialNetwork.DataAccess.Utilities.Enum;
 using SocialNetwork.DataAccess.Utilities.Roles;
 using System.Linq.Expressions;
 
@@ -32,6 +32,7 @@ namespace SocialNetwork.Business.Services.Implements
         private readonly IFriendshipService _friendshipService;
         private readonly IMessageService _messageService;
         private readonly INotificationService _notificationService;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
         public UserService(IUnitOfWork unitOfWork,
                            IMapper mapper,
@@ -42,7 +43,8 @@ namespace SocialNetwork.Business.Services.Implements
                            IPostService postService,
                            IFriendshipService friendshipService,
                            IMessageService messageService,
-                           INotificationService notificationService) : base(unitOfWork, mapper, logger)
+                           INotificationService notificationService,
+                           RoleManager<IdentityRole> roleManager) : base(unitOfWork, mapper, logger)
         {
             _userManager = userManager;
             _tokenService = tokenService;
@@ -51,6 +53,7 @@ namespace SocialNetwork.Business.Services.Implements
             _friendshipService = friendshipService;
             _messageService = messageService;
             _notificationService = notificationService;
+            _roleManager = roleManager;
         }
 
         #region Auth + User info
@@ -94,7 +97,9 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, result.GetErrors());
             }
 
-            return new DataResponse<GetUserResponse>(_mapper.Map<GetUserResponse>(user), 201, Messages.RegistrationSuccessfully);
+            var token = await _tokenService.CreateToken(user);
+
+            return new DataResponse<Token>(token, 201, Messages.RegistrationSuccessfully);
         }
 
         public async Task<IResponse> Login(LoginRequest request)
@@ -122,7 +127,7 @@ namespace SocialNetwork.Business.Services.Implements
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
             {
-                return new ErrorResponse(404, Messages.NotFounb("User"));
+                return new ErrorResponse(404, Messages.NotFound("User"));
             }    
 
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -134,7 +139,7 @@ namespace SocialNetwork.Business.Services.Implements
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
             {
-                return new ErrorResponse(404, Messages.NotFounb("User"));
+                return new ErrorResponse(404, Messages.NotFound("User"));
             }    
 
             var result = await _userManager.ResetPasswordAsync(user, request.Code, request.Password);
@@ -161,7 +166,7 @@ namespace SocialNetwork.Business.Services.Implements
             var user = await _userManager.FindByIdAsync(requestUserId);
             if (user == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }
 
             return new DataResponse<GetUserResponse>(_mapper.Map<GetUserResponse>(user), 200);
@@ -185,7 +190,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.UpdateError);
             }
 
-            var userUpdated = await _unitOfWork.UserRepository.FindById(requestUserId);
+            var userUpdated = await _userManager.FindByIdAsync(requestUserId);
 
             return new DataResponse<GetUserResponse>(_mapper.Map<GetUserResponse>(userUpdated), 204, Messages.UpdatedSuccessfully);
 
@@ -201,7 +206,7 @@ namespace SocialNetwork.Business.Services.Implements
             var user = await _userManager.FindByIdAsync(requestUserId);
             if (user == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }
 
             await _unitOfWork.UserRepository.Delete(user.Id);
@@ -209,7 +214,7 @@ namespace SocialNetwork.Business.Services.Implements
             var result = await _unitOfWork.CompleteAsync();
             if (!result)
             {
-                return new ErrorResponse(400, Messages.STWroong);
+                return new ErrorResponse(400, Messages.STWrong);
             }
 
             return new SuccessResponse(Messages.DeletedSuccessfully, 204);
@@ -217,10 +222,10 @@ namespace SocialNetwork.Business.Services.Implements
 
         public async Task<IResponse> ChangePassword(string loggedUserId, ChangePasswordRequest request)
         {
-            var user = await _unitOfWork.UserRepository.FindById(loggedUserId);
+            var user = await _userManager.FindByIdAsync(loggedUserId);
             if (user == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }    
 
             if (user.Email != request.Email)
@@ -248,7 +253,7 @@ namespace SocialNetwork.Business.Services.Implements
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return new ErrorResponse(404, Messages.NotFounb("User"));
+                return new ErrorResponse(404, Messages.NotFound("User"));
             }
 
             if (!(await CheckRoleValid(request.Roles)))
@@ -270,7 +275,7 @@ namespace SocialNetwork.Business.Services.Implements
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return new ErrorResponse(404, Messages.NotFounb("User"));
+                return new ErrorResponse(404, Messages.NotFound("User"));
             }
 
             var roles = await _userManager.GetRolesAsync(user);
@@ -294,7 +299,7 @@ namespace SocialNetwork.Business.Services.Implements
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return new ErrorResponse(404, Messages.NotFounb("User"));
+                return new ErrorResponse(404, Messages.NotFound("User"));
             }
             
             if (!(await CheckRoleValid(request.Roles)))
@@ -318,7 +323,7 @@ namespace SocialNetwork.Business.Services.Implements
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
             {
-                return new ErrorResponse(404, Messages.NotFounb("User"));
+                return new ErrorResponse(404, Messages.NotFound("User"));
             }
 
             var result = await _userManager.ConfirmEmailAsync(user, request.Code);
@@ -335,7 +340,7 @@ namespace SocialNetwork.Business.Services.Implements
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
             {
-                return new ErrorResponse(404, Messages.NotFounb("User"));
+                return new ErrorResponse(404, Messages.NotFound("User"));
             }
 
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -347,7 +352,7 @@ namespace SocialNetwork.Business.Services.Implements
         private async Task<bool> CheckAccess(string loggedUserId, string requestUserId)
         {
             var requestUser = await _userManager.FindByIdAsync(requestUserId);
-            var loggedUser = await _userManager.FindByEmailAsync(loggedUserId);
+            var loggedUser = await _userManager.FindByIdAsync(loggedUserId);
 
             if (requestUser == null || loggedUser == null)
             {
@@ -364,7 +369,7 @@ namespace SocialNetwork.Business.Services.Implements
 
         private async Task<bool> CheckRoleValid(List<string> inputRoles)
         {
-            var allRoles = (await _unitOfWork.RoleRepository.GetAll()).Select(r => r.Name).ToList();
+            var allRoles = await _roleManager.Roles.Select(x => x.Name).ToListAsync();
             if (inputRoles.Any(r => !allRoles.Contains(r)))
             {
                 return false;
@@ -398,7 +403,7 @@ namespace SocialNetwork.Business.Services.Implements
             var post = await _unitOfWork.PostRepository.GetById(postId);
             if (post == null || post.AuthorId != requestUserId)
             {
-                return new ErrorResponse(404, Messages.NotFounb("Post"));
+                return new ErrorResponse(404, Messages.NotFound("Post"));
             }
 
             return new DataResponse<GetPostResponse>(_mapper.Map<GetPostResponse>(post), 200);
@@ -454,7 +459,7 @@ namespace SocialNetwork.Business.Services.Implements
             var post = await _unitOfWork.PostRepository.FindBy(p => p.Id == postId && p.AuthorId == requestUserId);
             if (post == null)
             {
-                return new ErrorResponse(404, Messages.NotFounb("Post"));
+                return new ErrorResponse(404, Messages.NotFound("Post"));
             }
 
             await _unitOfWork.PostRepository.Delete(postId);
@@ -470,8 +475,8 @@ namespace SocialNetwork.Business.Services.Implements
 
         private async Task<bool> CheckAccessPost(string loggedUserId, string requestUserId)
         {
-            var requestUser = await _unitOfWork.UserRepository.FindById(requestUserId);
-            var loggedUser = await _unitOfWork.UserRepository.FindById(loggedUserId);
+            var requestUser = await _userManager.FindByIdAsync(requestUserId);
+            var loggedUser = await _userManager.FindByIdAsync(loggedUserId);
 
             if (requestUser == null || loggedUser == null) return false;
 
@@ -485,7 +490,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return true;
             }
 
-            return await _unitOfWork.FriendshipRepository.IsFriend(requestUserId, loggedUserId);
+            return await CheckFriend(loggedUserId, requestUserId);
         }
 
         #endregion
@@ -623,13 +628,13 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.BadRequest);
             }
 
-            return await _messageService.DeleteMessage(requestUserId, id);
+            return await _messageService.RevokeMessage(requestUserId, id);
         }
 
         private async Task<bool> CheckOwnerOrAdminAsync(string loggedUserId, string requestUserId)
         {
-            var requestUser = await _unitOfWork.UserRepository.FindById(loggedUserId);
-            var targetUser = await _unitOfWork.UserRepository.FindById(requestUserId);
+            var requestUser = await _userManager.FindByIdAsync(loggedUserId);
+            var targetUser = await _userManager.FindByIdAsync(requestUserId);
 
             if (requestUser == null || targetUser == null)
             {
@@ -682,5 +687,11 @@ namespace SocialNetwork.Business.Services.Implements
 
         #endregion
 
+    
+        private async Task<bool> CheckFriend(string userId1, string userId2)
+        {
+            var result = await _unitOfWork.FriendshipRepository.FindOneBy(x => x.RequestUserId == userId1 && x.TargetUserId == userId2 || x.RequestUserId == userId1 && x.TargetUserId == userId2);
+            return result != null;
+        }
     }
 }

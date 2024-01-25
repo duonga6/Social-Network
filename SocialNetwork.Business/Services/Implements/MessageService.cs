@@ -22,13 +22,13 @@ namespace SocialNetwork.Business.Services.Implements
             _userManager = userManager;
         }
 
-        public async Task<IResponse> DeleteMessage(string requestUserId, Guid id)
+        public async Task<IResponse> RevokeMessage(string requestUserId, Guid id)
         {
             var message = await _unitOfWork.MessageRepository.GetById(id);
 
             if (message == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }    
 
             if (message.SenderId != requestUserId)
@@ -41,10 +41,10 @@ namespace SocialNetwork.Business.Services.Implements
 
             if (!result)
             {
-                return new ErrorResponse(400, Messages.DeleteError);
+                return new ErrorResponse(500, Messages.STWrong);
             }
 
-            return new SuccessResponse(Messages.DeletedSuccessfully, 204);
+            return new SuccessResponse(Messages.MessageRevoked, 204);
 
         }
 
@@ -101,7 +101,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             if (!result)
             {
-                return new ErrorResponse(501, Messages.STWroong);
+                return new ErrorResponse(501, Messages.STWrong);
             }
 
             return new DataResponse<GetMessageResponse>(_mapper.Map<GetMessageResponse>(addEntity), 200, Messages.MessageSent);
@@ -113,7 +113,7 @@ namespace SocialNetwork.Business.Services.Implements
             var message = await _unitOfWork.MessageRepository.GetById(id);
             if (message == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }    
 
             if (!await CheckFriend(requestUserId, message.SenderId) && !await CheckFriend(requestUserId, message.ReceiverId))
@@ -125,6 +125,12 @@ namespace SocialNetwork.Business.Services.Implements
             
         }
 
-        private async Task<bool> CheckFriend(string requestUserId, string targetUserId) => await _unitOfWork.FriendshipRepository.IsFriend(requestUserId, targetUserId);
+        private async Task<bool> CheckFriend(string requestUserId, string targetUserId)
+        {
+            var result = await _unitOfWork.FriendshipRepository
+                .FindOneBy(x => x.RequestUserId == requestUserId && x.TargetUserId == targetUserId || x.RequestUserId == targetUserId && x.TargetUserId == requestUserId);
+
+            return result != null;
+        }
     }
 }

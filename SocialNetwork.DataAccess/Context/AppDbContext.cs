@@ -22,8 +22,6 @@ namespace SocialNetwork.DataAccess.Context
                     entityType.SetTableName(tableName[6..]);
                 }
             }
-
-            builder.AddDefaultReactionTable();
         }
 
         public DbSet<Post> Posts { get; set; }
@@ -35,5 +33,8 @@ namespace SocialNetwork.DataAccess.Context
         public DbSet<Friendship> Friendships { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<MessageType> MessageTypes { set; get; }
+        public DbSet<Gender> Genders { set; get; }
+        public DbSet<FriendshipType> FriendshipTypes { set; get; }
     }
 }

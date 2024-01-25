@@ -24,33 +24,36 @@ namespace SocialNetwork.Business.Services.Implements
         private readonly UserManager<User> _userManager;
         private readonly INotificationService _notificationService;
         private readonly IPostCommentService _postCommentService;
+        private readonly IFriendshipService _friendshipService;
 
         public PostService(IUnitOfWork unitOfWork,
                            IMapper mapper,
                            ILogger<PostService> logger,
                            INotificationService notificationService,
                            UserManager<User> userManager,
-                           IPostCommentService postCommentService) : base(unitOfWork, mapper, logger)
+                           IPostCommentService postCommentService,
+                           IFriendshipService friendshipService) : base(unitOfWork, mapper, logger)
         {
             _notificationService = notificationService;
             _userManager = userManager;
             _postCommentService = postCommentService;
+            _friendshipService = friendshipService;
         }
 
         #region Post
         public async Task<IResponse> GetAll(string requestUserId, string? searchString, int pageSize, int pageNumber)
         {
-            if (await _unitOfWork.UserRepository.FindById(requestUserId) == null)
+            if (await _userManager.FindByIdAsync(requestUserId) == null)
             {
-                return new ErrorResponse(404, Messages.NotFounb("User"));
+                return new ErrorResponse(404, Messages.NotFound("User"));
             }
 
             Expression<Func<Post, bool>> filter;
             Expression<Func<Post, bool>> active = x => x.Status == 1;
             Expression<Func<Post, bool>> search = x => x.Title.Contains(searchString!) || x.Content.Contains(searchString!) || (x.Author.FirstName + x.Author.LastName).Contains(searchString!);
             Expression<Func<Post, bool>> isFriend = x => 
-            (x.Author.Friendships1.Any(m => (m.RequestUserId == requestUserId || m.TargetUserId == requestUserId) && m.FriendStatus == FriendshipStatus.Accepted) || 
-            x.Author.Friendships2.Any(m => (m.RequestUserId == requestUserId || m.TargetUserId == requestUserId) && m.FriendStatus == FriendshipStatus.Accepted));
+            (x.Author.Friendships1.Any(m => (m.RequestUserId == requestUserId || m.TargetUserId == requestUserId) && m.FriendshipTypeId == (int)FriendshipEnum.Accepted) || 
+            x.Author.Friendships2.Any(m => (m.RequestUserId == requestUserId || m.TargetUserId == requestUserId) && m.FriendshipTypeId == (int)FriendshipEnum.Accepted));
 
             if (await CheckAdmin(requestUserId))
             {
@@ -96,10 +99,10 @@ namespace SocialNetwork.Business.Services.Implements
             var post = await _unitOfWork.PostRepository.GetById(id);
             if (post == null)
             {
-                return new ErrorResponse(404, Messages.NotFounb("Post"));
+                return new ErrorResponse(404, Messages.NotFound("Post"));
             }
 
-            if (!await _unitOfWork.FriendshipRepository.IsFriend(requestingUserId, post.AuthorId))
+            if (!await _friendshipService.IsFriend(requestingUserId, post.AuthorId))
             {
                 return new ErrorResponse(403, Messages.NotFriend);
             }
@@ -109,10 +112,10 @@ namespace SocialNetwork.Business.Services.Implements
      
         public async Task<IResponse> Create(CreatePostRequest request)
         {
-            var user = await _unitOfWork.UserRepository.FindById(request.AuthorId);
+            var user = await _userManager.FindByIdAsync(request.AuthorId);
             if (user == null)
             {
-                return new ErrorResponse(404, Messages.NotFounb("User"));
+                return new ErrorResponse(404, Messages.NotFound("User"));
             }
 
             var addEntity = _mapper.Map<Post>(request);
@@ -124,7 +127,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            await _notificationService.CreateNotification(addEntity.AuthorId, "", TypeNotification.Post);
+            await _notificationService.CreateNotification(addEntity.AuthorId, "", NotificationEnum.Post);
 
             return new DataResponse<GetPostResponse>(_mapper.Map<GetPostResponse>(addEntity), 200, Messages.CreatedSuccessfully);
         }
@@ -137,7 +140,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             if (!await _unitOfWork.PostRepository.Update(postUpdate))
             {
-                return new ErrorResponse(404, Messages.NotFounb("Post"));
+                return new ErrorResponse(404, Messages.NotFound("Post"));
             }
             
             if (!await CheckPermission(requestingUserId, postUpdate.AuthorId))
@@ -149,7 +152,7 @@ namespace SocialNetwork.Business.Services.Implements
             {
                 if (!await _unitOfWork.PostImageRepository.Delete(item))
                 {
-                    return new ErrorResponse(404, Messages.NotFounb("Image delete"));
+                    return new ErrorResponse(404, Messages.NotFound("Image delete"));
                 }
             }
 
@@ -158,7 +161,7 @@ namespace SocialNetwork.Business.Services.Implements
                 var updateImage = _mapper.Map<PostImage>(item);
                 if (!await _unitOfWork.PostImageRepository.Update(updateImage))
                 {
-                    return new ErrorResponse(404, Messages.NotFounb("Image update"));
+                    return new ErrorResponse(404, Messages.NotFound("Image update"));
                 }
             }
 
@@ -186,7 +189,7 @@ namespace SocialNetwork.Business.Services.Implements
             var post = await _unitOfWork.PostRepository.GetById(postId);
             if (post == null)
             {
-                return new ErrorResponse(404, Messages.NotFounb("Post"));
+                return new ErrorResponse(404, Messages.NotFound("Post"));
             }
 
             if (!await CheckPermission(requestingUserId, post.AuthorId))
@@ -207,8 +210,8 @@ namespace SocialNetwork.Business.Services.Implements
      
         private async Task<bool> CheckPermission(string requestingUserId, string targetUserId)
         {
-            var requestUser = await _unitOfWork.UserRepository.FindById(requestingUserId);
-            var targetUser = await _unitOfWork.UserRepository.FindById(targetUserId);
+            var requestUser = await _userManager.FindByIdAsync(requestingUserId);
+            var targetUser = await _userManager.FindByIdAsync(targetUserId);
 
             if (requestUser == null || targetUser == null)
             {
@@ -227,7 +230,7 @@ namespace SocialNetwork.Business.Services.Implements
 
         private async Task<bool> CheckAdmin(string requestUserId)
         {
-            var user = await _unitOfWork.UserRepository.FindById(requestUserId);
+            var user = await _userManager.FindByIdAsync(requestUserId);
             if (user == null) return false;
 
             return await _userManager.IsInRoleAsync(user, RoleName.Administrator);
@@ -245,7 +248,7 @@ namespace SocialNetwork.Business.Services.Implements
         {
             var post = await _unitOfWork.PostRepository.GetById(postId);
 
-            if (post == null) return new ErrorResponse(404, Messages.NotFound);
+            if (post == null) return new ErrorResponse(404, Messages.NotFound());
 
             if (!await CheckPermissionWithFriendAccess(requestUserId, post.AuthorId))
             {
@@ -255,7 +258,7 @@ namespace SocialNetwork.Business.Services.Implements
             var result = await _unitOfWork.PostCommentRepository.FindOneBy(x => x.PostId == postId && x.Id == commentId && x.Status == 1);
             if (result == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }
 
             return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(result), 200);
@@ -265,7 +268,7 @@ namespace SocialNetwork.Business.Services.Implements
         {
             var post = await _unitOfWork.PostRepository.GetById(postId);
 
-            if (post == null) return new ErrorResponse(404, Messages.NotFound);
+            if (post == null) return new ErrorResponse(404, Messages.NotFound());
 
             if (!await CheckPermissionWithFriendAccess(requestUserId, post.AuthorId))
             {
@@ -284,7 +287,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            await _notificationService.CreateNotification(requestUserId, post.AuthorId, TypeNotification.PostComment);
+            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.PostComment);
 
             return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(addEntity), 200, Messages.CreatedSuccessfully);
 
@@ -296,7 +299,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             if (comment == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }
 
             if (comment.UserId != requestUserId)
@@ -321,7 +324,7 @@ namespace SocialNetwork.Business.Services.Implements
             var entity = await _unitOfWork.PostCommentRepository.GetById(commentId, false);
             if (entity == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }
 
             if (!await CheckOwnerOrAdmin(requestUserId, entity.UserId))
@@ -344,8 +347,8 @@ namespace SocialNetwork.Business.Services.Implements
 
         private async Task<bool> CheckPermissionWithFriendAccess(string requestingUserId, string targetUserId)
         {
-            var requestUser = await _unitOfWork.UserRepository.FindById(requestingUserId);
-            var targetUser = await _unitOfWork.UserRepository.FindById(targetUserId);
+            var requestUser = await _userManager.FindByIdAsync(requestingUserId);
+            var targetUser = await _userManager.FindByIdAsync(targetUserId);
 
             if (requestUser == null || targetUser == null)
             {
@@ -359,7 +362,7 @@ namespace SocialNetwork.Business.Services.Implements
             }
 
             // Is friend
-            if (await _unitOfWork.FriendshipRepository.IsFriend(requestingUserId, targetUserId))
+            if (await _friendshipService.IsFriend(requestingUserId, targetUserId))
             {
                 return true;
             }
@@ -370,8 +373,8 @@ namespace SocialNetwork.Business.Services.Implements
         
         private async Task<bool> CheckOwnerOrAdmin(string requestingUserId, string targetUserId)
         {
-            var requestUser = await _unitOfWork.UserRepository.FindById(requestingUserId);
-            var targetUser = await _unitOfWork.UserRepository.FindById(targetUserId);
+            var requestUser = await _userManager.FindByIdAsync(requestingUserId);
+            var targetUser = await _userManager.FindByIdAsync(targetUserId);
 
             if (requestUser == null || targetUser == null)
             {
@@ -398,7 +401,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             if (post == null)
             {
-                return new ErrorResponse(404, Messages.NotFounb("Post"));
+                return new ErrorResponse(404, Messages.NotFound("Post"));
             }    
 
             if (!await CheckPermissionWithFriendAccess(requestUserId, post.AuthorId))
@@ -424,7 +427,7 @@ namespace SocialNetwork.Business.Services.Implements
             var post = await _unitOfWork.PostRepository.GetById(postId);
             if (post == null)
             {
-                return new ErrorResponse(404, Messages.NotFounb("Post"));
+                return new ErrorResponse(404, Messages.NotFound("Post"));
             }
 
             if (!await CheckPermissionWithFriendAccess(requestUserId, post.AuthorId))
@@ -436,7 +439,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             if (reaction == null)
             {
-                return new ErrorResponse(404, Messages.NotFounb("Reaction"));
+                return new ErrorResponse(404, Messages.NotFound("Reaction"));
             } 
 
             return new DataResponse<GetPostReactionResponse>(_mapper.Map<GetPostReactionResponse>(reaction), 200);
@@ -448,7 +451,7 @@ namespace SocialNetwork.Business.Services.Implements
             var post = await _unitOfWork.PostRepository.GetById(postId);
             if (post == null)
             {
-                return new ErrorResponse(404, Messages.NotFounb("Post"));
+                return new ErrorResponse(404, Messages.NotFound("Post"));
             }    
 
             if (!await CheckPermissionWithFriendAccess(requestUserId, post.AuthorId))
@@ -472,7 +475,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            await _notificationService.CreateNotification(requestUserId, post.AuthorId, TypeNotification.PostReaction);
+            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.PostReaction);
 
             var entityAdded = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId, entity.ReactionId);
 
@@ -484,7 +487,7 @@ namespace SocialNetwork.Business.Services.Implements
             var checkExits = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId, reactionId);
             if (checkExits == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }    
 
             var entity = _mapper.Map<PostReaction>(request);
@@ -493,7 +496,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             if (!await _unitOfWork.PostReactionRepository.Update(entity))
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }    
 
             var result = await _unitOfWork.CompleteAsync();
@@ -512,7 +515,7 @@ namespace SocialNetwork.Business.Services.Implements
             var entity = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId, reactionId);
             if (entity == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }
 
             await _unitOfWork.PostReactionRepository.Delete(postId, requestUserId, reactionId);

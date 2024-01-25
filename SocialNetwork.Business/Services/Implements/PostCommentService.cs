@@ -8,7 +8,6 @@ using SocialNetwork.Business.DTOs.CommentReaction.Responses;
 using SocialNetwork.Business.DTOs.PostComment.Requests;
 using SocialNetwork.Business.DTOs.PostComment.Responses;
 using SocialNetwork.Business.Services.Interfaces;
-using SocialNetwork.Business.Utilities.Enum;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
 using SocialNetwork.DataAccess.Entities;
@@ -23,11 +22,13 @@ namespace SocialNetwork.Business.Services.Implements
     {
         private readonly UserManager<User> _userManager;
         private readonly INotificationService _notificationService;
+        private readonly IFriendshipService _friendshipService;
 
-        public PostCommentService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<PostCommentService> logger, UserManager<User> userManager, INotificationService notificationService) : base(unitOfWork, mapper, logger)
+        public PostCommentService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<PostCommentService> logger, UserManager<User> userManager, INotificationService notificationService, IFriendshipService friendshipService) : base(unitOfWork, mapper, logger)
         {
             _userManager = userManager;
             _notificationService = notificationService;
+            _friendshipService = friendshipService;
         }
 
         #region Comment
@@ -36,7 +37,7 @@ namespace SocialNetwork.Business.Services.Implements
             var post = await _unitOfWork.PostRepository.GetById(request.PostId);
             if (post == null) 
             { 
-                return new ErrorResponse(404, Messages.NotFounb("Post")); 
+                return new ErrorResponse(404, Messages.NotFound("Post")); 
             }
 
             if (!await CheckAccessPost(requestUserId, post.AuthorId))
@@ -56,7 +57,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            await _notificationService.CreateNotification(requestUserId, post.AuthorId, TypeNotification.PostComment);
+            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.PostComment);
 
             return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(addComment), 200, Messages.CreatedSuccessfully);
         }
@@ -67,7 +68,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             if (comment == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }    
 
             if (!await CheckOwnerComment(requestUserId, comment.UserId))
@@ -91,7 +92,7 @@ namespace SocialNetwork.Business.Services.Implements
             var post = await _unitOfWork.PostRepository.GetById(postId);
             if (post == null)
             {
-                return new ErrorResponse(404, Messages.NotFounb("Post"));
+                return new ErrorResponse(404, Messages.NotFound("Post"));
             }    
 
             if (!await CheckAccessPost(requestUserId, post.AuthorId))
@@ -126,7 +127,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             if (comment == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }    
 
             if (!await CheckAccessPost(requestUserId, comment.UserId))
@@ -144,7 +145,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             if (comment == null) 
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }
 
             if (!await CheckOwnerComment(requestUserId, comment.UserId))
@@ -167,8 +168,8 @@ namespace SocialNetwork.Business.Services.Implements
 
         private async Task<bool> CheckAccessPost(string requestUserId, string targetUserId)
         {
-            var requestUser = await _unitOfWork.UserRepository.FindById(targetUserId);
-            var targetUser = await _unitOfWork.UserRepository.FindById(requestUserId);
+            var requestUser = await _userManager.FindByIdAsync(targetUserId);
+            var targetUser = await _userManager.FindByIdAsync(requestUserId);
 
             if (requestUser == null || targetUser == null) return false;
 
@@ -180,7 +181,7 @@ namespace SocialNetwork.Business.Services.Implements
 
 
             // Is friend
-            if ( await _unitOfWork.FriendshipRepository.IsFriend(requestUserId, targetUserId))
+            if (await _friendshipService.IsFriend(requestUserId, targetUserId))
             {
                 return true;
             }
@@ -192,7 +193,7 @@ namespace SocialNetwork.Business.Services.Implements
         
         private async Task<bool> CheckOwnerComment(string requestUserId, string authorCommentId)
         {
-            var requestUser = await _unitOfWork.UserRepository.FindById(requestUserId);
+            var requestUser = await _userManager.FindByIdAsync(requestUserId);
             if (requestUser == null) return false;
 
             // Is owner comment
@@ -215,13 +216,13 @@ namespace SocialNetwork.Business.Services.Implements
             var comment = await _unitOfWork.PostCommentRepository.GetById(commentId);
             if (comment == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }
 
             var post = await _unitOfWork.PostRepository.GetById(comment.PostId);
             if (post == null)
             {
-                return new ErrorResponse(404, Messages.NotFounb("Post of comment"));
+                return new ErrorResponse(404, Messages.NotFound("Post of comment"));
             }    
 
             if (!await CheckAccessPost(requestUserId, post.AuthorId))
@@ -251,7 +252,7 @@ namespace SocialNetwork.Business.Services.Implements
             
             if (entity == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }    
 
             return new DataResponse<GetCommentReactionResponse>(_mapper.Map<GetCommentReactionResponse>(entity), 200);
@@ -263,7 +264,7 @@ namespace SocialNetwork.Business.Services.Implements
             var comment = await _unitOfWork.PostCommentRepository.GetById(commentId);
             if (comment == null)
             {
-                return new ErrorResponse(404, Messages.NotFounb("Comment"));
+                return new ErrorResponse(404, Messages.NotFound("Comment"));
             }    
 
             if (await CheckExitCommentReaction(commentId, requestUserId))
@@ -285,7 +286,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             var addedEntity = await _unitOfWork.CommentReactionRepository.GetById(commentId, requestUserId, addEntity.ReactionId);
 
-            await _notificationService.CreateNotification(requestUserId, comment.UserId, TypeNotification.PostCommentReaction);
+            await _notificationService.CreateNotification(requestUserId, comment.UserId, NotificationEnum.PostCommentReaction);
 
             return new DataResponse<GetCommentReactionResponse>(_mapper.Map<GetCommentReactionResponse>(addedEntity), 204, Messages.CreatedSuccessfully);
         }
@@ -295,7 +296,7 @@ namespace SocialNetwork.Business.Services.Implements
             var reaction = await _unitOfWork.CommentReactionRepository.GetById(commentId, requestUserId, request.ReactionId);
             if (reaction == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }
 
             _mapper.Map(request, reaction);
@@ -315,7 +316,7 @@ namespace SocialNetwork.Business.Services.Implements
             var reaction = await _unitOfWork.CommentReactionRepository.GetById(commentId, requestUserId, reactionId);
             if (reaction == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }
 
             await _unitOfWork.CommentReactionRepository.Delete(commentId, requestUserId, reaction.ReactionId);

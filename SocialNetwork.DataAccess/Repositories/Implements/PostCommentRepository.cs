@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
 {
-    public class PostCommentRepository : GenericRepository<PostComment>, IPostCommentRepository
+    public class PostCommentRepository : GenericRepository<PostComment, Guid>, IPostCommentRepository
     {
         public PostCommentRepository(ILogger logger, AppDbContext context) : base(logger, context)
         {
@@ -56,24 +56,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 throw;
             }
         }
-    
-        public override async Task<bool> Delete(Guid id)
-        {
-            try
-            {
-                var entity = await _dbSet.FirstOrDefaultAsync(x => x.Id == id && x.Status == 1);
-                if (entity == null) { return false; }
-
-                entity.Status = 0;
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "{Repo} error function Delete", typeof(PostCommentRepository));
-                throw;
-            }
-        }
-
+   
         public async Task<ICollection<PostComment>> GetByPost(Guid postId)
         {
             var comments = await _dbSet.AsNoTracking()

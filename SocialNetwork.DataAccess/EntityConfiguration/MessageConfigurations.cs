@@ -20,9 +20,15 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);
 
-            builder.Property(x => x.MessageType).IsRequired();
+            builder.HasOne(x => x.MessageType)
+                .WithMany(x => x.Messages)
+                .HasForeignKey(x => x.MessageTypeId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.NoAction);
 
             builder.Property(x => x.Content).IsRequired();
+
+            builder.Property(x => x.IsRevoked).IsRequired();
         }
     }
 }

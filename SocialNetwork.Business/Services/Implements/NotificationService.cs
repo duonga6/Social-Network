@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Notification.Responses;
@@ -14,19 +15,21 @@ namespace SocialNetwork.Business.Services.Implements
 {
     internal class NotificationService : BaseServices<NotificationService>, INotificationService
     {
-        public NotificationService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<NotificationService> logger) : base(unitOfWork, mapper, logger)
+        private readonly UserManager<User> _userManager;
+        public NotificationService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<NotificationService> logger, UserManager<User> userManager) : base(unitOfWork, mapper, logger)
         {
+            _userManager = userManager;
         }
 
-        public async Task<bool> CreateNotification(string fromUserId, string toUserId, TypeNotification type)
+        public async Task<bool> CreateNotification(string fromUserId, string toUserId, NotificationEnum type)
         {
             if (fromUserId == toUserId)
             {
                 return false;
             }
 
-            var fromUser = await _unitOfWork.UserRepository.FindById(fromUserId);
-            var toUser = await _unitOfWork.UserRepository.FindById(toUserId);
+            var fromUser = await _userManager.FindByIdAsync(fromUserId);
+            var toUser = await _userManager.FindByIdAsync(toUserId);
 
             if (fromUser == null || toUser == null)
             {
@@ -35,7 +38,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             switch (type)
             {
-                case TypeNotification.Post:
+                case NotificationEnum.Post:
                     {
                         string content = @$"""{fromUser.GetFullName()}"" đã đăng một bài viết.";
 
@@ -60,7 +63,7 @@ namespace SocialNetwork.Business.Services.Implements
                         var result = await _unitOfWork.CompleteAsync();
                         return result;
                     }
-                case TypeNotification.PostComment:
+                case NotificationEnum.PostComment:
                     {
                         string content = @$"""{fromUser.GetFullName()}"" đã đã bình luận về bài viết của bạn.";
 
@@ -77,7 +80,7 @@ namespace SocialNetwork.Business.Services.Implements
 
                         return result;
                     }
-                case TypeNotification.PostCommentReaction:
+                case NotificationEnum.PostCommentReaction:
                     {
                         string content = @$"""{fromUser.GetFullName()}"" đã bày tỏ cảm xúc về bình luận của bạn.";
 
@@ -94,7 +97,7 @@ namespace SocialNetwork.Business.Services.Implements
 
                         return result;
                     }
-                case TypeNotification.FriendRequest:
+                case NotificationEnum.FriendRequest:
                     {
                         string content = @$"""{fromUser.GetFullName()}"" đã gửi cho bạn lời mời kết bạn.";
 
@@ -110,7 +113,7 @@ namespace SocialNetwork.Business.Services.Implements
 
                         return result;
                     }
-                case TypeNotification.PostReaction:
+                case NotificationEnum.PostReaction:
                     {
                         string content = @$"""{fromUser.GetFullName()}"" đã bày tỏ cảm xúc về bài viết của bạn.";
 
@@ -161,11 +164,11 @@ namespace SocialNetwork.Business.Services.Implements
         public async Task<IResponse> SeenNotification(string userId, Guid id)
         {
             var notification = await _unitOfWork.NotificationRepository.GetById(id);
-            if (notification.TargetUserId != userId) return new ErrorResponse(404, Messages.NotFound);
+            if (notification.TargetUserId != userId) return new ErrorResponse(404, Messages.NotFound());
 
             if (notification.Seen)
             {
-                return new SuccessResponse(Messages.NotiHBSeen, 204);
+                return new SuccessResponse(Messages.NotificationSeen, 204);
             }    
 
             await _unitOfWork.NotificationRepository.Seen(id);
@@ -173,7 +176,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             if (!result)
             {
-                return new ErrorResponse(400, Messages.STWroong);
+                return new ErrorResponse(400, Messages.STWrong);
             }
 
             return new SuccessResponse(Messages.MessageSeen, 204);
@@ -186,7 +189,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             if (notification == null || notification.TargetUserId != userId)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }
 
             return new DataResponse<GetNotificationResponse>(_mapper.Map<GetNotificationResponse>(notification), 200);

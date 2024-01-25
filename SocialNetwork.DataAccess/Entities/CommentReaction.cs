@@ -1,6 +1,8 @@
-﻿namespace SocialNetwork.DataAccess.Entities
+﻿using SocialNetwork.DataAccess.Entities.Base;
+
+namespace SocialNetwork.DataAccess.Entities
 {
-    public class CommentReaction
+    public class CommentReaction : BaseEntity<Guid>
     {
         public int ReactionId { get; set; }
         public Reaction Reaction { get; set; }
@@ -10,8 +12,5 @@
 
         public string UserId { get; set; }
         public virtual User User { get; set; }
-
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
     }
 }

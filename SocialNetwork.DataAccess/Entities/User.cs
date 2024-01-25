@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using SocialNetwork.DataAccess.Utilities.Enum;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SocialNetwork.DataAccess.Entities
@@ -8,6 +9,7 @@ namespace SocialNetwork.DataAccess.Entities
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Address { get; set; }
+        public int Gender { set; get; }
         public string AvatarUrl { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
@@ -30,5 +32,6 @@ namespace SocialNetwork.DataAccess.Entities
         public virtual ICollection<Message> MessageReceived { set; get; }
         public virtual ICollection<Notification> NotificationsSend { set; get; }
         public virtual ICollection<Notification> NotificationsReceive { set; get; }
+        public virtual Gender Gender_FK { set; get; }
     }
 }

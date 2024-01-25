@@ -2,7 +2,7 @@
 
 namespace SocialNetwork.DataAccess.Entities
 {
-    public class Post : BaseEntity
+    public class Post : BaseEntity<Guid>
     {
         public string Title { get; set; }
         public string Content { get; set; }

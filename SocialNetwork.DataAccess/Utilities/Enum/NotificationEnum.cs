@@ -1,6 +1,6 @@
 ﻿namespace SocialNetwork.DataAccess.Utilities.Enum
 {
-    public enum TypeNotification
+    public enum NotificationEnum
     {
         /// <summary>
         /// Create post

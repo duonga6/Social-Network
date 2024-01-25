@@ -10,6 +10,6 @@ namespace SocialNetwork.Business.DTOs.Message.Requests
         [Required]
         public string Content { get; set; } = string.Empty;
         [Required]
-        public MessageType MessageType { get; set; }
+        public MessageEnum MessageType { get; set; }
     }
 }

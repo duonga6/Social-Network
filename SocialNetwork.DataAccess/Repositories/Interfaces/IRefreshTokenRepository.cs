@@ -2,7 +2,7 @@
 
 namespace SocialNetwork.DataAccess.Repositories.Interfaces
 {
-    public interface IRefreshTokenRepository : IGenericRepository<RefreshToken>
+    public interface IRefreshTokenRepository : IGenericRepository<RefreshToken, Guid>
     {
         Task<bool> RevokeToken(RefreshToken token);
         Task<RefreshToken> GetToken(string Token, string Jti);

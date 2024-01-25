@@ -3,67 +3,76 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.DataAccess.Context;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
+using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
 {
-    public class UserRepository : GenericRepository<User>, IUserRepository
+    public class UserRepository : IUserRepository
     {
-        public UserRepository(ILogger logger, AppDbContext context) : base(logger, context)
+        private readonly AppDbContext _context;
+        private readonly DbSet<User> _dbSet;
+        private readonly ILogger _logger;
+
+        public UserRepository(ILogger logger, AppDbContext context)
         {
+            _context = context;
+            _dbSet = context.Set<User>();
+            _logger = logger;
         }
 
-        public override async Task<ICollection<User>> GetAll(bool asNoTracking = true) 
+        public async Task<int> Count(Expression<Func<User, bool>> filter)
         {
-            if (asNoTracking)
-            {
-                return await _dbSet.AsNoTracking().ToListAsync();
-            }
-
-            return await _dbSet.ToListAsync();
-        }
-
-        public async Task<User> FindByEmail(string email)
-        {
-            return await _dbSet.FirstOrDefaultAsync(x => x.Email == email && x.Status == 1);
-        }
-
-        public async Task<User> FindById(string id)
-        {
-            return await _dbSet.FirstOrDefaultAsync(x => x.Id == id && x.Status == 1);
-        }
-    
-        public override async Task<bool> Update(User entity)
-        {
-            var entityUpdate = await _dbSet.FindAsync(entity.Id);
-            if (entityUpdate == null) { return false; }
-
-            entityUpdate.FirstName = entity.FirstName;
-            entityUpdate.LastName = entity.LastName;
-            entityUpdate.Address = entity.Address;
-            entityUpdate.DateOfBirth = entity.DateOfBirth;
-            entityUpdate.PhoneNumber = entity.PhoneNumber;
-
-            return true;
-        }
-    
-        public override async Task<bool> Delete(Guid Id)
-        {
-            var entity = await _dbSet.FindAsync(Id);
-            if (entity == null) return false;
-
-            entity.Status = 0;
-            entity.UpdatedAt = DateTime.UtcNow;
-
-            return true;
+            return await _dbSet.AsNoTracking().Where(filter).CountAsync();
         }
 
         public async Task<bool> Delete(string id)
         {
-            var entity = await _dbSet.FindAsync(id);
-            if (entity == null) return false;
+            var user = await _dbSet.FindAsync(id);
+            user.Status = 0;
 
-            entity.Status = 0;
-            entity.UpdatedAt = DateTime.UtcNow;
+            return true;
+        }
+
+        public async Task<User> GetById(string id, bool noTracking)
+        {
+            if (noTracking)
+            {
+                return await _dbSet.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+            }    
+
+            return await _dbSet.FindAsync(id);
+        }
+
+        public async Task<ICollection<User>> GetPaged(int pageSize, int pageNumber, Expression<Func<User, bool>> filter, Expression<Func<User, object>> orderBy, bool isDesc)
+        {
+            var query = _dbSet
+                .AsNoTracking()
+                .Where(filter);
+
+            if (isDesc)
+            {
+                query = query.OrderByDescending(orderBy);
+            }
+            else
+            {
+                query = query.OrderBy(orderBy);
+            }
+
+            return await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<bool> Update(User user)
+        {
+            var updateUser = await _dbSet.FindAsync(user.Id);
+
+            updateUser.FirstName = user.FirstName;
+            updateUser.LastName = user.LastName;
+            updateUser.Address = user.Address;
+            updateUser.PhoneNumber = updateUser.PhoneNumber;
+            updateUser.DateOfBirth = updateUser.DateOfBirth;
 
             return true;
         }

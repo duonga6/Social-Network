@@ -10,6 +10,6 @@ namespace SocialNetwork.Business.DTOs.Message.Responses
         public BasicUserResponse Receiver { get; set; } = null!;
         public string Content { get; set; } = string.Empty;
         public string CreatedAt { get; set; } = string.Empty;
-        public MessageType MessageType { get; set; }
+        public MessageEnum MessageType { get; set; }
     }
 }

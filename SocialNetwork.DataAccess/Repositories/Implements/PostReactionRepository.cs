@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
 {
-    public class PostReactionRepository : GenericRepository<PostReaction>, IPostReactionRepository
+    public class PostReactionRepository : GenericRepository<PostReaction, Guid>, IPostReactionRepository
     {
         public PostReactionRepository(ILogger logger, AppDbContext context) : base(logger, context)
         {

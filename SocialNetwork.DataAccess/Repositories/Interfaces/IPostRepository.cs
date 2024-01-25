@@ -2,7 +2,7 @@
 
 namespace SocialNetwork.DataAccess.Repositories.Interfaces
 {
-    public interface IPostRepository : IGenericRepository<Post>
+    public interface IPostRepository : IGenericRepository<Post, Guid>
     {
     }
 }

@@ -17,7 +17,10 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 .HasColumnType("nvarchar(50)")
                 .IsRequired();
 
-            builder.ToTable("Users");
+            builder.HasOne(x => x.Gender_FK)
+                .WithMany(x => x.Users)
+                .HasForeignKey(x => x.Gender)
+                .IsRequired();
         }
     }
 }

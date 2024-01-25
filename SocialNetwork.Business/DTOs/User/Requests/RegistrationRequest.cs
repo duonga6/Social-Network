@@ -18,5 +18,7 @@ namespace SocialNetwork.Business.DTOs.User.Requests
         public string Password { get; set; } = string.Empty;
         [Required]
         public DateTime DateOfBirth { get; set; }
+        [Required]
+        public int Gender { set; get; }
     }
 }

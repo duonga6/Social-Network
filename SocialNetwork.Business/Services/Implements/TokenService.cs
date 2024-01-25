@@ -202,7 +202,7 @@ namespace SocialNetwork.Business.Services.Implements
                         Token = null
                     };
                 }
-                var user = await _unitOfWork.UserRepository.FindById(userId);
+                var user = await _userManager.FindByIdAsync(userId);
                 if (user == null) 
                 {
                     return new TokenWithMessage

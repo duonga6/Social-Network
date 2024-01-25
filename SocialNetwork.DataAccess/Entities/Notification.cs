@@ -2,7 +2,7 @@
 
 namespace SocialNetwork.DataAccess.Entities
 {
-    public class Notification : BaseEntity
+    public class Notification : BaseEntity<Guid>
     {
         public string Content { get; set; }
         public string TargetUserId { get; set; }

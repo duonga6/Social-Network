@@ -42,7 +42,7 @@ namespace SocialNetwork.Business.Services.Implements
             var entity = await _unitOfWork.ReactionRepository.GetById(id);
             if (entity == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }
 
             await _unitOfWork.ReactionRepository.Delete(id);
@@ -67,7 +67,7 @@ namespace SocialNetwork.Business.Services.Implements
             var entity = await _unitOfWork.ReactionRepository.GetById(id);
             if (entity == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }
 
             return new DataResponse<GetReactionReponse>(_mapper.Map<GetReactionReponse>(entity), 200);
@@ -78,7 +78,7 @@ namespace SocialNetwork.Business.Services.Implements
             var findEntity = await _unitOfWork.ReactionRepository.GetById(Id);
             if (findEntity == null)
             {
-                return new ErrorResponse(404, Messages.NotFound);
+                return new ErrorResponse(404, Messages.NotFound());
             }
 
             if (entity.Name == findEntity.Name)

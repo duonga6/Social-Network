@@ -2,7 +2,7 @@
 
 namespace SocialNetwork.DataAccess.Entities
 {
-    public class PostImage : BaseEntity
+    public class PostImage : BaseEntity<Guid>
     {
         public string Url { get; set; }
         public Guid PostId { get; set; }

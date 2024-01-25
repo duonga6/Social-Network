@@ -9,9 +9,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
     public class UnitOfWork : IUnitOfWork, IDisposable
     {
         public IReactionRepository ReactionRepository { get; }
-        public IUserRepository UserRepository { get; }
         public IRefreshTokenRepository RefreshTokenRepository { get; }
-        public IRoleRepository RoleRepository { get; }
         public IPostImageRepository PostImageRepository { get; }
         public IPostRepository PostRepository { get; }
         public IPostCommentRepository PostCommentRepository { get; }
@@ -20,6 +18,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         public IFriendshipRepository FriendshipRepository { get; }
         public IMessageRepository MessageRepository { get; }
         public INotificationRepository NotificationRepository { get; }
+        public IUserRepository UserRepository { get; }
 
         public readonly AppDbContext _context;
 
@@ -27,8 +26,6 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
             _context = context;
             ReactionRepository = new ReactionRepository(logger, context);
-            UserRepository = new UserRepository(logger, context);
-            RoleRepository = new RoleRepository(logger, context);
             RefreshTokenRepository = new RefreshTokenRepository(logger, context);
             PostImageRepository = new PostImageRepository(logger, context);
             PostRepository = new PostRepository(logger, context);
@@ -38,6 +35,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             FriendshipRepository = new FriendshipRepository(logger, context);
             MessageRepository = new MessageRepository(logger, context);
             NotificationRepository = new NotificationRepository(logger, context);
+            UserRepository = new UserRepository(logger, context);
         }
 
         public async Task<bool> CompleteAsync()

@@ -13,6 +13,7 @@ namespace SocialNetwork.Business
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             services.Configure<JWTSettings>(configuration.GetSection("JWTSettings"));
+            services.Configure<MailSettings>(configuration.GetSection("MailSettings"));
 
             services.AddScoped<IReactionService, ReactionService>();
             services.AddScoped<IUserService, UserService>();
@@ -23,6 +24,7 @@ namespace SocialNetwork.Business
             services.AddScoped<IFriendshipService, FriendshipService>();
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddTransient<IMailService, MailService>();
         }
     }
 }

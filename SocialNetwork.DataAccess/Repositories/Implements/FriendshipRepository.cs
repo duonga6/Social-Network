@@ -9,7 +9,7 @@ using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
 {
-    public class FriendshipRepository : GenericRepository<Friendship>, IFriendshipRepository
+    public class FriendshipRepository : GenericRepository<Friendship, Guid>, IFriendshipRepository
     {
         public FriendshipRepository(ILogger logger, AppDbContext context) : base(logger, context)
         {
@@ -37,28 +37,9 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return true;
         }
 
-        public override async Task<bool> Delete(Guid id)
-        {
-            var entity = await _dbSet.FindAsync(id);
-            if (entity == null) { return false; }
-
-            _dbSet.Remove(entity);
-            return true;
-        }
-    
-        public async Task<bool> IsFriend(string requestUserId, string targetUserId)
-        {
-            var isFriend = await _dbSet
-                .FirstOrDefaultAsync(
-                x => (x.TargetUserId == requestUserId && x.RequestUserId == targetUserId && x.FriendStatus == FriendshipStatus.Accepted)
-             || (x.TargetUserId == targetUserId && x.RequestUserId == requestUserId && x.FriendStatus == FriendshipStatus.Accepted));
-
-            return isFriend != null;
-        }
-
         public async Task<ICollection<Friendship>> GetAllFriendship(string userId)
         {
-            var friends = await _dbSet.Where(x => (x.TargetUserId == userId || x.RequestUserId == userId) && x.FriendStatus == FriendshipStatus.Accepted)
+            var friends = await _dbSet.Where(x => (x.TargetUserId == userId || x.RequestUserId == userId) && x.FriendshipTypeId == (int)FriendshipEnum.Accepted)
                                         .AsNoTracking()
                                         .ToListAsync();
 

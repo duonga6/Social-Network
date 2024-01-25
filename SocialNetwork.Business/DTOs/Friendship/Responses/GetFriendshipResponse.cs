@@ -8,7 +8,7 @@ namespace SocialNetwork.Business.DTOs.Friendship.Responses
         public UserRespone RequestUser { set; get; } = null!;
         public UserRespone TargetUser { set; get; } = null!;
         public string UpdatedAt { set; get; } = string.Empty;
-        public FriendshipStatus FriendStatus { set; get; }
+        public FriendshipEnum FriendStatus { set; get; }
     }
 
     public class UserRespone

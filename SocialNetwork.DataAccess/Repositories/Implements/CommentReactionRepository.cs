@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
 {
-    public class CommentReactionRepository : GenericRepository<CommentReaction>, ICommentReactionRepository
+    public class CommentReactionRepository : GenericRepository<CommentReaction, Guid>, ICommentReactionRepository
     {
         public CommentReactionRepository(ILogger logger, AppDbContext context) : base(logger, context)
         {
@@ -58,7 +58,6 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .Include(x => x.Reaction)
                 .ToListAsync();
         }
-
 
         public override async Task<ICollection<CommentReaction>> GetPaged(int pageSize, int pageNumber, Expression<Func<CommentReaction, bool>> filter = null, Expression<Func<CommentReaction, object>> orderBy = null, bool isDesc = true)
         {

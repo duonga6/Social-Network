@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
 {
-    public class ReactionRepository : GenericRepository<Reaction>, IReactionRepository
+    public class ReactionRepository : GenericRepository<Reaction, int>, IReactionRepository
     {
         public ReactionRepository(ILogger logger, AppDbContext context) : base(logger, context)
         {
@@ -29,24 +29,6 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return await _dbSet.ToListAsync();
         }
 
-        public async Task<bool> Delete(int id)
-        {
-            try
-            {
-                var entity = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
-                if (entity == null) { return false; }
-
-                _dbSet.Remove(entity);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "{Repo} error function: Delete", typeof(ReactionRepository));
-                throw;
-            }
-        }
-
         public override async Task<bool> Update(Reaction entity)
         {
             try
@@ -55,7 +37,6 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 if (result == null) return false;
 
                 result.Name = entity.Name;
-
                 result.UpdatedAt = DateTime.UtcNow;
 
                 return true;

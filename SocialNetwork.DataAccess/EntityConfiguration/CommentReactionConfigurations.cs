@@ -11,28 +11,23 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
             builder.HasOne(p => p.Reaction)
                .WithMany(r => r.CommentReactions)
                .HasForeignKey(p => p.ReactionId)
-               .HasConstraintName("FK_CommentReaction_Reaction")
                .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(p => p.User)
                 .WithMany(u => u.CommentReactions)
                 .HasForeignKey(p => p.UserId)
-                .HasConstraintName("FK_CommentReaction_User")
                 .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(p => p.Comment)
                 .WithMany(p => p.Reactions)
                 .HasForeignKey(p => p.CommentId)
-                .HasConstraintName("FK_CommentReaction_Post")
                 .OnDelete(DeleteBehavior.NoAction);
 
-            builder.HasKey(p => new
+            builder.HasIndex(p => new
             {
                 p.UserId,
                 p.CommentId
-            });
-
-            builder.ToTable("CommentReactions");
+            }).IsUnique();
         }
     }
 }

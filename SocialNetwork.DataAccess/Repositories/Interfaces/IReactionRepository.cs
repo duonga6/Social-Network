@@ -4,9 +4,7 @@ using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Interfaces
 {
-    public interface IReactionRepository : IGenericRepository<Reaction>
+    public interface IReactionRepository : IGenericRepository<Reaction, int>
     {
-        Task<Reaction> GetById(int id);
-        Task<bool> Delete(int id);
     }
 }

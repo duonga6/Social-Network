@@ -11,15 +11,12 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
             builder.HasOne(i => i.Post)
                 .WithMany(p => p.Images)
                 .HasForeignKey(i => i.PostId)
-                .HasConstraintName("FK_PostImage_Image")
                 .OnDelete(DeleteBehavior.NoAction)
                 .IsRequired();
 
             builder.Property(i => i.Url)
                 .IsRequired()
                 .HasMaxLength(100);
-
-            builder.ToTable("PostImages");
         }
     }
 }

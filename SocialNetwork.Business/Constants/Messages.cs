@@ -5,7 +5,7 @@
         // Successfully basic
         public static string CreatedSuccessfully => "Created successfully";
         public static string DeletedSuccessfully => "Deleted successfully";
-        public static string UpdatedSuccessfully => "Updated sucessfully";
+        public static string UpdatedSuccessfully => "Updated successfully";
         public static string GetSuccessfully => "Get successfully";
 
 
@@ -13,13 +13,14 @@
         public static string AddError => "Error create";
         public static string UpdateError => "Error update";
         public static string DeleteError => "Error delete";
-        public static string NotFound => "Not found";
-        public static string NotFounb(string resource) => $"{resource} not found";
+        public static string NotFound() => "Not found";
+        public static string NotFound(string resource) => $"{resource} not found";
         public static string UnAuthorized => "Unauthorized";
         public static string BadRequest => "Bad Request";
         public static string Forbidden => "Forbidden";
-        public static string STWroong => "Something went wrong";
+        public static string STWrong => "Something went wrong";
         public static string OutOfPage => "The page number is out of page range";
+        public static string EmailSent => "Email sent";
 
         // Reaction
         public static string ReactionExist => "Name and Code are already exist";
@@ -64,10 +65,10 @@
 
         // Message
         public static string MessageSent => "Send message successfully";
-        public static string MessageDeleted => "Delete message successfully";
+        public static string MessageRevoked => "Revoked message successfully";
         public static string MessageSeen => "Seen message";
 
         // Notification
-        public static string NotiHBSeen => "Notification has been seen";
+        public static string NotificationSeen => "Notification has been seen";
     }
 }

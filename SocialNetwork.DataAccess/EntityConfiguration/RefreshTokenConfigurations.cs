@@ -35,11 +35,8 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
             builder.HasOne(r => r.User)
                 .WithMany(u => u.RefreshTokens)
                 .HasForeignKey(r => r.UserId)
-                .HasConstraintName("FK_RefreshToken_User")
                 .OnDelete(DeleteBehavior.NoAction)
                 .IsRequired();
-
-            builder.ToTable("RefreshTokens");
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
 {
-    public class NotificationRepository : GenericRepository<Notification>, INotificationRepository
+    public class NotificationRepository : GenericRepository<Notification, Guid>, INotificationRepository
     {
         public NotificationRepository(ILogger logger, AppDbContext context) : base(logger, context)
         {

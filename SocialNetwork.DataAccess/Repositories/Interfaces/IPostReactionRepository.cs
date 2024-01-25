@@ -2,7 +2,7 @@
 
 namespace SocialNetwork.DataAccess.Repositories.Interfaces
 {
-    public interface IPostReactionRepository : IGenericRepository<PostReaction>
+    public interface IPostReactionRepository : IGenericRepository<PostReaction, Guid>
     {
         Task<ICollection<PostReaction>> GetByPost(Guid postId);
         Task<ICollection<PostReaction>> GetByUser(string userId);

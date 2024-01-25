@@ -1,6 +1,6 @@
 ﻿namespace SocialNetwork.DataAccess.Utilities.Enum
 {
-    public enum FriendshipStatus
+    public enum FriendshipEnum
     {
         Pending = 0,
         Accepted = 1,

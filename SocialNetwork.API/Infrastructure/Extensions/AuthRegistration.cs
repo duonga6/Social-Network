@@ -2,7 +2,7 @@
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-namespace SocialNetwork.API.Extensions
+namespace SocialNetwork.API.Infrastructure.Extensions
 {
     public static class AuthRegistration
     {

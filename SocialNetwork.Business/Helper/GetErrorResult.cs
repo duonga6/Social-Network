@@ -22,19 +22,19 @@ namespace SocialNetwork.Business.Helper
 
             if (signInResult.IsNotAllowed)
             {
-                errors.Add("Email not confirmed");
+                errors.Add("Email chưa được xác thực");
             }
             else if (signInResult.IsLockedOut)
             {
-                errors.Add("LockedOut");
+                errors.Add("Tài khoản đã bị khóa");
             }
             else if (signInResult.RequiresTwoFactor)
             {
-                errors.Add("Require two factor");
+                errors.Add("Yêu cầu xác thực 2 lớp");
             }
             else
             {
-                errors.Add("Username or password invalid");
+                errors.Add("Email hoặc mật khẩu không chính xác");
             }    
 
             return errors;

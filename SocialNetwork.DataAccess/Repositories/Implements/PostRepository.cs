@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
 {
-    public class PostRepository : GenericRepository<Post>, IPostRepository
+    public class PostRepository : GenericRepository<Post, Guid>, IPostRepository
     {
         public PostRepository(ILogger logger, AppDbContext context) : base(logger, context)
         {
@@ -60,17 +60,6 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return await query.ToListAsync();
         }
         
-        public override async Task<bool> Delete(Guid id)
-        {
-            var post = await _dbSet.FirstOrDefaultAsync(x => x.Id == id && x.Status == 1);
-            if (post == null) { return false; }
-
-            post.Status = 0;
-            post.UpdatedAt = DateTime.UtcNow;
-
-            return true;
-        }
-
         public override async Task<bool> Update(Post post)
         {
             try

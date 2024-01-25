@@ -36,7 +36,7 @@ namespace SocialNetwork.API.Controllers
         /// </summary>
         [HttpPost("Register")]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(DataResponse<GetUserResponse>), 200)]
+        [ProducesResponseType(typeof(DataResponse<Token>), 200)]
         public async Task<IResponse> Register([FromBody] RegistrationRequest request)
         {
             return await _userService.Register(request);
@@ -129,6 +129,17 @@ namespace SocialNetwork.API.Controllers
         public async Task<IResponse> GetAll(string? searchString,[FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
             return await _userService.GetAll(searchString, pageSize, pageNumber);
+        }
+
+        /// <summary>
+        /// Get logged user info
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("Info")]
+        [ProducesResponseType(typeof(DataResponse<GetUserResponse>), 200)]
+        public async Task<IResponse> GetInfo()
+        {
+            return await _userService.GetById(UserId, UserId);
         }
 
         /// <summary>
