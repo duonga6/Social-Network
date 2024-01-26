@@ -31,7 +31,7 @@
         public static string LoginSuccessfully => "Login successfully";
         public static string RegistrationSuccessfully => "Registration successfully";
         public static string AddRoleToUserSuccess => "Add roles to user successfully";
-        public static string EmailUsed => "Email is used";
+        public static string EmailUsed => "Email đã được sử dụng";
         public static string IncorrectEP => "Incorrect email or password";
         public static string GetCodeResetPassword = "Get code reset password successfully";
         public static string ResetPasswordSuccessfully = "Password has been reset";

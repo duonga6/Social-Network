@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.CommentReaction.Requests;
 using SocialNetwork.Business.DTOs.Friendship.Requests;
 using SocialNetwork.Business.DTOs.Message.Requests;
@@ -26,7 +27,9 @@ namespace SocialNetwork.Business.Mapper
             CreateMap<RegistrationRequest, User>()
                 .ForMember(d => d.UserName, o => o.MapFrom(s => s.Email))
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(s => DateTime.UtcNow))
-                .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
+                .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow))
+                .ForMember(d => d.AvatarUrl, o => o.MapFrom(s => AvatarUrl.Default));
+                
 
             CreateMap<CreatePostRequest, Post>()
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(s => DateTime.UtcNow))

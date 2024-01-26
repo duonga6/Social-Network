@@ -85,7 +85,7 @@ namespace SocialNetwork.Business.Services.Implements
         public async Task<IResponse> Register(RegistrationRequest request)
         {
             var checkExistUser = await _userManager.FindByEmailAsync(request.Email);
-            if (checkExistUser != null)
+            if (checkExistUser != null && checkExistUser.Status != 0)
             {
                 return new ErrorResponse(400, Messages.EmailUsed);
             }
