@@ -49,9 +49,10 @@ namespace SocialNetwork.Business.Services.Implements
             }
 
             Expression<Func<Post, bool>> filter;
+
             Expression<Func<Post, bool>> active = x => x.Status == 1;
-            Expression<Func<Post, bool>> search = x => x.Title.Contains(searchString!) || x.Content.Contains(searchString!) || (x.Author.FirstName + x.Author.LastName).Contains(searchString!);
-            Expression<Func<Post, bool>> isFriend = x => 
+            Expression<Func<Post, bool>> search = x => x.Content.Contains(searchString!) || (x.Author.FirstName + x.Author.LastName).Contains(searchString!);
+            Expression<Func<Post, bool>> isFriendOrOwner = x => x.AuthorId == requestUserId ||
             (x.Author.Friendships1.Any(m => (m.RequestUserId == requestUserId || m.TargetUserId == requestUserId) && m.FriendshipTypeId == (int)FriendshipEnum.Accepted) || 
             x.Author.Friendships2.Any(m => (m.RequestUserId == requestUserId || m.TargetUserId == requestUserId) && m.FriendshipTypeId == (int)FriendshipEnum.Accepted));
 
@@ -63,7 +64,7 @@ namespace SocialNetwork.Business.Services.Implements
                 }
                 else
                 {
-                    filter = active.And(search);
+                    filter = search.And(active);
                 }
             }   
             else
@@ -71,11 +72,11 @@ namespace SocialNetwork.Business.Services.Implements
 
                 if (searchString == null)
                 {
-                    filter = active.And(isFriend);
+                    filter = isFriendOrOwner.And(active);
                 }
                 else
                 {
-                    filter = active.And(isFriend).And(search);
+                    filter = isFriendOrOwner.And(search).And(active);
                 }    
             }
 
@@ -158,7 +159,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             foreach (var item in request.ImagesUpdate)
             {
-                var updateImage = _mapper.Map<PostImage>(item);
+                var updateImage = _mapper.Map<PostMedia>(item);
                 if (!await _unitOfWork.PostImageRepository.Update(updateImage))
                 {
                     return new ErrorResponse(404, Messages.NotFound("Image update"));
@@ -167,7 +168,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             foreach (var item in request.ImagesAdd)
             {
-                var addImage = _mapper.Map<PostImage>(item);
+                var addImage = _mapper.Map<PostMedia>(item);
                 addImage.PostId = postUpdate.Id;
                 await _unitOfWork.PostImageRepository.Add(addImage);
             }

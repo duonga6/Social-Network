@@ -1,4 +1,4 @@
-﻿using SocialNetwork.Business.DTOs.PostImage.Requests;
+﻿using SocialNetwork.Business.DTOs.PostMedia.Requests;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -14,8 +14,8 @@ namespace SocialNetwork.Business.DTOs.Post.Requests
         public string AuthorId { get; set; } = string.Empty;
 
         public List<Guid> ImagesDelete { get; set; } = new();
-        public List<CreatePostImageRequest> ImagesAdd { get; set; } = new();
-        public List<UpdatePostImageRequest> ImagesUpdate { get; set; } = new();
+        public List<CreatePostMediaRequest> ImagesAdd { get; set; } = new();
+        public List<UpdatePostMediaRequest> ImagesUpdate { get; set; } = new();
 
     }
 }

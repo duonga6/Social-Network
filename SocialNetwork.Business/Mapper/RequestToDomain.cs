@@ -5,7 +5,7 @@ using SocialNetwork.Business.DTOs.Friendship.Requests;
 using SocialNetwork.Business.DTOs.Message.Requests;
 using SocialNetwork.Business.DTOs.Post.Requests;
 using SocialNetwork.Business.DTOs.PostComment.Requests;
-using SocialNetwork.Business.DTOs.PostImage.Requests;
+using SocialNetwork.Business.DTOs.PostMedia.Requests;
 using SocialNetwork.Business.DTOs.PostReaction.Requests;
 using SocialNetwork.Business.DTOs.Reaction.Requests;
 using SocialNetwork.Business.DTOs.User.Requests;
@@ -35,11 +35,11 @@ namespace SocialNetwork.Business.Mapper
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(s => DateTime.UtcNow))
                 .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
 
-            CreateMap<CreatePostImageRequest, PostImage>()
+            CreateMap<CreatePostMediaRequest, PostMedia>()
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(s => DateTime.UtcNow))
                 .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
 
-            CreateMap<UpdatePostImageRequest, PostImage>()
+            CreateMap<UpdatePostMediaRequest, PostMedia>()
                 .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
 
             CreateMap<UpdatePostRequest, Post>()

@@ -29,12 +29,12 @@ namespace SocialNetwork.DataAccess.Context
         public DbSet<PostReaction> PostReactions { get; set; }
         public DbSet<CommentReaction> CommentReactions { get; set; }
         public DbSet<Reaction> Reactions { get; set; }
-        public DbSet<PostImage> PostImages { get; set; }
+        public DbSet<PostMedia> PostMedias { get; set; }
         public DbSet<Friendship> Friendships { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-        public DbSet<MessageType> MessageTypes { set; get; }
         public DbSet<Gender> Genders { set; get; }
         public DbSet<FriendshipType> FriendshipTypes { set; get; }
+        public DbSet<MediaType> MediaTypes { set; get; }
     }
 }

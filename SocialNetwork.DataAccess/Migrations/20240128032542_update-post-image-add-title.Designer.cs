@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SocialNetwork.DataAccess.Context;
 
@@ -11,9 +12,10 @@ using SocialNetwork.DataAccess.Context;
 namespace SocialNetwork.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240128032542_update-post-image-add-title")]
+    partial class updatepostimageaddtitle
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,15 +53,15 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "99ce695d-439f-4c11-8015-c596bdeb113e",
-                            ConcurrencyStamp = "1fd0281f-f7b0-401c-b05a-fd6b6593cf4a",
+                            Id = "fd34a429-fc8b-4772-9a29-735d4dc3b001",
+                            ConcurrencyStamp = "c878fe12-2a31-4f8e-8da1-0aa5ef3e3bc6",
                             Name = "Administrator",
                             NormalizedName = "ADMINISTRATOR"
                         },
                         new
                         {
-                            Id = "973e465d-053f-45ae-9a4b-346ec6af4a7c",
-                            ConcurrencyStamp = "7b1f5643-67e5-49dd-bc3e-37e0597f89df",
+                            Id = "2407510a-9d32-42b8-a419-987b0274f10f",
+                            ConcurrencyStamp = "62ced3ab-11f8-4c56-89a8-bc3beeccb992",
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -275,26 +277,26 @@ namespace SocialNetwork.DataAccess.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7035),
+                            CreatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 227, DateTimeKind.Utc).AddTicks(8754),
                             Name = "Pending",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7037)
+                            UpdatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 227, DateTimeKind.Utc).AddTicks(8756)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7041),
+                            CreatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 227, DateTimeKind.Utc).AddTicks(8760),
                             Name = "Accepted",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7041)
+                            UpdatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 227, DateTimeKind.Utc).AddTicks(8760)
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7042),
+                            CreatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 227, DateTimeKind.Utc).AddTicks(8761),
                             Name = "Blocked",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7042)
+                            UpdatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 227, DateTimeKind.Utc).AddTicks(8761)
                         });
                 });
 
@@ -328,87 +330,18 @@ namespace SocialNetwork.DataAccess.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7411),
+                            CreatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 227, DateTimeKind.Utc).AddTicks(9136),
                             Name = "Female",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7411)
+                            UpdatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 227, DateTimeKind.Utc).AddTicks(9137)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7414),
+                            CreatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 227, DateTimeKind.Utc).AddTicks(9139),
                             Name = "Male",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7414)
-                        });
-                });
-
-            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.MediaType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("MediaTypes");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7846),
-                            Name = "Text",
-                            Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7846)
-                        },
-                        new
-                        {
-                            Id = 2,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7849),
-                            Name = "Image",
-                            Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7849)
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7850),
-                            Name = "Video",
-                            Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7850)
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7851),
-                            Name = "File",
-                            Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7851)
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7851),
-                            Name = "Hyper link",
-                            Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7852)
+                            UpdatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 227, DateTimeKind.Utc).AddTicks(9139)
                         });
                 });
 
@@ -428,7 +361,7 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.Property<bool>("IsRevoked")
                         .HasColumnType("bit");
 
-                    b.Property<int>("MediaTypeId")
+                    b.Property<int>("MessageTypeId")
                         .HasColumnType("int");
 
                     b.Property<string>("ReceiverId")
@@ -447,13 +380,66 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MediaTypeId");
+                    b.HasIndex("MessageTypeId");
 
                     b.HasIndex("ReceiverId");
 
                     b.HasIndex("SenderId");
 
                     b.ToTable("Messages");
+                });
+
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.MessageType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MessageTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 230, DateTimeKind.Utc).AddTicks(9533),
+                            Name = "Text",
+                            Status = 1,
+                            UpdatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 230, DateTimeKind.Utc).AddTicks(9535)
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 230, DateTimeKind.Utc).AddTicks(9538),
+                            Name = "Video",
+                            Status = 1,
+                            UpdatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 230, DateTimeKind.Utc).AddTicks(9539)
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 230, DateTimeKind.Utc).AddTicks(9539),
+                            Name = "Image",
+                            Status = 1,
+                            UpdatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 230, DateTimeKind.Utc).AddTicks(9540)
+                        });
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Notification", b =>
@@ -515,6 +501,10 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -560,7 +550,7 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.ToTable("PostComments");
                 });
 
-            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostMedia", b =>
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostImage", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -568,9 +558,6 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("MediaTypeId")
-                        .HasColumnType("int");
 
                     b.Property<Guid>("PostId")
                         .HasColumnType("uniqueidentifier");
@@ -587,15 +574,14 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.Property<string>("Url")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MediaTypeId");
-
                     b.HasIndex("PostId");
 
-                    b.ToTable("PostMedias");
+                    b.ToTable("PostImages");
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostReaction", b =>
@@ -664,50 +650,50 @@ namespace SocialNetwork.DataAccess.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4273),
+                            CreatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 235, DateTimeKind.Utc).AddTicks(947),
                             Name = "Like",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4275)
+                            UpdatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 235, DateTimeKind.Utc).AddTicks(949)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4280),
+                            CreatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 235, DateTimeKind.Utc).AddTicks(953),
                             Name = "Love",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4280)
+                            UpdatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 235, DateTimeKind.Utc).AddTicks(953)
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4281),
+                            CreatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 235, DateTimeKind.Utc).AddTicks(954),
                             Name = "Haha",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4281)
+                            UpdatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 235, DateTimeKind.Utc).AddTicks(955)
                         },
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4281),
+                            CreatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 235, DateTimeKind.Utc).AddTicks(956),
                             Name = "Wow",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4282)
+                            UpdatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 235, DateTimeKind.Utc).AddTicks(956)
                         },
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4282),
+                            CreatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 235, DateTimeKind.Utc).AddTicks(957),
                             Name = "Sad",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4282)
+                            UpdatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 235, DateTimeKind.Utc).AddTicks(957)
                         },
                         new
                         {
                             Id = 6,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4285),
+                            CreatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 235, DateTimeKind.Utc).AddTicks(960),
                             Name = "Angry",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4285)
+                            UpdatedAt = new DateTime(2024, 1, 28, 3, 25, 42, 235, DateTimeKind.Utc).AddTicks(960)
                         });
                 });
 
@@ -958,9 +944,9 @@ namespace SocialNetwork.DataAccess.Migrations
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Message", b =>
                 {
-                    b.HasOne("SocialNetwork.DataAccess.Entities.MediaType", "MediaType")
+                    b.HasOne("SocialNetwork.DataAccess.Entities.MessageType", "MessageType")
                         .WithMany("Messages")
-                        .HasForeignKey("MediaTypeId")
+                        .HasForeignKey("MessageTypeId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
@@ -976,7 +962,7 @@ namespace SocialNetwork.DataAccess.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("MediaType");
+                    b.Navigation("MessageType");
 
                     b.Navigation("Receiver");
 
@@ -1032,21 +1018,13 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostMedia", b =>
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostImage", b =>
                 {
-                    b.HasOne("SocialNetwork.DataAccess.Entities.MediaType", "MediaType")
-                        .WithMany("PostMedias")
-                        .HasForeignKey("MediaTypeId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.HasOne("SocialNetwork.DataAccess.Entities.Post", "Post")
-                        .WithMany("PostMedias")
+                        .WithMany("Images")
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
-
-                    b.Navigation("MediaType");
 
                     b.Navigation("Post");
                 });
@@ -1104,16 +1082,14 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.Navigation("Users");
                 });
 
-            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.MediaType", b =>
+            modelBuilder.Entity("SocialNetwork.DataAccess.Entities.MessageType", b =>
                 {
                     b.Navigation("Messages");
-
-                    b.Navigation("PostMedias");
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Post", b =>
                 {
-                    b.Navigation("PostMedias");
+                    b.Navigation("Images");
 
                     b.Navigation("Reactions");
                 });

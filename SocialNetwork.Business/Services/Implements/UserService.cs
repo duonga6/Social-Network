@@ -118,8 +118,11 @@ namespace SocialNetwork.Business.Services.Implements
 
             var token = await _tokenService.CreateToken(user);
 
+            var response = _mapper.Map<UserWithTokenResponse>(user);
+            response.Token = token;
 
-            return new DataResponse<Token>(token, 200, Messages.LoginSuccessfully);
+
+            return new DataResponse<UserWithTokenResponse>(response, 200, Messages.LoginSuccessfully);
         }
 
         public async Task<IResponse> ForgotPassword(ForgotPasswordRequest request)
@@ -131,7 +134,7 @@ namespace SocialNetwork.Business.Services.Implements
             }    
 
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-            return new DataResponse<ForgotPasswordCodeReponse>(new ForgotPasswordCodeReponse(code), 200, Messages.GetCodeResetPassword);
+            return new DataResponse<ForgotPasswordCodeResponse>(new ForgotPasswordCodeResponse(code), 200, Messages.GetCodeResetPassword);
         }
 
         public async Task<IResponse> ResetPassword(ResetPasswordRequest request)
@@ -420,7 +423,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             if (searchString != null)
             {
-                filter = x => (x.Title.Contains(searchString) || x.Content.Contains(searchString)) && x.AuthorId == requestUserId && x.Status == 1;
+                filter = x => x.Content.Contains(searchString) && x.AuthorId == requestUserId && x.Status == 1;
             }   
             else
             {

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SocialNetwork.DataAccess.Context;
 
@@ -11,9 +12,10 @@ using SocialNetwork.DataAccess.Context;
 namespace SocialNetwork.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240128100101_add-media-type")]
+    partial class addmediatype
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,15 +53,15 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "99ce695d-439f-4c11-8015-c596bdeb113e",
-                            ConcurrencyStamp = "1fd0281f-f7b0-401c-b05a-fd6b6593cf4a",
+                            Id = "b30763c5-dd0c-4c91-a9d6-ec86ca7d9c10",
+                            ConcurrencyStamp = "c240dcea-ed27-41e6-b52e-af2125a58041",
                             Name = "Administrator",
                             NormalizedName = "ADMINISTRATOR"
                         },
                         new
                         {
-                            Id = "973e465d-053f-45ae-9a4b-346ec6af4a7c",
-                            ConcurrencyStamp = "7b1f5643-67e5-49dd-bc3e-37e0597f89df",
+                            Id = "514982c2-52c8-4ba2-98b7-c6f49b57e5d6",
+                            ConcurrencyStamp = "20539327-09b3-46bf-ad61-7bcb3725b435",
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -275,26 +277,26 @@ namespace SocialNetwork.DataAccess.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7035),
+                            CreatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 84, DateTimeKind.Utc).AddTicks(5044),
                             Name = "Pending",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7037)
+                            UpdatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 84, DateTimeKind.Utc).AddTicks(5046)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7041),
+                            CreatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 84, DateTimeKind.Utc).AddTicks(5050),
                             Name = "Accepted",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7041)
+                            UpdatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 84, DateTimeKind.Utc).AddTicks(5050)
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7042),
+                            CreatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 84, DateTimeKind.Utc).AddTicks(5051),
                             Name = "Blocked",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7042)
+                            UpdatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 84, DateTimeKind.Utc).AddTicks(5051)
                         });
                 });
 
@@ -328,18 +330,18 @@ namespace SocialNetwork.DataAccess.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7411),
+                            CreatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 84, DateTimeKind.Utc).AddTicks(5570),
                             Name = "Female",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7411)
+                            UpdatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 84, DateTimeKind.Utc).AddTicks(5571)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7414),
+                            CreatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 84, DateTimeKind.Utc).AddTicks(5574),
                             Name = "Male",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7414)
+                            UpdatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 84, DateTimeKind.Utc).AddTicks(5575)
                         });
                 });
 
@@ -373,42 +375,34 @@ namespace SocialNetwork.DataAccess.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7846),
+                            CreatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 84, DateTimeKind.Utc).AddTicks(6003),
                             Name = "Text",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7846)
+                            UpdatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 84, DateTimeKind.Utc).AddTicks(6004)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7849),
+                            CreatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 84, DateTimeKind.Utc).AddTicks(6008),
                             Name = "Image",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7849)
+                            UpdatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 84, DateTimeKind.Utc).AddTicks(6008)
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7850),
+                            CreatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 84, DateTimeKind.Utc).AddTicks(6009),
                             Name = "Video",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7850)
+                            UpdatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 84, DateTimeKind.Utc).AddTicks(6009)
                         },
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7851),
+                            CreatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 84, DateTimeKind.Utc).AddTicks(6010),
                             Name = "File",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7851)
-                        },
-                        new
-                        {
-                            Id = 5,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7851),
-                            Name = "Hyper link",
-                            Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 615, DateTimeKind.Utc).AddTicks(7852)
+                            UpdatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 84, DateTimeKind.Utc).AddTicks(6010)
                         });
                 });
 
@@ -587,7 +581,8 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.Property<string>("Url")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
@@ -664,50 +659,50 @@ namespace SocialNetwork.DataAccess.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4273),
+                            CreatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 90, DateTimeKind.Utc).AddTicks(6859),
                             Name = "Like",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4275)
+                            UpdatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 90, DateTimeKind.Utc).AddTicks(6860)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4280),
+                            CreatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 90, DateTimeKind.Utc).AddTicks(6863),
                             Name = "Love",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4280)
+                            UpdatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 90, DateTimeKind.Utc).AddTicks(6863)
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4281),
+                            CreatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 90, DateTimeKind.Utc).AddTicks(6864),
                             Name = "Haha",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4281)
+                            UpdatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 90, DateTimeKind.Utc).AddTicks(6864)
                         },
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4281),
+                            CreatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 90, DateTimeKind.Utc).AddTicks(6865),
                             Name = "Wow",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4282)
+                            UpdatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 90, DateTimeKind.Utc).AddTicks(6865)
                         },
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4282),
+                            CreatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 90, DateTimeKind.Utc).AddTicks(6865),
                             Name = "Sad",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4282)
+                            UpdatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 90, DateTimeKind.Utc).AddTicks(6866)
                         },
                         new
                         {
                             Id = 6,
-                            CreatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4285),
+                            CreatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 90, DateTimeKind.Utc).AddTicks(6868),
                             Name = "Angry",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 1, 28, 10, 44, 12, 622, DateTimeKind.Utc).AddTicks(4285)
+                            UpdatedAt = new DateTime(2024, 1, 28, 10, 1, 1, 90, DateTimeKind.Utc).AddTicks(6868)
                         });
                 });
 
@@ -1041,7 +1036,7 @@ namespace SocialNetwork.DataAccess.Migrations
                         .IsRequired();
 
                     b.HasOne("SocialNetwork.DataAccess.Entities.Post", "Post")
-                        .WithMany("PostMedias")
+                        .WithMany("Images")
                         .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
@@ -1113,7 +1108,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Post", b =>
                 {
-                    b.Navigation("PostMedias");
+                    b.Navigation("Images");
 
                     b.Navigation("Reactions");
                 });

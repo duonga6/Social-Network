@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SocialNetwork.API.Controllers.Base;
 using SocialNetwork.Business.DTOs.Friendship.Requests;
 using SocialNetwork.Business.DTOs.Friendship.Responses;
 using SocialNetwork.Business.DTOs.Message.Requests;
@@ -36,7 +37,7 @@ namespace SocialNetwork.API.Controllers
         /// </summary>
         [HttpPost("Register")]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(DataResponse<Token>), 200)]
+        [ProducesResponseType(typeof(DataResponse<UserWithTokenResponse>), 200)]
         public async Task<IResponse> Register([FromBody] RegistrationRequest request)
         {
             return await _userService.Register(request);
@@ -49,7 +50,7 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPost("Login")]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(DataResponse<Token>), 200)]
+        [ProducesResponseType(typeof(DataResponse<UserWithTokenResponse>), 200)]
         public async Task<IResponse> Login([FromBody] LoginRequest request)
         {
             return await _userService.Login(request);
@@ -60,7 +61,7 @@ namespace SocialNetwork.API.Controllers
         /// </summary>
         [HttpPost("ForgotPassword")]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(DataResponse<ForgotPasswordCodeReponse>), 200)]
+        [ProducesResponseType(typeof(DataResponse<ForgotPasswordCodeResponse>), 200)]
         public async Task<IResponse> ForgotPassword([FromBody] ForgotPasswordRequest request)
         {
             return await _userService.ForgotPassword(request);

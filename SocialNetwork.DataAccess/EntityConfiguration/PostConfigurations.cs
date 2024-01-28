@@ -14,10 +14,6 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 .OnDelete(DeleteBehavior.NoAction)
                 .IsRequired();
 
-            builder.Property(p => p.Title)
-                .HasColumnType("nvarchar(50)")
-                .IsRequired();
-
             builder.Property(p => p.Content)
                 .HasColumnType("nvarchar(MAX)")
                 .IsRequired();

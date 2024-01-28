@@ -20,9 +20,9 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);
 
-            builder.HasOne(x => x.MessageType)
+            builder.HasOne(x => x.MediaType)
                 .WithMany(x => x.Messages)
-                .HasForeignKey(x => x.MessageTypeId)
+                .HasForeignKey(x => x.MediaTypeId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);
 

@@ -17,7 +17,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         public override async Task<Post> GetById(Guid id, bool asNoTracking = true)
         {
             var query = _dbSet.Where(x => x.Status == 1 && x.Id == id)
-                .Include(x => x.Images.Where(i => i.Status == 1))
+                .Include(x => x.PostMedias.Where(i => i.Status == 1))
                 .AsSplitQuery();
 
             if (asNoTracking)
@@ -34,7 +34,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         public override async Task<ICollection<Post>> FindBy(Expression<Func<Post, bool>> filter = null, bool asNoTracking = true)
         {
             var query = _dbSet.Where(filter)
-                .Include(x => x.Images.Where(i => i.Status == 1))
+                .Include(x => x.PostMedias.Where(i => i.Status == 1))
                 .OrderByDescending(x => x.CreatedAt)
                 .AsSplitQuery();
 
@@ -49,7 +49,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         public override async Task<ICollection<Post>> GetAll(bool asNoTracking)
         {
             var query = _dbSet.Where(x => x.Status == 1)
-                .Include(x => x.Images.Where(i => i.Status == 1))
+                .Include(x => x.PostMedias.Where(i => i.Status == 1))
                 .AsSplitQuery();
 
             if ( asNoTracking)
@@ -70,7 +70,6 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                     return false;
                 }
 
-                updatePost.Title = post.Title;
                 updatePost.Content = post.Content;
                 updatePost.UpdatedAt = DateTime.UtcNow;
 
@@ -89,7 +88,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .AsNoTracking()
                 .Where(filter)
                 .Include(x => x.Author)
-                .Include(x => x.Images)
+                .Include(x => x.PostMedias)
                 .AsSplitQuery();
 
             if (isDesc)

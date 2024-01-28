@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.API.Utilities;
 
-namespace SocialNetwork.API.Controllers
+namespace SocialNetwork.API.Controllers.Base
 {
     [Route("/api/[controller]")]
     [ApiController]

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SocialNetwork.API.Controllers.Base;
 using SocialNetwork.Business.DTOs.Message.Responses;
 using SocialNetwork.Business.DTOs.Notification.Responses;
 using SocialNetwork.Business.Services.Interfaces;

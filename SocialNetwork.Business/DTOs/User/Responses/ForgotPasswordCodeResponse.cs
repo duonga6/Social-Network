@@ -1,15 +1,15 @@
 ﻿namespace SocialNetwork.Business.DTOs.User.Responses
 {
-    public class ForgotPasswordCodeReponse
+    public class ForgotPasswordCodeResponse
     {
         public string Code { set; get; }
 
-        public ForgotPasswordCodeReponse() 
+        public ForgotPasswordCodeResponse() 
         {
             Code = string.Empty;
         }
 
-        public ForgotPasswordCodeReponse(string code)
+        public ForgotPasswordCodeResponse(string code)
         {
             Code = code;
         }

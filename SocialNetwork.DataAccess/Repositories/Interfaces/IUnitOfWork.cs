@@ -13,6 +13,7 @@
         IMessageRepository MessageRepository { get; }
         INotificationRepository NotificationRepository { get; }
         IUserRepository UserRepository { get; }
+        IMediaTypeRepository MediaTypeRepository { get; }
 
         Task<bool> CompleteAsync();
     }

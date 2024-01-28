@@ -7,12 +7,12 @@ namespace SocialNetwork.DataAccess.Entities
     {
         public string SenderId { get; set; }
         public string ReceiverId { get; set; }
-        public int MessageTypeId { get; set; }
+        public int MediaTypeId { get; set; }
         public string Content { get; set; }
         public bool IsRevoked { set; get; }
 
         public virtual User Sender { set;get; }
         public virtual User Receiver { set; get; }
-        public virtual MessageType MessageType { set; get; }
+        public virtual MediaType MediaType{ set; get; }
     }
 }

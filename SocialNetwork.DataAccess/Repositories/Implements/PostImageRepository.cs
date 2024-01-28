@@ -6,13 +6,13 @@ using SocialNetwork.DataAccess.Repositories.Interfaces;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
 {
-    public class PostImageRepository : GenericRepository<PostImage, Guid>, IPostImageRepository
+    public class PostImageRepository : GenericRepository<PostMedia, Guid>, IPostImageRepository
     {
         public PostImageRepository(ILogger logger, AppDbContext context) : base(logger, context)
         {
         }
 
-        public override async Task<ICollection<PostImage>> GetAll(bool asNoTracking = true)
+        public override async Task<ICollection<PostMedia>> GetAll(bool asNoTracking = true)
         {
             if (asNoTracking)
             {
@@ -24,7 +24,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                     .ToListAsync();
         }
 
-        public override async Task<bool> Update(PostImage post)
+        public override async Task<bool> Update(PostMedia post)
         {
             try
             {

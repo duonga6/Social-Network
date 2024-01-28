@@ -2,7 +2,7 @@
 
 namespace SocialNetwork.DataAccess.Repositories.Interfaces
 {
-    public interface IPostImageRepository : IGenericRepository<PostMedia, Guid>
+    public interface IMediaTypeRepository : IGenericRepository<MediaType, int>
     {
     }
 }

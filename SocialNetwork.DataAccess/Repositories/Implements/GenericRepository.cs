@@ -52,7 +52,6 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return true;
         }
 
-        // No implement
         public virtual async Task<TEntity> GetById(TKey id, bool asNoTracking = true)
         {
             if (asNoTracking)
@@ -70,7 +69,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
             throw new NotImplementedException();
         }
-        // No implement
+
         public virtual async Task<bool> Delete(TKey id)
         {
             try
