@@ -16,7 +16,7 @@ jobs:
       - name: Checkout docker-compose
         uses: actions/checkout@v2
         with:
-          path: ./docker-compose.yml
+          path: docker-compose.yml
         
       - name: DockerHub login
         uses: docker/login-action@v1
@@ -27,6 +27,7 @@ jobs:
       - name: Build with compose
         run: |
           docker-compose up -d
+          
       - name: Push images to Docker Hub
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/socialnetwork.api:latest
