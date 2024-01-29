@@ -20,7 +20,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Create network deployment
-      - run: |
+        run: |
           docker network create deployment_network
           
       - name: Build with compose
