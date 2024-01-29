@@ -5,23 +5,12 @@ services:
     build:
       context: .
       dockerfile: SocialNetwork.API/Dockerfile
-    container_name: app.api
+    container_name: socialnetwork.api
     networks:
-      - default
-      - sqlserver_network
+      - deployment_network
     ports:
       - 9999:9999
     restart: always
-
-  nginx:
-    image: nginx:latest
-    container_name: nginx.api
-    ports:
-      - 1111:1111
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./proxy.conf:/etc/nginx/proxy.conf:ro
 networks:
-  sqlserver_network:
-    external:
-      name: web_default
+  deployment_network:
+    external: true
