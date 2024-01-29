@@ -25,7 +25,7 @@ jobs:
           
       - name: Build with compose
         run: |
-          docker-compose up -d --network deployment_network
+          docker-compose up -d
       
       - name: Add tag
         run: |
