@@ -29,7 +29,7 @@ jobs:
           
       - name: Push images to Docker Hub
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/socialnetwork.api:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/socialnetwork.api
 
       - name: Test container
         run: |
