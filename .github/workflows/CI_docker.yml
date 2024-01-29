@@ -29,7 +29,7 @@ jobs:
       
       - name: Add tag
         run: |
-          docker tag socialnetwork.api ${{ secrets.DOCKER_USERNAME }}/socialnetwork.api
+          docker tag social-network_socialnetwork.api ${{ secrets.DOCKER_USERNAME }}/socialnetwork.api
 
       - name: Push images to Docker Hub
         run: |
