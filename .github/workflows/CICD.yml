@@ -38,3 +38,21 @@ jobs:
       - name: Test container
         run: |
           docker ps -a
+          
+  update_server:
+    name: Updating prod environment
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Replacing container
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOSTNAME }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            docker image pull duonga6/socialnetwork.api
+            docker container stop socialnetwork.api
+            docker container prune -f
+            docker run -d --name socialnetwork.api --network deployment_network --restart unless-stopped -p 9999:9999 duonga6/socialnetwork.api
+            docker image prune -f
