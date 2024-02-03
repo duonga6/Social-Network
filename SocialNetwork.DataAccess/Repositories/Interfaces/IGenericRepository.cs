@@ -14,5 +14,7 @@ namespace SocialNetwork.DataAccess.Repositories.Interfaces
         Task<bool> Add(TEntity entity);
         Task<bool> Update(TEntity entity);
         Task<bool> Delete(TKey id);
+        Task<int> GetCount(Expression<Func<TEntity, bool>> filter = null);
+        IQueryable GetQueryable();
     }
 }

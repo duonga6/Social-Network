@@ -20,7 +20,7 @@ namespace SocialNetwork.Business.Mapper
     {
         public DomainToResponse() 
         {
-            CreateMap<Reaction, GetReactionReponse>();
+            CreateMap<Reaction, GetReactionResponse>();
 
             CreateMap<User, GetUserResponse>();
             CreateMap<User, UserWithTokenResponse>();
@@ -36,12 +36,6 @@ namespace SocialNetwork.Business.Mapper
                 .ForPath(d => d.Author.AvatarUrl, o => o.MapFrom(s => s.Author.AvatarUrl));
 
             CreateMap<PostComment, GetPostCommentResponse>()
-                .ForPath(d => d.User.Id, o => o.MapFrom(s => s.User.Id))
-                .ForPath(d => d.User.FullName, o => o.MapFrom(s => s.User.GetFullName()))
-                .ForPath(d => d.User.AvatarUrl, o => o.MapFrom(s => s.User.AvatarUrl));
-
-            CreateMap<PostReaction, GetPostReactionResponse>()
-                .ForMember(d => d.Name, o => o.MapFrom(s => s.Reaction.Name))
                 .ForPath(d => d.User.Id, o => o.MapFrom(s => s.User.Id))
                 .ForPath(d => d.User.FullName, o => o.MapFrom(s => s.User.GetFullName()))
                 .ForPath(d => d.User.AvatarUrl, o => o.MapFrom(s => s.User.AvatarUrl));

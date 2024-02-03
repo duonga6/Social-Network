@@ -8,6 +8,7 @@ namespace SocialNetwork.Business.Services.Interfaces
     public interface IPostCommentService
     {
         Task<IResponse> GetAll(string requestUserId, string? searchString, int pageSize, int pageNumber, Guid postId);
+        Task<IResponse> GetCount(string requestUserId, Guid Id);
         Task<IResponse> GetById(string requestUserId, Guid id);
         Task<IResponse> Create(string requestUserId, CreatePostCommentRequest request);
         Task<IResponse> Update(string requestUserId, Guid id, UpdatePostCommentRequest request);

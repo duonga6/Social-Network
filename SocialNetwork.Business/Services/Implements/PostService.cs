@@ -8,6 +8,7 @@ using SocialNetwork.Business.DTOs.Post.Responses;
 using SocialNetwork.Business.DTOs.PostComment.Responses;
 using SocialNetwork.Business.DTOs.PostReaction.Requests;
 using SocialNetwork.Business.DTOs.PostReaction.Responses;
+using SocialNetwork.Business.Services.Implements.Base;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
@@ -436,7 +437,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.NotFriend);
             }    
 
-            var reaction = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId, reactionId);
+            var reaction = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId);
 
             if (reaction == null)
             {
@@ -478,14 +479,14 @@ namespace SocialNetwork.Business.Services.Implements
 
             await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.PostReaction);
 
-            var entityAdded = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId, entity.ReactionId);
+            var entityAdded = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId);
 
             return new DataResponse<GetPostReactionResponse>(_mapper.Map<GetPostReactionResponse>(entityAdded), 201, Messages.CreatedSuccessfully);
         }
        
         public async Task<IResponse> UpdateReaction(string requestUserId, Guid postId,int reactionId, CreatePostReactionRequest request)
         {
-            var checkExits = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId, reactionId);
+            var checkExits = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId);
             if (checkExits == null)
             {
                 return new ErrorResponse(404, Messages.NotFound());
@@ -506,20 +507,20 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.UpdateError);
             }
 
-            var entityAdded = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId, entity.ReactionId);
+            var entityAdded = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId);
 
             return new DataResponse<GetPostReactionResponse>(_mapper.Map<GetPostReactionResponse>(entityAdded), 204, Messages.UpdatedSuccessfully);
         }
      
         public async Task<IResponse> DeleteReaction(string requestUserId, Guid postId,int reactionId)
         {
-            var entity = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId, reactionId);
+            var entity = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId);
             if (entity == null)
             {
                 return new ErrorResponse(404, Messages.NotFound());
             }
 
-            await _unitOfWork.PostReactionRepository.Delete(postId, requestUserId, reactionId);
+            await _unitOfWork.PostReactionRepository.Delete(postId, requestUserId);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)

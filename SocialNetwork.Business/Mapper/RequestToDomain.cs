@@ -74,6 +74,10 @@ namespace SocialNetwork.Business.Mapper
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(s => DateTime.UtcNow))
                 .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
 
+            CreateMap<CreatePostReactionsRequest, PostReaction>()
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(s => DateTime.UtcNow))
+                .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
+
         }
     }
 }

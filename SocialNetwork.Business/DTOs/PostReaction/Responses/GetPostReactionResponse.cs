@@ -1,12 +1,14 @@
-﻿using SocialNetwork.Business.DTOs.User.Responses;
+﻿using SocialNetwork.Business.DTOs.Reaction.Response;
+using SocialNetwork.Business.DTOs.User.Responses;
 
 namespace SocialNetwork.Business.DTOs.PostReaction.Responses
 {
     public class GetPostReactionResponse
     {
-        public int ReactionId { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public BasicUserResponse User { get; set; } = null!;
-        public DateTime CreatedAt { get; set; }
+        public int Id { set; get; }
+        public string Name { set; get; } = string.Empty;
+        public string IconUrl { set; get; } = string.Empty;
+        public List<string> Users { set; get; } = null!;
+        public int Total { set; get; }
     }
 }

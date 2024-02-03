@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.DataAccess.Context;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
@@ -30,6 +31,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .AsNoTracking()
                 .Where(x => x.PostId == id)
                 .Include(x => x.Reaction)
+                .Include(x => x.User)
                 .ToListAsync();
         }
 
@@ -38,11 +40,16 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return await _dbSet.AsNoTracking().Where(x => x.UserId == id).Include(x => x.Reaction).ToListAsync();
         }
 
-        public async Task<PostReaction> GetById(Guid postId, string userId, int reactionId)
+        public async Task<PostReaction> GetById(Guid postId, string userId, bool noTracking = true)
         {
+            if (noTracking)
             return await _dbSet.Include(x => x.Reaction)
+                .Include(x => x.User)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.PostId == postId && x.UserId == userId && x.ReactionId == reactionId);
+                .FirstOrDefaultAsync(x => x.PostId == postId && x.UserId == userId);
+
+            return await _dbSet.Include(x => x.Reaction)
+                .FirstOrDefaultAsync(x => x.PostId == postId && x.UserId == userId);
         }
 
         public override async Task<bool> Update(PostReaction postReaction)
@@ -59,9 +66,9 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return true;
         }
 
-        public async Task<bool> Delete(Guid postId, string userId, int reactionId)
+        public async Task<bool> Delete(Guid postId, string userId)
         {
-            var entity = await _dbSet.FirstOrDefaultAsync(x => x.PostId == postId && x.UserId == userId && x.ReactionId == reactionId);
+            var entity = await _dbSet.FirstOrDefaultAsync(x => x.PostId == postId && x.UserId == userId);
             if (entity == null)
             {
                 return false;
@@ -71,6 +78,32 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return true;
         }
 
+        public override async Task<PostReaction> FindOneBy(Expression<Func<PostReaction, bool>> filter = null, bool asNoTracking = true)
+        {
+            if (asNoTracking)
+            {
+                return await _dbSet.Include(x => x.Reaction).AsNoTracking().FirstOrDefaultAsync(filter);
+            }
+            return await _dbSet.Include(x => x.Reaction).FirstOrDefaultAsync(filter);
+        }
+
+        public override async Task<ICollection<PostReaction>> FindBy(Expression<Func<PostReaction, bool>> filter = null, bool asNoTracking = true)
+        {
+            if (asNoTracking)
+            {
+                return await _dbSet
+                    .Include(x => x.Reaction)
+                    .Include(x => x.User)
+                    .AsNoTracking()
+                    .Where(filter)
+                    .ToListAsync();
+            }
+            return await _dbSet
+                    .Include(x => x.Reaction)
+                    .Include(x => x.User)
+                    .Where(filter)
+                    .ToListAsync();
+        }
 
         public override async Task<ICollection<PostReaction>> GetPaged(int pageSize, int pageNumber, Expression<Func<PostReaction, bool>> filter = null, Expression<Func<PostReaction, object>> orderBy = null, bool isDesc = true)
         {

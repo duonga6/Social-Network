@@ -7,6 +7,7 @@ using SocialNetwork.Business.DTOs.CommentReaction.Requests;
 using SocialNetwork.Business.DTOs.CommentReaction.Responses;
 using SocialNetwork.Business.DTOs.PostComment.Requests;
 using SocialNetwork.Business.DTOs.PostComment.Responses;
+using SocialNetwork.Business.Services.Implements.Base;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
@@ -139,6 +140,24 @@ namespace SocialNetwork.Business.Services.Implements
 
         }
 
+        public async Task<IResponse> GetCount(string requestUserId, Guid Id)
+        {
+            var post = await _unitOfWork.PostRepository.GetById(Id);
+            if (post == null)
+            {
+                return new ErrorResponse(404, Messages.NotFound("Post"));
+            }
+
+            if (!await CheckAccessPost(requestUserId, post.AuthorId))
+            {
+                return new ErrorResponse(400, Messages.NotFriend);
+            }
+
+            int count = await _unitOfWork.PostCommentRepository.GetCount(x => x.PostId == Id);
+
+            return new DataResponse<int>(count, 200, Messages.GetSuccessfully);
+        }
+
         public async Task<IResponse> Update(string requestUserId, Guid id, UpdatePostCommentRequest request)
         {
             var comment = await _unitOfWork.PostCommentRepository.GetById(id, false);
@@ -188,7 +207,6 @@ namespace SocialNetwork.Business.Services.Implements
 
             // Is admin
             return await _userManager.IsInRoleAsync(targetUser, RoleName.Administrator);
-
         }
         
         private async Task<bool> CheckOwnerComment(string requestUserId, string authorCommentId)

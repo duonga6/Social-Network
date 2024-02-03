@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
 
-namespace SocialNetwork.Business.Services.Implements
+namespace SocialNetwork.Business.Services.Implements.Base
 {
     public class BaseServices<T> where T : class
     {

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SocialNetwork.DataAccess.Context;
 
@@ -11,9 +12,10 @@ using SocialNetwork.DataAccess.Context;
 namespace SocialNetwork.DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240131162208_add-reaction-icon-url")]
+    partial class addreactioniconurl
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,15 +53,15 @@ namespace SocialNetwork.DataAccess.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "b622ccea-2e5f-4c43-b0e7-bef932d0bdb3",
-                            ConcurrencyStamp = "c5449915-64ed-430a-96a8-faede493916b",
+                            Id = "d893ce77-f6dd-4308-9f63-c5a71bf169a3",
+                            ConcurrencyStamp = "0045a8cf-c6b0-4cf6-87a5-303c09f35188",
                             Name = "Administrator",
                             NormalizedName = "ADMINISTRATOR"
                         },
                         new
                         {
-                            Id = "e979a8bc-efed-4912-ad9e-9b40c9a1d188",
-                            ConcurrencyStamp = "43c1c208-f846-43f5-80da-187a55357619",
+                            Id = "b971846b-4fcc-45bf-b2b5-6d9627433c64",
+                            ConcurrencyStamp = "cb1b3539-e119-48a3-8ed2-8655e78ce94a",
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -275,26 +277,26 @@ namespace SocialNetwork.DataAccess.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(1820),
+                            CreatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(6884),
                             Name = "Pending",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(1823)
+                            UpdatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(6886)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(1827),
+                            CreatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(6890),
                             Name = "Accepted",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(1827)
+                            UpdatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(6891)
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(1828),
+                            CreatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(6891),
                             Name = "Blocked",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(1828)
+                            UpdatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(6892)
                         });
                 });
 
@@ -328,18 +330,18 @@ namespace SocialNetwork.DataAccess.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(2177),
+                            CreatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(7321),
                             Name = "Female",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(2178)
+                            UpdatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(7321)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(2181),
+                            CreatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(7325),
                             Name = "Male",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(2182)
+                            UpdatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(7325)
                         });
                 });
 
@@ -373,42 +375,42 @@ namespace SocialNetwork.DataAccess.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(2446),
+                            CreatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(7720),
                             Name = "Text",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(2446)
+                            UpdatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(7720)
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(2449),
+                            CreatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(7724),
                             Name = "Image",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(2449)
+                            UpdatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(7724)
                         },
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(2450),
+                            CreatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(7725),
                             Name = "Video",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(2450)
+                            UpdatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(7725)
                         },
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(2451),
+                            CreatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(7726),
                             Name = "File",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(2451)
+                            UpdatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(7726)
                         },
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(2452),
+                            CreatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(7727),
                             Name = "Hyper link",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 405, DateTimeKind.Utc).AddTicks(2452)
+                            UpdatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 791, DateTimeKind.Utc).AddTicks(7727)
                         });
                 });
 
@@ -643,9 +645,6 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<string>("ColorCode")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -671,62 +670,56 @@ namespace SocialNetwork.DataAccess.Migrations
                         new
                         {
                             Id = 1,
-                            ColorCode = "#0561F2",
-                            CreatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 411, DateTimeKind.Utc).AddTicks(5889),
+                            CreatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 797, DateTimeKind.Utc).AddTicks(7626),
                             IconUrl = "https://ibb.co/QddcY6g",
-                            Name = "Thích",
+                            Name = "Like",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 411, DateTimeKind.Utc).AddTicks(5891)
+                            UpdatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 797, DateTimeKind.Utc).AddTicks(7628)
                         },
                         new
                         {
                             Id = 2,
-                            ColorCode = "#f33e58",
-                            CreatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 411, DateTimeKind.Utc).AddTicks(5896),
+                            CreatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 797, DateTimeKind.Utc).AddTicks(7632),
                             IconUrl = "https://ibb.co/vsf57Q1",
-                            Name = "Yêu thích",
+                            Name = "Love",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 411, DateTimeKind.Utc).AddTicks(5896)
+                            UpdatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 797, DateTimeKind.Utc).AddTicks(7632)
                         },
                         new
                         {
                             Id = 3,
-                            ColorCode = "#F7B125",
-                            CreatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 411, DateTimeKind.Utc).AddTicks(5897),
+                            CreatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 797, DateTimeKind.Utc).AddTicks(7633),
                             IconUrl = "https://ibb.co/FqzXMg0",
                             Name = "Haha",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 411, DateTimeKind.Utc).AddTicks(5897)
+                            UpdatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 797, DateTimeKind.Utc).AddTicks(7633)
                         },
                         new
                         {
                             Id = 4,
-                            ColorCode = "#F7B125",
-                            CreatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 411, DateTimeKind.Utc).AddTicks(5898),
+                            CreatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 797, DateTimeKind.Utc).AddTicks(7634),
                             IconUrl = "https://ibb.co/mvpmMS8",
                             Name = "Wow",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 411, DateTimeKind.Utc).AddTicks(5898)
+                            UpdatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 797, DateTimeKind.Utc).AddTicks(7634)
                         },
                         new
                         {
                             Id = 5,
-                            ColorCode = "#F7B125",
-                            CreatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 411, DateTimeKind.Utc).AddTicks(5899),
+                            CreatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 797, DateTimeKind.Utc).AddTicks(7635),
                             IconUrl = "https://ibb.co/W35v5Gz",
-                            Name = "Buồn",
+                            Name = "Sad",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 411, DateTimeKind.Utc).AddTicks(5899)
+                            UpdatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 797, DateTimeKind.Utc).AddTicks(7635)
                         },
                         new
                         {
                             Id = 6,
-                            ColorCode = "#E9710F",
-                            CreatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 411, DateTimeKind.Utc).AddTicks(5901),
+                            CreatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 797, DateTimeKind.Utc).AddTicks(7637),
                             IconUrl = "https://ibb.co/FYw1Gfp",
-                            Name = "Phẫn nộ",
+                            Name = "Angry",
                             Status = 1,
-                            UpdatedAt = new DateTime(2024, 2, 1, 16, 31, 30, 411, DateTimeKind.Utc).AddTicks(5902)
+                            UpdatedAt = new DateTime(2024, 1, 31, 16, 22, 7, 797, DateTimeKind.Utc).AddTicks(7637)
                         });
                 });
 

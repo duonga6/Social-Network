@@ -26,6 +26,7 @@ namespace SocialNetwork.Business
             services.AddScoped<INotificationService, NotificationService>();
             services.AddTransient<IMailService, MailService>();
             services.AddScoped<IMediaTypeService, MediaTypeService>();
+            services.AddScoped<IPostReactionService, PostReactionService>();
         }
     }
 }

@@ -2,8 +2,8 @@
 {
     public enum FriendshipEnum
     {
-        Pending = 0,
-        Accepted = 1,
-        Blocked = 2,
+        Pending = 1,
+        Accepted = 2,
+        Blocked = 3,
     }
 }

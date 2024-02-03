@@ -90,6 +90,18 @@ namespace SocialNetwork.API.Controllers
             return await _postCommentService.Delete(UserId, Id);
         }
 
+        /// <summary>
+        /// Get sum comment of post
+        /// </summary>
+        /// <param name="postId">Post id</param>
+        /// <returns></returns>
+        [HttpGet("GetCount")]
+        [ProducesResponseType(typeof(DataResponse<int>), 200)]
+        public async Task<IResponse> GetCount([FromQuery, Required] Guid postId)
+        {
+            return await _postCommentService.GetCount(UserId, postId);
+        }
+
         #endregion
 
         #region Reaction

@@ -6,6 +6,7 @@ using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Role.Request;
 using SocialNetwork.Business.DTOs.Role.Responses;
 using SocialNetwork.Business.Helper;
+using SocialNetwork.Business.Services.Implements.Base;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;

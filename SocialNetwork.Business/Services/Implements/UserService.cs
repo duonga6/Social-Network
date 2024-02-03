@@ -12,6 +12,7 @@ using SocialNetwork.Business.DTOs.Token.Requests;
 using SocialNetwork.Business.DTOs.User.Requests;
 using SocialNetwork.Business.DTOs.User.Responses;
 using SocialNetwork.Business.Helper;
+using SocialNetwork.Business.Services.Implements.Base;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Utilities.Enum;
 using SocialNetwork.Business.Wrapper;

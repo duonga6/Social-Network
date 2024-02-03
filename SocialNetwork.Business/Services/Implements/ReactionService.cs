@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Reaction.Requests;
 using SocialNetwork.Business.DTOs.Reaction.Response;
+using SocialNetwork.Business.Services.Implements.Base;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
@@ -34,7 +35,7 @@ namespace SocialNetwork.Business.Services.Implements
             {
                 return new ErrorResponse(400, Messages.AddError);
             }
-            return new DataResponse<GetReactionReponse>(_mapper.Map<GetReactionReponse>(addEntity), 201);
+            return new DataResponse<GetReactionResponse>(_mapper.Map<GetReactionResponse>(addEntity), 201);
         }
 
         public async Task<IResponse> Delete(int id)
@@ -59,7 +60,7 @@ namespace SocialNetwork.Business.Services.Implements
         public async Task<IResponse> GetAll()
         {
             var entity = await _unitOfWork.ReactionRepository.GetAll();
-            return new DataResponse<List<GetReactionReponse>>(_mapper.Map<List<GetReactionReponse>>(entity), 200);
+            return new DataResponse<List<GetReactionResponse>>(_mapper.Map<List<GetReactionResponse>>(entity), 200);
         }
 
         public async Task<IResponse> GetById(int id)
@@ -70,7 +71,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(404, Messages.NotFound());
             }
 
-            return new DataResponse<GetReactionReponse>(_mapper.Map<GetReactionReponse>(entity), 200);
+            return new DataResponse<GetReactionResponse>(_mapper.Map<GetReactionResponse>(entity), 200);
         }
 
         public async Task<IResponse> Update(int Id, UpdateReactionRequest entity)
@@ -97,7 +98,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.UpdateError);
             }
 
-            return new DataResponse<GetReactionReponse>(_mapper.Map<GetReactionReponse>(updateEntity), 200);
+            return new DataResponse<GetReactionResponse>(_mapper.Map<GetReactionResponse>(updateEntity), 200);
             
         }
     }

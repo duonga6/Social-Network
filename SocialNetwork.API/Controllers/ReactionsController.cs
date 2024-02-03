@@ -22,6 +22,7 @@ namespace SocialNetwork.API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IResponse> GetAll()
         {
             return await _reactionService.GetAll();

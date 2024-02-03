@@ -88,6 +88,11 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             }
         }
 
+        public virtual async Task<int> GetCount(Expression<Func<TEntity, bool>> filter = null)
+        {
+            return await _dbSet.Where(filter).CountAsync();
+        }
+
         public virtual async Task<ICollection<TEntity>> GetPaged(int pageSize, int pageNumber, Expression<Func<TEntity, bool>> filter = null, Expression<Func<TEntity, object>> orderBy = null, bool isDesc = true)
         {
             var query = _dbSet
@@ -116,6 +121,9 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .Where(filter)
                 .CountAsync();
         }
-
+        public IQueryable GetQueryable()
+        {
+            return _dbSet.AsQueryable();
+        }
     }
 }

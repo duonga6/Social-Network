@@ -5,6 +5,7 @@ using Org.BouncyCastle.Asn1.Ocsp;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Friendship.Requests;
 using SocialNetwork.Business.DTOs.Friendship.Responses;
+using SocialNetwork.Business.Services.Implements.Base;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Utilities.Enum;
 using SocialNetwork.Business.Wrapper;
@@ -185,7 +186,7 @@ namespace SocialNetwork.Business.Services.Implements
                 TargetUserId = request.TargetUserId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                FriendshipTypeId = (int)(int)FriendshipEnum.Pending
+                FriendshipTypeId = (int)FriendshipEnum.Pending
             };
 
             await _unitOfWork.FriendshipRepository.Add(newFriendShip);

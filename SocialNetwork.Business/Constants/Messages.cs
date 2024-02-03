@@ -24,8 +24,8 @@
 
         // Reaction
         public static string ReactionExist => "Name and Code are already exist";
-        public static string PostReactionExist => "This user has already added a reaction";
-        public static string CommentReactionExist => "This user has already added a reaction";
+        public static string PostReactionExist => "This user has already added a reaction for this post";
+        public static string CommentReactionExist => "This user has already added a reaction for this comment";
 
         // User
         public static string LoginSuccessfully => "Login successfully";
