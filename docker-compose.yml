@@ -5,7 +5,6 @@ services:
     build:
       context: .
       dockerfile: ./SocialNetwork.API/Dockerfile
-    container_name: facebook.api
     ports:
       - 9999:9999
     restart: always
@@ -13,7 +12,6 @@ services:
 
   nginx:
     image: nginx:latest
-    container_name: nginx_facebook.api
     ports:
       - 1111:1111
     volumes:

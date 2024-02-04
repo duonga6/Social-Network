@@ -25,11 +25,12 @@ jobs:
       
       - name: Add tag
         run: |
-          docker images
+          docker tag nginx duonga6/nginx-facebook.api
 
       - name: Push images to Docker Hub
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/facebook.api
+          docker push ${{ secrets.DOCKER_USERNAME }}/nginx-facebook.api
 
       - name: Test container
         run: |
@@ -48,7 +49,10 @@ jobs:
           password: ${{ secrets.SERVER_SN_API_PASSWORD }}
           script: |
             docker image pull duonga6/facebook.api
+            docker image pull duonga6/nginx-facebook.api
             docker container stop facebook.api
+            docker container stop nginx-facebook.api
             docker container prune -f
-            docker run -d --name facebook.api --restart unless-stopped -p 9999:9999 duonga6/facebook.api
+            docker run -d --network nginx-facebook --name facebook.api --restart unless-stopped -p 9999:9999 duonga6/facebook.api
+            docker run -d --network nginx-facebook --name nginx-facebook.api --restart unless-stopped -p 1111:1111 duonga6/nginx-facebook.api
             docker image prune -f
