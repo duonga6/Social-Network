@@ -6,11 +6,10 @@ services:
       context: .
       dockerfile: SocialNetwork.API/Dockerfile
     container_name: facebook.api
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
     ports:
       - 9999:9999
     restart: always
+
   nginx:
     image: nginx:latest
     container_name: nginx_facebook.api
