@@ -25,7 +25,7 @@ jobs:
       
       - name: Add tag
         run: |
-          docker tag facebook_facebook.api ${{ secrets.DOCKER_USERNAME }}/facebook.api
+          docker tag socialnetwork_facebook.api ${{ secrets.DOCKER_USERNAME }}/facebook.api
 
       - name: Push images to Docker Hub
         run: |
