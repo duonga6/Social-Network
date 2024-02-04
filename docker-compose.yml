@@ -9,6 +9,7 @@ services:
     ports:
       - 9999:9999
     restart: always
+    image: duonga6/facebook.api
 
   nginx:
     image: nginx:latest
