@@ -55,7 +55,7 @@ jobs:
             docker container stop nginx-facebook.api
             docker container prune -f
             docker network rm facebookapi-network
-            docker create network facebookapi-network
+            docker network create facebookapi-network
             docker run -d --network facebookapi-network --name facebook.api --restart unless-stopped -p 9999:9999 duonga6/facebook.api
             docker run -d --network facebookapi-network --name nginx-facebook.api -p 1111:1111 duonga6/nginx-facebook.api
             docker image prune -f
