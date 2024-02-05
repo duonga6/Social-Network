@@ -8,13 +8,21 @@ services:
     ports:
       - 9999:9999
     restart: always
-    image: duonga6/facebook.api 
+    image: duonga6/facebook.api
+    container_name: facebook.api
+    networks:
+      - facebookapi-network
 
   nginx:
-    image: nginx:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    image: duonga6/nginx-facebook.api
+    container_name: nginx-facebook.api
     ports:
       - 1111:1111
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./proxy.conf:/etc/nginx/proxy.conf:ro
-  
+    networks:
+      - facebookapi-network
+networks:
+  facebookapi-network:
+    external: true

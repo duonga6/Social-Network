@@ -12,6 +12,7 @@
   <ItemGroup>
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
+    <None Include="Dockerfile.nginx" />
     <None Include="nginx.conf" />
     <None Include="proxy.conf" />
   </ItemGroup>
