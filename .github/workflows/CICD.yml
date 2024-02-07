@@ -21,8 +21,7 @@ jobs:
 
       - name: Build
         run: |
-          ls
-          docker build SocialNetwork.API/ -t duonga6/facebook.api
+          docker build . -t duonga6/facebook.api
 
       - name: Push images to Docker Hub
         run: |
