@@ -47,5 +47,5 @@ jobs:
             docker image pull duonga6/nginx-facebook.api
             docker container stop facebook.api
             docker container prune -f
-            docker run -d --name facebook.api --restart unless-stopped -p 9999:9999 duonga6/facebook.api
+            docker run -d --name facebook.api --network nginx-network --restart unless-stopped -p 9999:9999 duonga6/facebook.api
             docker image prune -f
