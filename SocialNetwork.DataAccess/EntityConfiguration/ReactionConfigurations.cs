@@ -21,37 +21,37 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 new() { 
                     Id = (int)ReactionEnum.Like,
                     Name = "Thích",
-                    IconUrl = "https://ibb.co/QddcY6g",
+                    IconUrl = "https://i.ibb.co/BNNPTgp/like.png",
                     ColorCode = "#0561F2"
                 },
                 new() { 
                     Id = (int)ReactionEnum.Love,
                     Name = "Yêu thích",
-                    IconUrl = "https://ibb.co/vsf57Q1",
+                    IconUrl = "https://i.ibb.co/wJ8H9wy/love.png",
                     ColorCode = "#f33e58"
                 },
                 new() { 
                     Id = (int)ReactionEnum.Haha,
                     Name = "Haha",
-                    IconUrl = "https://ibb.co/FqzXMg0",
+                    IconUrl = "https://i.ibb.co/BKBGxqr/haha.png",
                     ColorCode = "#F7B125"
                 },
                 new() { 
                     Id = (int)ReactionEnum.Wow,
                     Name = "Wow",
-                    IconUrl = "https://ibb.co/mvpmMS8",
+                    IconUrl = "https://i.ibb.co/hX0ktCf/wow.png",
                     ColorCode = "#F7B125"
                 },
                 new() { 
                     Id = (int)ReactionEnum.Sad,
                     Name = "Buồn",
-                    IconUrl = "https://ibb.co/W35v5Gz",
+                    IconUrl = "https://i.ibb.co/9vgHgc4/sad.png",
                     ColorCode = "#F7B125"
                 },
                 new() { 
                     Id = (int)ReactionEnum.Angry,
                     Name = "Phẫn nộ",
-                    IconUrl = "https://ibb.co/FYw1Gfp",
+                    IconUrl = "https://i.ibb.co/dp2vn3Z/angry.png",
                     ColorCode = "#E9710F"
                 }
             };

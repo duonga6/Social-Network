@@ -33,7 +33,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return true;
         }
 
-        public async Task<User> GetById(string id, bool noTracking)
+        public async Task<User> GetById(string id, bool noTracking = true)
         {
             if (noTracking)
             {

@@ -88,7 +88,7 @@ app.UseCors(options =>
 
 app.UseStaticFiles();
 
-app.UseCustomExceptionMiddleware();
+//app.UseCustomExceptionMiddleware();
 
 app.UseAuthentication();
 app.UseAuthorization();

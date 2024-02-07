@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using SocialNetwork.DataAccess.Utilities.Enum;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SocialNetwork.DataAccess.Entities

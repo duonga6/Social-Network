@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.API.Controllers.Base;
 using SocialNetwork.Business.DTOs.PostReaction.Requests;
 using SocialNetwork.Business.DTOs.PostReaction.Responses;
+using SocialNetwork.Business.DTOs.Reaction.Response;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
@@ -50,7 +51,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPut]
-        [ProducesResponseType(typeof(DataResponse<GetPostReactionResponse>), 200)]
+        [ProducesResponseType(typeof(DataResponse<GetReactionResponse>), 200)]
         public async Task<IResponse> Update(UpdatePostReactionRequest request)
         {
             return await _postReactionService.Update(UserId, request);
@@ -74,7 +75,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="postId"></param>
         /// <returns></returns>
         [HttpGet("GetByPost/{postId}")]
-        [ProducesResponseType(typeof(DataResponse<List<GetPostReactionResponse>>), 200)]
+        [ProducesResponseType(typeof(DataResponse<GetPostReactionResponse>), 200)]
         public async Task<IResponse> GetByPost(Guid postId)
         {
             return await _postReactionService.GetByPost(UserId, postId);

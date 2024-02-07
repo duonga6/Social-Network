@@ -5,6 +5,7 @@ using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.PostReaction.Requests;
 using SocialNetwork.Business.DTOs.PostReaction.Responses;
 using SocialNetwork.Business.DTOs.Reaction.Response;
+using SocialNetwork.Business.DTOs.User.Responses;
 using SocialNetwork.Business.Services.Implements.Base;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
@@ -70,7 +71,7 @@ namespace SocialNetwork.Business.Services.Implements
         public async Task<IResponse> GetByPost(string requestUserId, Guid postId)
         {
             var post = await _unitOfWork.PostRepository.GetById(postId);
-
+            
             if (post == null)
             {
                 return new ErrorResponse(404, Messages.NotFound("Post"));
@@ -81,15 +82,22 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.NotFriend);
             }
 
-            var postReactions = new List<GetPostReactionResponse>();
-
+            // obj return
+            var postReactions = new GetPostReactionResponse();
+            
+            // get reaction of this post by each ReactionEnum
             foreach (ReactionEnum react in Enum.GetValues(typeof(ReactionEnum)))
             {
                 var item = await GetPostReactionByReaction(requestUserId, postId, (int)react);
-                if (item.Total > 0) postReactions.Add(item);
+
+                if (item != null)
+                {
+                    postReactions.Reactions.Add(item);
+                } 
+                    
             }
 
-            return new DataResponse<List<GetPostReactionResponse>>(postReactions, 200);
+            return new DataResponse<GetPostReactionResponse>(postReactions, 200);
         }
 
         public async Task<IResponse> Create(string requestUserId, CreatePostReactionsRequest request)
@@ -205,10 +213,12 @@ namespace SocialNetwork.Business.Services.Implements
             return await _userManager.IsInRoleAsync(targetUser, RoleName.Administrator);
         }
     
-        private async Task<GetPostReactionResponse> GetPostReactionByReaction(string requestUserId, Guid postId, int reactionId)
+        private async Task<PostReactionDetail?> GetPostReactionByReaction(string requestUserId, Guid postId, int reactionId)
         {
             var reaction = await _unitOfWork.ReactionRepository.GetById(reactionId);
             var postReactionCount = await _unitOfWork.PostReactionRepository.Count(x => x.PostId == postId && x.ReactionId == reactionId);
+
+            if (postReactionCount == 0) return null;
 
             ICollection<PostReaction> postReactions = null!;
 
@@ -221,14 +231,35 @@ namespace SocialNetwork.Business.Services.Implements
                 postReactions = await _unitOfWork.PostReactionRepository.FindBy(x => x.PostId == postId && x.ReactionId == reactionId);
             }
 
-            var response = new GetPostReactionResponse()
+            var response = new PostReactionDetail()
             {
                 Id = reaction.Id,
                 Name = reaction.Name,
                 IconUrl = reaction.IconUrl,
-                Users = postReactions.Select(x => x.User.GetFullName()).ToList(),
+                ColorCode = reaction.ColorCode,
+                Users = postReactions.Select(x => _mapper.Map<BasicUserResponse>(x.User)).ToList(),
                 Total = postReactionCount
             };
+
+            // user request is reacted this post ?
+            var userReacted = await _unitOfWork.PostReactionRepository.FindOneBy(x => x.UserId == requestUserId && x.PostId == postId);
+
+            // move it to first element of PostReactionDetail.Users
+            if (userReacted != null)
+            {
+                var isExistedInUsers = response.Users.FirstOrDefault(x => x.Id == requestUserId);
+
+                if (isExistedInUsers != null)
+                {
+                    response.Users.Insert(0, isExistedInUsers);
+                    response.Users.Remove(isExistedInUsers);
+                } else
+                {
+                    var user = _mapper.Map<BasicUserResponse>(await _unitOfWork.UserRepository.GetById(userReacted.UserId));
+                    response.Users.Insert(0, user);
+                    response.Total -= 1;
+                }
+            }
 
             return response;
         }

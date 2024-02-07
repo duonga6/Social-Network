@@ -82,9 +82,16 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
             if (asNoTracking)
             {
-                return await _dbSet.Include(x => x.Reaction).AsNoTracking().FirstOrDefaultAsync(filter);
+                return await _dbSet
+                    .AsNoTracking()
+                    .Where(filter)
+                    .Include(x => x.Reaction)
+                    .FirstOrDefaultAsync();
             }
-            return await _dbSet.Include(x => x.Reaction).FirstOrDefaultAsync(filter);
+            return await _dbSet
+                .Where(filter)
+                .Include(x => x.Reaction)
+                .FirstOrDefaultAsync();
         }
 
         public override async Task<ICollection<PostReaction>> FindBy(Expression<Func<PostReaction, bool>> filter = null, bool asNoTracking = true)
@@ -92,10 +99,10 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             if (asNoTracking)
             {
                 return await _dbSet
-                    .Include(x => x.Reaction)
-                    .Include(x => x.User)
                     .AsNoTracking()
                     .Where(filter)
+                    .Include(x => x.Reaction)
+                    .Include(x => x.User)
                     .ToListAsync();
             }
             return await _dbSet

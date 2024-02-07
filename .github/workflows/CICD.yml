@@ -18,20 +18,14 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      
-      - name: Create network
-        run: |
-          docker network create facebookapi-network
 
-      - name: Build with compose
+      - name: Build
         run: |
-          docker-compose build
-          docker-compose up -d
+          docker build . -t duonga6/facebook.api
 
       - name: Push images to Docker Hub
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/facebook.api
-          docker push ${{ secrets.DOCKER_USERNAME }}/nginx-facebook.api
 
       - name: Test container
         run: |
@@ -49,14 +43,8 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            docker image pull duonga6/facebook.api
             docker image pull duonga6/nginx-facebook.api
             docker container stop facebook.api
-            docker container stop nginx-facebook.api
             docker container prune -f
-            docker network rm facebookapi-network
-            docker network create facebookapi-network
-            docker run -d --network facebookapi-network --name facebook.api --restart unless-stopped -p 9999:9999 duonga6/facebook.api
-            docker run -d --network facebookapi-network --name nginx-facebook.api -p 1111:1111 duonga6/nginx-facebook.api
+            docker run -d --name facebook.api --restart unless-stopped -p 9999:9999 duonga6/facebook.api
             docker image prune -f
-            ufw-docker allow nginx-facebook.api

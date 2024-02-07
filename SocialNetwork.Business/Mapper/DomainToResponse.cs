@@ -23,6 +23,9 @@ namespace SocialNetwork.Business.Mapper
             CreateMap<Reaction, GetReactionResponse>();
 
             CreateMap<User, GetUserResponse>();
+            CreateMap<User, BasicUserResponse>()
+                .ForMember(d => d.FullName, o => o.MapFrom(x => x.GetFullName()));
+
             CreateMap<User, UserWithTokenResponse>();
 
             CreateMap<IdentityRole, GetRoleResponse>();

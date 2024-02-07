@@ -99,8 +99,10 @@ namespace SocialNetwork.Business.Services.Implements
             }
 
             var token = await _tokenService.CreateToken(user);
+            var userResponse = _mapper.Map<UserWithTokenResponse>(user);
+            userResponse.Token = token;
 
-            return new DataResponse<Token>(token, 201, Messages.RegistrationSuccessfully);
+            return new DataResponse<UserWithTokenResponse>(userResponse, 201, Messages.RegistrationSuccessfully);
         }
 
         public async Task<IResponse> Login(LoginRequest request)
@@ -494,7 +496,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return true;
             }
 
-            return await CheckFriend(loggedUserId, requestUserId);
+            return await IsFriend(loggedUserId, requestUserId);
         }
 
         #endregion
@@ -692,7 +694,7 @@ namespace SocialNetwork.Business.Services.Implements
         #endregion
 
     
-        private async Task<bool> CheckFriend(string userId1, string userId2)
+        private async Task<bool> IsFriend(string userId1, string userId2)
         {
             var result = await _unitOfWork.FriendshipRepository.FindOneBy(x => x.RequestUserId == userId1 && x.TargetUserId == userId2 || x.RequestUserId == userId1 && x.TargetUserId == userId2);
             return result != null;

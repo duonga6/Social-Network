@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SocialNetwork.DataAccess.Entities;
+using SocialNetwork.DataAccess.Utilities.Enum;
 
 namespace SocialNetwork.DataAccess.EntityConfiguration
 {
@@ -16,27 +17,27 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
             {
                 new()
                 {
-                    Id = 1,
+                    Id = (int)MediaTypeEnum.Text,
                     Name = "Text",
                 },
                 new()
                 {
-                    Id = 2,
+                    Id = (int)MediaTypeEnum.Image,
                     Name = "Image",
                 },
                 new()
                 {
-                    Id = 3,
+                    Id = (int)MediaTypeEnum.Video,
                     Name = "Video"
                 },
                 new()
                 {
-                    Id = 4,
+                    Id = (int)MediaTypeEnum.File,
                     Name = "File"
                 },
                 new()
                 {
-                    Id = 5,
+                    Id = (int)MediaTypeEnum.HyperLink,
                     Name = "Hyper link"
                 }
             };
