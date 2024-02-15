@@ -60,7 +60,10 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         public async Task<ICollection<PostComment>> GetByPost(Guid postId)
         {
             var comments = await _dbSet.AsNoTracking()
-                .Where(x => x.PostId == postId && x.Status == 1)
+                .Where(x => x.PostId == postId && x.Status == 1 && x.ParentCommentId == null)
+                .Include(x => x.User)
+                .Include(x => x.ChildrenComment)
+                .ThenInclude(x => x.User)
                 .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();
 

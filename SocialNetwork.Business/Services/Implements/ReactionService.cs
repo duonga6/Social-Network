@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
-using SocialNetwork.Business.DTOs.Reaction.Requests;
-using SocialNetwork.Business.DTOs.Reaction.Response;
+using SocialNetwork.Business.DTOs.Requests;
+using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.Services.Implements.Base;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;

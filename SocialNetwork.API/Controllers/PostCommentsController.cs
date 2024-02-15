@@ -2,10 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.API.Controllers.Base;
 using SocialNetwork.API.Utilities;
-using SocialNetwork.Business.DTOs.CommentReaction.Requests;
-using SocialNetwork.Business.DTOs.CommentReaction.Responses;
+using SocialNetwork.Business.DTOs.CommentReactions.Requests;
+using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.DTOs.PostComment.Requests;
-using SocialNetwork.Business.DTOs.PostComment.Responses;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
@@ -100,6 +99,18 @@ namespace SocialNetwork.API.Controllers
         public async Task<IResponse> GetCount([FromQuery, Required] Guid postId)
         {
             return await _postCommentService.GetCount(UserId, postId);
+        }
+
+        /// <summary>
+        /// Get overview comment of post
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <returns></returns>
+        [ProducesResponseType(typeof(DataResponse<GetCommentReactionResponse>), 200)]
+        [HttpGet("GetOverview/{postId}")]
+        public async Task<IResponse> GetOverview(Guid postId)
+        {
+            return await _postCommentService.GetOverviewComment(UserId, postId);
         }
 
         #endregion

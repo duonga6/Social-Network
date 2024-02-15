@@ -1,6 +1,5 @@
-﻿using SocialNetwork.Business.DTOs.Reaction.Requests;
+﻿using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.Wrapper.Interfaces;
-using SocialNetwork.DataAccess.Entities;
 
 namespace SocialNetwork.Business.Services.Interfaces
 {

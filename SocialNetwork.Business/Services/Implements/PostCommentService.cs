@@ -3,10 +3,9 @@ using LinqKit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
-using SocialNetwork.Business.DTOs.CommentReaction.Requests;
-using SocialNetwork.Business.DTOs.CommentReaction.Responses;
+using SocialNetwork.Business.DTOs.CommentReactions.Requests;
+using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.DTOs.PostComment.Requests;
-using SocialNetwork.Business.DTOs.PostComment.Responses;
 using SocialNetwork.Business.Services.Implements.Base;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
@@ -24,12 +23,14 @@ namespace SocialNetwork.Business.Services.Implements
         private readonly UserManager<User> _userManager;
         private readonly INotificationService _notificationService;
         private readonly IFriendshipService _friendshipService;
+        private readonly ICommentReactionService _commentReactionService;
 
-        public PostCommentService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<PostCommentService> logger, UserManager<User> userManager, INotificationService notificationService, IFriendshipService friendshipService) : base(unitOfWork, mapper, logger)
+        public PostCommentService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<PostCommentService> logger, UserManager<User> userManager, INotificationService notificationService, IFriendshipService friendshipService, ICommentReactionService commentReactionService) : base(unitOfWork, mapper, logger)
         {
             _userManager = userManager;
             _notificationService = notificationService;
             _friendshipService = friendshipService;
+            _commentReactionService = commentReactionService;
         }
 
         #region Comment
@@ -138,6 +139,33 @@ namespace SocialNetwork.Business.Services.Implements
 
             return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(comment), 200);
 
+        }
+
+        public async Task<IResponse> GetOverviewComment(string requestUserId, Guid postId)
+        {
+            var post = await _unitOfWork.PostRepository.GetById(postId);
+
+            if (post == null )
+            {
+                return new ErrorResponse(404, Messages.NotFound("Post"));
+            }
+
+            if (!await CheckAccessPost(requestUserId, post.AuthorId))
+            {
+                return new ErrorResponse(400, Messages.NotFriend);
+            }
+
+            int commentCount = await _unitOfWork.PostCommentRepository.GetCount(x => x.PostId == postId);
+
+            var comments = await _unitOfWork.PostCommentRepository.GetPaged(20, 1, x => x.PostId == postId && x.ParentCommentId == null, x => x.CreatedAt);
+
+            var commentResponse = new GetOverviewCommentResponse
+            {
+                Total = commentCount,
+                Comments = _mapper.Map<List<GetPostCommentResponse>>(comments)
+            };
+
+            return new DataResponse<GetOverviewCommentResponse>(commentResponse, 200);
         }
 
         public async Task<IResponse> GetCount(string requestUserId, Guid Id)

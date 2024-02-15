@@ -2,7 +2,7 @@
 using SocialNetwork.Business.DTOs.Message.Requests;
 using SocialNetwork.Business.DTOs.Post.Requests;
 using SocialNetwork.Business.DTOs.Token.Requests;
-using SocialNetwork.Business.DTOs.User.Requests;
+using SocialNetwork.Business.DTOs.Users.Requests;
 using SocialNetwork.Business.Utilities.Enum;
 using SocialNetwork.Business.Wrapper.Interfaces;
 

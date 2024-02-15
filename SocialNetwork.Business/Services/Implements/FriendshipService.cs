@@ -360,6 +360,11 @@ namespace SocialNetwork.Business.Services.Implements
         
         public async Task<bool> IsFriend(string userId1, string userId2)
         {
+            if (userId1 == userId2)
+            {
+                return true;
+            }
+
             var result = await _unitOfWork.FriendshipRepository.FindOneBy(x => x.RequestUserId == userId1 && x.TargetUserId == userId2 || x.RequestUserId == userId2 && x.TargetUserId == userId1);
             return result != null;
         }

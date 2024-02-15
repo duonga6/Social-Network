@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.API.Controllers.Base;
 using SocialNetwork.Business.DTOs.PostReaction.Requests;
 using SocialNetwork.Business.DTOs.PostReaction.Responses;
-using SocialNetwork.Business.DTOs.Reaction.Response;
+using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
@@ -79,6 +79,18 @@ namespace SocialNetwork.API.Controllers
         public async Task<IResponse> GetByPost(Guid postId)
         {
             return await _postReactionService.GetByPost(UserId, postId);
+        }
+
+        /// <summary>
+        /// Get overview reaction: type reaction, total count
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <returns></returns>
+        [HttpGet("GetOverview/{postId}")]
+        [ProducesResponseType(typeof(DataResponse<GetOverviewReactionResponse>), 200)]
+        public async Task<IResponse> GetOverview(Guid postId)
+        {
+            return await _postReactionService.GetOverviewReaction(UserId, postId);
         }
 
         /// <summary>

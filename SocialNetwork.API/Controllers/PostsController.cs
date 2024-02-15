@@ -5,7 +5,7 @@ using SocialNetwork.API.Utilities;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Post.Requests;
 using SocialNetwork.Business.DTOs.Post.Responses;
-using SocialNetwork.Business.DTOs.PostComment.Responses;
+using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.DTOs.PostReaction.Requests;
 using SocialNetwork.Business.DTOs.PostReaction.Responses;
 using SocialNetwork.Business.Services.Interfaces;

@@ -24,10 +24,28 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return true;
         }
 
+        public override async Task<CommentReaction> GetById(Guid id, bool asNoTracking = true)
+        {
+            if (asNoTracking)
+            {
+                return await _dbSet
+                    .AsNoTracking()
+                    .Include(x => x.Reaction)
+                    .Include(x => x.User)
+                    .FirstOrDefaultAsync(x => x.Id == id);
+            }
+
+            return await _dbSet
+                   .Include(x => x.Reaction)
+                   .Include(x => x.User)
+                   .FirstOrDefaultAsync(x => x.Id == id);
+        }
+
         public async Task<CommentReaction> GetById(Guid commentId, string userId, int reactionId)
         {
             return await _dbSet.AsNoTracking()
                 .Include(x => x.Reaction)
+                .Include(x => x.User)
                 .FirstOrDefaultAsync(x => x.CommentId == commentId && x.UserId == userId && x.ReactionId == reactionId);
         }
     
@@ -56,7 +74,14 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return await _dbSet.AsNoTracking()
                 .Where(x => x.CommentId == commentId)
                 .Include(x => x.Reaction)
+                .Include(x => x.User)
                 .ToListAsync();
+        }
+
+        public async Task<ICollection<Reaction>> GetTypeReaction(Guid commentId)
+        {
+            var reactionId = await _dbSet.AsNoTracking().Where(x => x.CommentId == commentId).Select(x => x.ReactionId).Distinct().ToListAsync();
+            return await _context.Reactions.AsNoTracking().Where(x => reactionId.Contains(x.Id)).ToListAsync();
         }
 
         public override async Task<ICollection<CommentReaction>> GetPaged(int pageSize, int pageNumber, Expression<Func<CommentReaction, bool>> filter = null, Expression<Func<CommentReaction, object>> orderBy = null, bool isDesc = true)
@@ -82,6 +107,22 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
+        }
+
+        public override async Task<CommentReaction> FindOneBy(Expression<Func<CommentReaction, bool>> filter = null, bool asNoTracking = true)
+        {
+            if (asNoTracking)
+            {
+                return await _dbSet
+                    .AsNoTracking()
+                    .Include(x => x.Reaction)
+                    .Include(x => x.User)
+                    .FirstOrDefaultAsync(filter);
+            }
+            return await _dbSet
+                .Include(x => x.User)
+                 .Include(x => x.Reaction)
+                .FirstOrDefaultAsync(filter);
         }
     }
 }

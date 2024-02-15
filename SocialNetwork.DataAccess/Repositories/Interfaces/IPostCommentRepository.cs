@@ -4,6 +4,6 @@ namespace SocialNetwork.DataAccess.Repositories.Interfaces
 {
     public interface IPostCommentRepository : IGenericRepository<PostComment, Guid>
     {
-        Task<ICollection<PostComment>> GetByPost(Guid postId);  
+        Task<ICollection<PostComment>> GetByPost(Guid postId);
     }
 }

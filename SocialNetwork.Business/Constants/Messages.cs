@@ -51,6 +51,9 @@
         // Comment 
         public static string CommentNotOwner => "Is not the owner";
 
+        // Comment reaction
+        public static string NotOwnerCommentReaction => "You are not the owner comment's reaction";
+
         // Friendship
         public static string FriendshipExisted => "Friendship existed";
         public static string FriendshipSent => "Send request successfully";

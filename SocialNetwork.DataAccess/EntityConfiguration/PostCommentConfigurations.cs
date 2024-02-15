@@ -16,6 +16,14 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 .OnDelete(DeleteBehavior.NoAction)
                 .IsRequired();
 
+            builder.HasOne(x => x.ParentComment)
+                .WithMany(x => x.ChildrenComment)
+                .HasForeignKey(x => x.ParentCommentId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
+            builder.HasKey(x => x.Id);
+
         }
     }
 }

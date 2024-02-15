@@ -12,6 +12,10 @@ namespace SocialNetwork.DataAccess.Entities
         public Guid PostId { set; get; }
         public virtual Post Post { set; get; }
 
+        public Guid? ParentCommentId { set; get; }
+        public virtual PostComment ParentComment { set; get; }
+
         public virtual ICollection<CommentReaction> Reactions { set; get; }
+        public virtual ICollection<PostComment> ChildrenComment { set; get; }
     }
 }

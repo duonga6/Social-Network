@@ -1,4 +1,4 @@
-﻿using SocialNetwork.Business.DTOs.CommentReaction.Requests;
+﻿using SocialNetwork.Business.DTOs.CommentReactions.Requests;
 using SocialNetwork.Business.DTOs.PostComment.Requests;
 using SocialNetwork.Business.Utilities.Enum;
 using SocialNetwork.Business.Wrapper.Interfaces;
@@ -8,6 +8,7 @@ namespace SocialNetwork.Business.Services.Interfaces
     public interface IPostCommentService
     {
         Task<IResponse> GetAll(string requestUserId, string? searchString, int pageSize, int pageNumber, Guid postId);
+        Task<IResponse> GetOverviewComment(string requestUserId, Guid postId);
         Task<IResponse> GetCount(string requestUserId, Guid Id);
         Task<IResponse> GetById(string requestUserId, Guid id);
         Task<IResponse> Create(string requestUserId, CreatePostCommentRequest request);

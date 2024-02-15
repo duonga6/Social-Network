@@ -1,17 +1,14 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using SocialNetwork.Business.DTOs.CommentReaction.Responses;
+using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.DTOs.Friendship.Responses;
 using SocialNetwork.Business.DTOs.MediaType.Responses;
 using SocialNetwork.Business.DTOs.Message.Responses;
 using SocialNetwork.Business.DTOs.Notification.Responses;
 using SocialNetwork.Business.DTOs.Post.Responses;
-using SocialNetwork.Business.DTOs.PostComment.Responses;
 using SocialNetwork.Business.DTOs.PostMedia.Responses;
-using SocialNetwork.Business.DTOs.PostReaction.Responses;
-using SocialNetwork.Business.DTOs.Reaction.Response;
 using SocialNetwork.Business.DTOs.Role.Responses;
-using SocialNetwork.Business.DTOs.User.Responses;
+using SocialNetwork.Business.DTOs.Users.Responses;
 using SocialNetwork.DataAccess.Entities;
 
 namespace SocialNetwork.Business.Mapper
@@ -41,13 +38,14 @@ namespace SocialNetwork.Business.Mapper
             CreateMap<PostComment, GetPostCommentResponse>()
                 .ForPath(d => d.User.Id, o => o.MapFrom(s => s.User.Id))
                 .ForPath(d => d.User.FullName, o => o.MapFrom(s => s.User.GetFullName()))
-                .ForPath(d => d.User.AvatarUrl, o => o.MapFrom(s => s.User.AvatarUrl));
+                .ForPath(d => d.User.AvatarUrl, o => o.MapFrom(s => s.User.AvatarUrl))
+                .ForPath(d => d.ChildrenComment, o => o.MapFrom(s => s.ChildrenComment));
 
             CreateMap<CommentReaction, GetCommentReactionResponse>()
-                .ForMember(d => d.Name, o => o.MapFrom(s => s.Reaction.Name))
                 .ForPath(d => d.User.Id, o => o.MapFrom(s => s.User.Id))
                 .ForPath(d => d.User.FullName, o => o.MapFrom(s => s.User.GetFullName()))
-                .ForPath(d => d.User.AvatarUrl, o => o.MapFrom(s => s.User.AvatarUrl));
+                .ForPath(d => d.User.AvatarUrl, o => o.MapFrom(s => s.User.AvatarUrl))
+                .ForPath(d => d.Reaction, o => o.MapFrom(s => s.Reaction));
 
             CreateMap<Friendship, GetFriendshipResponse>()
                 .ForPath(x => x.RequestUser.Id, o => o.MapFrom(s => s.RequestUser.Id))

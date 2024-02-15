@@ -4,8 +4,8 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.PostReaction.Requests;
 using SocialNetwork.Business.DTOs.PostReaction.Responses;
-using SocialNetwork.Business.DTOs.Reaction.Response;
-using SocialNetwork.Business.DTOs.User.Responses;
+using SocialNetwork.Business.DTOs.Responses;
+using SocialNetwork.Business.DTOs.Users.Responses;
 using SocialNetwork.Business.Services.Implements.Base;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
@@ -98,6 +98,40 @@ namespace SocialNetwork.Business.Services.Implements
             }
 
             return new DataResponse<GetPostReactionResponse>(postReactions, 200);
+        }
+
+        public async Task<IResponse> GetOverviewReaction(string requestUserId, Guid postId)
+        {
+            var post = await _unitOfWork.PostRepository.GetById(postId);
+
+            if (post == null)
+            {
+                return new ErrorResponse(404, Messages.NotFound("Post"));
+            }
+
+            if (!await CheckAccessPost(requestUserId, post.AuthorId))
+            {
+                return new ErrorResponse(400, Messages.NotFriend);
+            }
+
+            int reactionCount = await _unitOfWork.PostReactionRepository.GetCount(x => x.PostId == postId);
+            var reactionType = await _unitOfWork.PostReactionRepository.GetTypeReaction(postId);
+
+            var response = new GetOverviewReactionResponse
+            {
+                Reactions = _mapper.Map<List<GetReactionResponse>>(reactionType.ToList()),
+                Total = reactionCount,
+            };
+
+            var userReactedInPost = await _unitOfWork.PostReactionRepository.FindOneBy(x => x.PostId == postId && x.UserId == requestUserId);
+
+            if (userReactedInPost != null)
+            {
+                var userReacted = await _unitOfWork.ReactionRepository.GetById(userReactedInPost.ReactionId);
+                response.UserReacted = _mapper.Map<GetReactionResponse>(userReacted);
+            }
+
+            return new DataResponse<GetOverviewReactionResponse>(response, 200);
         }
 
         public async Task<IResponse> Create(string requestUserId, CreatePostReactionsRequest request)
@@ -242,7 +276,7 @@ namespace SocialNetwork.Business.Services.Implements
             };
 
             // user request is reacted this post ?
-            var userReacted = await _unitOfWork.PostReactionRepository.FindOneBy(x => x.UserId == requestUserId && x.PostId == postId);
+            var userReacted = await _unitOfWork.PostReactionRepository.FindOneBy(x => x.UserId == requestUserId && x.PostId == postId && x.ReactionId == reaction.Id);
 
             // move it to first element of PostReactionDetail.Users
             if (userReacted != null)
