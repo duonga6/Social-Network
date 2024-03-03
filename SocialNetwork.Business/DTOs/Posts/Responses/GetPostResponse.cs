@@ -7,7 +7,7 @@ namespace SocialNetwork.Business.DTOs.Post.Responses
     {
         public Guid Id { get; set; }
         public string Content { get; set; } = string.Empty;
-        public BasicUserResponse Author { get; set; } = null!;
+        public string AuthorId { set; get; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public List<GetPostMediaResponse>? PostMedias { set; get; }
     }

@@ -199,7 +199,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="pageNumber">Current page</param>
         /// <returns></returns>
         [HttpGet("{Id}/Reactions")]
-        [ProducesResponseType(typeof(PagedResponse<List<GetPostReactionResponse>>), 200)]
+        [ProducesResponseType(typeof(PagedResponse<List<GetPostReactionResponses>>), 200)]
         public async Task<IResponse> GetAllReactions(Guid Id,[FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
             return await _postService.GetAllReactions(UserId, Id, pageSize, pageNumber);
@@ -212,7 +212,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("{Id}/Reactions")]
-        [ProducesResponseType(typeof(DataResponse<GetPostReactionResponse>), 200)]
+        [ProducesResponseType(typeof(DataResponse<GetPostReactionResponses>), 200)]
         public async Task<IResponse> CreatePostReaction(Guid Id, [FromBody] CreatePostReactionRequest request)
         {
             return await _postService.CreateReaction(UserId, Id, request);
@@ -226,7 +226,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPut("{Id}/Reactions/{reactionId}")]
-        [ProducesResponseType(typeof(DataResponse<GetPostReactionResponse>), 200)]
+        [ProducesResponseType(typeof(DataResponse<GetPostReactionResponses>), 200)]
         public async Task<IResponse> UpdatePostReaction(Guid Id, int reactionId, [FromBody] CreatePostReactionRequest request)
         {
             return await _postService.UpdateReaction(UserId, Id, reactionId, request);

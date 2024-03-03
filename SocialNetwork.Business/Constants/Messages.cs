@@ -48,6 +48,9 @@
         // Post
         public static string PostNotOwner => "Is not the owner";
 
+        // Post reaction
+        public static string NotOwnerPostReaction => "You are not the owner post's reaction";
+
         // Comment 
         public static string CommentNotOwner => "Is not the owner";
 

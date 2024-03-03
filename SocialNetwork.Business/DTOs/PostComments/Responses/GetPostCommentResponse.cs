@@ -7,8 +7,8 @@ namespace SocialNetwork.Business.DTOs.Responses
         public Guid Id { get; set; }
         public string Content { get; set; } = string.Empty;
         public Guid PostId { get; set; }
-        public BasicUserResponse User { get; set; } = null!;
+        public string UserId { set; get; } = string.Empty;
         public DateTime CreatedAt { get; set; }
-        public List<GetPostCommentResponse> ChildrenComment { set; get; } = null!;
+        public Guid? ParentCommentId { set; get; }
     }
 }

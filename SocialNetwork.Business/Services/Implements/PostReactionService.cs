@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.PostReaction.Requests;
 using SocialNetwork.Business.DTOs.PostReaction.Responses;
+using SocialNetwork.Business.DTOs.PostReactions.Responses;
+using SocialNetwork.Business.DTOs.Response;
 using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.DTOs.Users.Responses;
 using SocialNetwork.Business.Services.Implements.Base;
@@ -83,7 +85,7 @@ namespace SocialNetwork.Business.Services.Implements
             }
 
             // obj return
-            var postReactions = new GetPostReactionResponse();
+            var postReactions = new GetPostReactionResponses();
             
             // get reaction of this post by each ReactionEnum
             foreach (ReactionEnum react in Enum.GetValues(typeof(ReactionEnum)))
@@ -97,10 +99,10 @@ namespace SocialNetwork.Business.Services.Implements
                     
             }
 
-            return new DataResponse<GetPostReactionResponse>(postReactions, 200);
+            return new DataResponse<GetPostReactionResponses>(postReactions, 200);
         }
 
-        public async Task<IResponse> GetOverviewReaction(string requestUserId, Guid postId)
+        public async Task<IResponse> GetOverview(string requestUserId, Guid postId)
         {
             var post = await _unitOfWork.PostRepository.GetById(postId);
 
@@ -117,9 +119,9 @@ namespace SocialNetwork.Business.Services.Implements
             int reactionCount = await _unitOfWork.PostReactionRepository.GetCount(x => x.PostId == postId);
             var reactionType = await _unitOfWork.PostReactionRepository.GetTypeReaction(postId);
 
-            var response = new GetOverviewReactionResponse
+            var response = new OverviewReactionResponse<GetPostReactionResponse>
             {
-                Reactions = _mapper.Map<List<GetReactionResponse>>(reactionType.ToList()),
+                ReactionTypes = reactionType.ToList(),
                 Total = reactionCount,
             };
 
@@ -127,11 +129,10 @@ namespace SocialNetwork.Business.Services.Implements
 
             if (userReactedInPost != null)
             {
-                var userReacted = await _unitOfWork.ReactionRepository.GetById(userReactedInPost.ReactionId);
-                response.UserReacted = _mapper.Map<GetReactionResponse>(userReacted);
+                response.UserReacted = _mapper.Map<GetPostReactionResponse>(userReactedInPost);
             }
 
-            return new DataResponse<GetOverviewReactionResponse>(response, 200);
+            return new DataResponse<OverviewReactionResponse<GetPostReactionResponse>>(response, 200);
         }
 
         public async Task<IResponse> Create(string requestUserId, CreatePostReactionsRequest request)
@@ -166,28 +167,22 @@ namespace SocialNetwork.Business.Services.Implements
 
             var addedPostReaction = await _unitOfWork.PostReactionRepository.FindOneBy(x => x.PostId == request.PostId && x.UserId == requestUserId);
 
-            return new DataResponse<GetReactionResponse>(_mapper.Map<GetReactionResponse>(addedPostReaction.Reaction), 201, Messages.CreatedSuccessfully);
+            return new DataResponse<GetPostReactionResponse>(_mapper.Map<GetPostReactionResponse>(addedPostReaction), 201, Messages.CreatedSuccessfully);
 
         }
 
-        public async Task<IResponse> Update(string requestUserId, UpdatePostReactionRequest request)
+        public async Task<IResponse> Update(string requestUserId, Guid id,UpdatePostReactionRequest request)
         {
-            var post = await _unitOfWork.PostRepository.GetById(request.PostId);
-            if (post == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound("Post"));
-            }
-
-            if (!await CheckAccessPost(requestUserId, post.AuthorId))
-            {
-                return new ErrorResponse(400, Messages.NotFriend);
-            }
-
-            var postReaction = await _unitOfWork.PostReactionRepository.GetById(request.PostId, requestUserId, false);
+            var postReaction = await _unitOfWork.PostReactionRepository.GetById(id, false);
 
             if (postReaction == null)
             {
                 return new ErrorResponse(404, Messages.NotFound());
+            }
+
+            if (postReaction.UserId != requestUserId)
+            {
+                return new ErrorResponse(400, Messages.NotOwnerPostReaction);
             }
 
             postReaction.ReactionId = request.ReactionId;
@@ -198,20 +193,25 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(500, Messages.STWrong);
             }
 
-            var postReactionUpdated = await _unitOfWork.PostReactionRepository.GetById(request.PostId, requestUserId);
+            var postReactionUpdated = await _unitOfWork.PostReactionRepository.GetById(id);
 
-            return new DataResponse<GetReactionResponse>(_mapper.Map<GetReactionResponse>(postReactionUpdated.Reaction), 201, Messages.UpdatedSuccessfully);
+            return new DataResponse<GetPostReactionResponse>(_mapper.Map<GetPostReactionResponse>(postReactionUpdated), 201, Messages.UpdatedSuccessfully);
         }
 
-        public async Task<IResponse> Delete(string requestUserId, Guid postId)
+        public async Task<IResponse> Delete(string requestUserId, Guid Id)
         {
-            var postReaction = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId);
+            var postReaction = await _unitOfWork.PostReactionRepository.GetById(Id);
             if (postReaction == null)
             {
                 return new ErrorResponse(404, Messages.NotFound());
             }
 
-            await _unitOfWork.PostReactionRepository.Delete(postReaction.PostId, postReaction.UserId);
+            if (postReaction.UserId != requestUserId)
+            {
+                return new ErrorResponse(400, Messages.NotOwnerPostReaction);
+            }
+
+            await _unitOfWork.PostReactionRepository.Delete(Id);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)

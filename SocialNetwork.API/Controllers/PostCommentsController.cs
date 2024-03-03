@@ -10,6 +10,8 @@ using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
 using SocialNetwork.DataAccess.Utilities.Roles;
 using System.ComponentModel.DataAnnotations;
+using SocialNetwork.Business.DTOs.CommentReactions.Responses;
+using SocialNetwork.Business.DTOs.Response;
 
 namespace SocialNetwork.API.Controllers
 {
@@ -39,6 +41,24 @@ namespace SocialNetwork.API.Controllers
         {
             return await _postCommentService.GetAll(UserId, searchString, pageSize, pageNumber, postId);
         }
+
+        /// <summary>
+        /// Get comment of post by cursor pagination
+        /// </summary>
+        /// <param name="postId"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="desc"></param>
+        /// <param name="endCursor"></param>
+        /// <param name="parentId"></param>
+        /// <returns></returns>
+        [HttpGet("GetCursor")]
+        [ProducesResponseType(typeof(CursorResponse<List<GetPostCommentResponse>>), 200)]
+        [AllowAnonymous]
+        public async Task<IResponse> GetCursor([FromQuery, Required] Guid postId, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required] bool desc, [FromQuery] DateTime? endCursor, Guid? parentId)
+        {
+            return await _postCommentService.GetCursor(UserId, pageSize, endCursor, desc, postId, parentId);
+        }
+
 
         /// <summary>
         /// Get comment by Id (post owner || post owner's friend)
@@ -90,27 +110,55 @@ namespace SocialNetwork.API.Controllers
         }
 
         /// <summary>
-        /// Get sum comment of post
+        /// Get total comment of post (both child comment)
         /// </summary>
         /// <param name="postId">Post id</param>
         /// <returns></returns>
-        [HttpGet("GetCount")]
+        [HttpGet("GetCount/{postId}")]
         [ProducesResponseType(typeof(DataResponse<int>), 200)]
-        public async Task<IResponse> GetCount([FromQuery, Required] Guid postId)
+        public async Task<IResponse> GetCount(Guid postId)
         {
             return await _postCommentService.GetCount(UserId, postId);
         }
 
         /// <summary>
-        /// Get overview comment of post
+        /// Get total child comment of a comment
         /// </summary>
-        /// <param name="postId"></param>
+        /// <param name="Id"></param>
         /// <returns></returns>
-        [ProducesResponseType(typeof(DataResponse<GetCommentReactionResponse>), 200)]
-        [HttpGet("GetOverview/{postId}")]
-        public async Task<IResponse> GetOverview(Guid postId)
+        [HttpGet("{Id}/GetChildCount")]
+        [ProducesResponseType(typeof(DataResponse<int>), 200)]
+        public async Task<IResponse> GetChildCount(Guid Id)
         {
-            return await _postCommentService.GetOverviewComment(UserId, postId);
+            return await _postCommentService.GetCountChild(UserId, Id);
+        }
+
+
+        /// <summary>
+        /// Get child comment of comment
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="searchString"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="pageNumber"></param>
+        /// <returns></returns>
+        [HttpGet("{Id}/GetChild")]
+        [ProducesResponseType(typeof(PagedResponse<List<GetPostCommentResponse>>), 200)]
+        public async Task<IResponse> GetChild(Guid Id, [FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
+        {
+            return await _postCommentService.GetChild(UserId, searchString, pageSize, pageNumber, Id);
+        }
+
+        /// <summary>
+        /// Get overview reaction of comment
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        [HttpGet("{Id}/Reactions/GetOverview")]
+        [ProducesResponseType(typeof(DataResponse<OverviewReactionResponse<GetCommentReactionResponse>>), 200)]
+        public async Task<IResponse> GetOverviewReaction(Guid Id)
+        {
+            return await _postCommentService.GetOverviewReaction(UserId, Id);
         }
 
         #endregion

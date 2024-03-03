@@ -11,7 +11,7 @@ namespace SocialNetwork.Business.Services.Interfaces
     public interface IUserService
     {
         Task<IResponse> GetAll(string? searchString, int pageSize, int pageNumber);
-        Task<IResponse> GetById(string loggedUserId, string requestUserId);
+        Task<IResponse> GetById(string id);
         Task<IResponse> Register(RegistrationRequest request);
         Task<IResponse> Login(LoginRequest request);
         Task<IResponse> RenewToken(RenewTokenRequest token);
@@ -21,7 +21,7 @@ namespace SocialNetwork.Business.Services.Interfaces
         Task<IResponse> DeleteUser(string loggedUserId, string requestUserId);
         Task<IResponse> ConfirmEmail(ConfirmEmailRequest request);
         Task<IResponse> ResendConfirmEmail(ResendConfirmEmailRequest request);
-        Task<IResponse> ChangePassword(string loggedUserId, ChangePasswordRequest request);
+        Task<IResponse> ChangePassword(string requestUserId, ChangePasswordRequest request);
 
 
         Task<IResponse> AddRoles(string userId, AddRolesToUserRequest request);

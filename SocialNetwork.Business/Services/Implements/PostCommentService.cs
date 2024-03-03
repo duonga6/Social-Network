@@ -42,6 +42,15 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(404, Messages.NotFound("Post")); 
             }
 
+            if (request.ParentCommentId != null)
+            {
+                var parentComment = await _unitOfWork.PostCommentRepository.FindOneBy(x => x.Id == request.ParentCommentId && x.Status == 1);
+                if (parentComment == null)
+                {
+                    return new ErrorResponse(404, Messages.NotFound("Parent comment"));
+                }
+            }
+
             if (!await CheckAccessPost(requestUserId, post.AuthorId))
             {
                 return new ErrorResponse(400, Messages.NotFriend);
@@ -102,9 +111,9 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.NotFriend);
             }    
 
-            Expression<Func<PostComment, bool>> filter = x => x.Status == 1 && x.PostId == postId;
+            Expression<Func<PostComment, bool>> filter = x => x.Status == 1 && x.PostId == postId && x.ParentCommentId == null;
             
-            if (searchString != null)
+            if (!string.IsNullOrEmpty(searchString))
             {
                 filter = filter.And(x => x.Content.Contains(searchString));
             }
@@ -120,7 +129,43 @@ namespace SocialNetwork.Business.Services.Implements
             var comments = await _unitOfWork.PostCommentRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
             var commentsResponse = _mapper.Map<List<GetPostCommentResponse>>(comments);
 
-            return new PagedResponse<List<GetPostCommentResponse>>(commentsResponse, 200, totalItems);
+            return new PagedResponse<List<GetPostCommentResponse>>(commentsResponse, totalItems, 200);
+        }
+
+        public async Task<IResponse> GetCursor(string requestUserId, int pageSize, DateTime? cursor, bool desc, Guid postId, Guid? parentId)
+        {
+            var post = await _unitOfWork.PostRepository.GetById(postId);
+            if (post == null)
+            {
+                return new ErrorResponse(404, Messages.NotFound("Post"));
+            }
+
+            if (!await CheckAccessPost(requestUserId, post.AuthorId))
+            {
+                return new ErrorResponse(400, Messages.NotFriend);
+            }
+
+            Expression<Func<PostComment, bool>> filter = x => x.PostId == postId && x.ParentCommentId == parentId && x.Status == 1;
+            int totalItems = await _unitOfWork.PostCommentRepository.GetCount(filter);
+
+            if (cursor != null)
+            {
+                filter = filter.And(x => x.CreatedAt < cursor);
+            }
+
+            var comments = await _unitOfWork
+                .PostCommentRepository
+                .GetCursorPaged(pageSize, x => x.CreatedAt, filter, desc);
+
+            bool hasNext = true;
+            if (comments.Count < pageSize)
+            {
+                hasNext = false;
+            }
+
+            var response = _mapper.Map<List<GetPostCommentResponse>>(comments);
+
+            return new CursorResponse<List<GetPostCommentResponse>>(response, comments.LastOrDefault()?.CreatedAt, hasNext, totalItems);
         }
 
         public async Task<IResponse> GetById(string requestUserId, Guid id)
@@ -141,33 +186,6 @@ namespace SocialNetwork.Business.Services.Implements
 
         }
 
-        public async Task<IResponse> GetOverviewComment(string requestUserId, Guid postId)
-        {
-            var post = await _unitOfWork.PostRepository.GetById(postId);
-
-            if (post == null )
-            {
-                return new ErrorResponse(404, Messages.NotFound("Post"));
-            }
-
-            if (!await CheckAccessPost(requestUserId, post.AuthorId))
-            {
-                return new ErrorResponse(400, Messages.NotFriend);
-            }
-
-            int commentCount = await _unitOfWork.PostCommentRepository.GetCount(x => x.PostId == postId);
-
-            var comments = await _unitOfWork.PostCommentRepository.GetPaged(20, 1, x => x.PostId == postId && x.ParentCommentId == null, x => x.CreatedAt);
-
-            var commentResponse = new GetOverviewCommentResponse
-            {
-                Total = commentCount,
-                Comments = _mapper.Map<List<GetPostCommentResponse>>(comments)
-            };
-
-            return new DataResponse<GetOverviewCommentResponse>(commentResponse, 200);
-        }
-
         public async Task<IResponse> GetCount(string requestUserId, Guid Id)
         {
             var post = await _unitOfWork.PostRepository.GetById(Id);
@@ -181,11 +199,68 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.NotFriend);
             }
 
-            int count = await _unitOfWork.PostCommentRepository.GetCount(x => x.PostId == Id);
+            int count = await _unitOfWork.PostCommentRepository.GetCount(x => x.PostId == Id && x.Status == 1);
 
             return new DataResponse<int>(count, 200, Messages.GetSuccessfully);
         }
 
+        public async Task<IResponse> GetCountChild(string requestUserId, Guid commentId)
+        {
+            var comment = await _unitOfWork.PostCommentRepository.GetById(commentId);
+            if (comment == null)
+            {
+                return new ErrorResponse(404, Messages.NotFound($"Comment {commentId}"));
+            }
+
+            var post = await _unitOfWork.PostRepository.GetById(comment.PostId);
+            if (post == null)
+            {
+                return new ErrorResponse(404, Messages.NotFound($"Post of comment ${commentId}"));
+            }
+
+            if (!await CheckAccessPost(requestUserId, post.AuthorId))
+            {
+                return new ErrorResponse(400, Messages.NotFriend);
+            }
+
+            int childCount = await _unitOfWork.PostCommentRepository.GetCount(x => x.ParentCommentId == commentId && x.Status == 1);
+
+            return new DataResponse<int>(childCount, 200);
+        }
+
+        public async Task<IResponse> GetChild(string requestUserId, string? searchString, int pageSize, int pageNumber, Guid Id)
+        {
+            var comment = await _unitOfWork.PostCommentRepository.GetById(Id);
+            if (comment == null)
+            {
+                return new ErrorResponse(404, Messages.NotFound("Comment"));
+            }
+
+            var post = await _unitOfWork.PostRepository.GetById(comment.PostId);
+            if (post == null)
+            {
+                return new ErrorResponse(404, Messages.NotFound("Post"));
+            }
+
+            if (!await CheckAccessPost(requestUserId, post.AuthorId))
+            {
+                return new ErrorResponse(400, Messages.NotFriend);
+            }
+
+            Expression<Func<PostComment, bool>> filter = x => x.Status == 1 && x.ParentCommentId == comment.Id;
+
+            if (searchString != null)
+            {
+                filter.And(x => x.Content.Contains(searchString));
+            }
+
+            int total = await _unitOfWork.PostCommentRepository.GetCount(filter);
+            var comments = await _unitOfWork.PostCommentRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
+
+            var response = _mapper.Map<List<GetPostCommentResponse>>(comments);
+            return new PagedResponse<List<GetPostCommentResponse>>(response, total, 200);
+        }
+        
         public async Task<IResponse> Update(string requestUserId, Guid id, UpdatePostCommentRequest request)
         {
             var comment = await _unitOfWork.PostCommentRepository.GetById(id, false);
@@ -212,7 +287,11 @@ namespace SocialNetwork.Business.Services.Implements
             return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(comment), 204, Messages.UpdatedSuccessfully);
 
         }
-
+        
+        public async Task<IResponse> GetOverviewReaction(string requestUserId, Guid commentId)
+        {
+            return await _commentReactionService.GetOverview(requestUserId, commentId);
+        }
         private async Task<bool> CheckAccessPost(string requestUserId, string targetUserId)
         {
             var requestUser = await _userManager.FindByIdAsync(targetUserId);

@@ -78,10 +78,9 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .ToListAsync();
         }
 
-        public async Task<ICollection<Reaction>> GetTypeReaction(Guid commentId)
+        public async Task<ICollection<int>> GetTypeReaction(Guid commentId)
         {
-            var reactionId = await _dbSet.AsNoTracking().Where(x => x.CommentId == commentId).Select(x => x.ReactionId).Distinct().ToListAsync();
-            return await _context.Reactions.AsNoTracking().Where(x => reactionId.Contains(x.Id)).ToListAsync();
+            return await _dbSet.AsNoTracking().Where(x => x.CommentId == commentId).Select(x => x.ReactionId).Distinct().ToListAsync();
         }
 
         public override async Task<ICollection<CommentReaction>> GetPaged(int pageSize, int pageNumber, Expression<Func<CommentReaction, bool>> filter = null, Expression<Func<CommentReaction, object>> orderBy = null, bool isDesc = true)

@@ -10,6 +10,8 @@ using SocialNetwork.Business.DTOs.PostMedia.Responses;
 using SocialNetwork.Business.DTOs.Role.Responses;
 using SocialNetwork.Business.DTOs.Users.Responses;
 using SocialNetwork.DataAccess.Entities;
+using SocialNetwork.Business.DTOs.Response;
+using SocialNetwork.Business.DTOs.PostReactions.Responses;
 
 namespace SocialNetwork.Business.Mapper
 {
@@ -20,8 +22,7 @@ namespace SocialNetwork.Business.Mapper
             CreateMap<Reaction, GetReactionResponse>();
 
             CreateMap<User, GetUserResponse>();
-            CreateMap<User, BasicUserResponse>()
-                .ForMember(d => d.FullName, o => o.MapFrom(x => x.GetFullName()));
+            CreateMap<User, BasicUserResponse>();
 
             CreateMap<User, UserWithTokenResponse>();
 
@@ -30,22 +31,12 @@ namespace SocialNetwork.Business.Mapper
             CreateMap<PostMedia, GetPostMediaResponse>();
 
             CreateMap<Post, GetPostResponse>()
-                .ForMember(d => d.PostMedias, o => o.MapFrom(s => s.PostMedias))
-                .ForPath(d => d.Author.Id, o => o.MapFrom(s => s.Author.Id))
-                .ForPath(d => d.Author.FullName, o => o.MapFrom(s => s.Author.GetFullName()))
-                .ForPath(d => d.Author.AvatarUrl, o => o.MapFrom(s => s.Author.AvatarUrl));
+                .ForMember(d => d.PostMedias, o => o.MapFrom(s => s.PostMedias));
 
-            CreateMap<PostComment, GetPostCommentResponse>()
-                .ForPath(d => d.User.Id, o => o.MapFrom(s => s.User.Id))
-                .ForPath(d => d.User.FullName, o => o.MapFrom(s => s.User.GetFullName()))
-                .ForPath(d => d.User.AvatarUrl, o => o.MapFrom(s => s.User.AvatarUrl))
-                .ForPath(d => d.ChildrenComment, o => o.MapFrom(s => s.ChildrenComment));
+            CreateMap<PostComment, GetPostCommentResponse>();
 
-            CreateMap<CommentReaction, GetCommentReactionResponse>()
-                .ForPath(d => d.User.Id, o => o.MapFrom(s => s.User.Id))
-                .ForPath(d => d.User.FullName, o => o.MapFrom(s => s.User.GetFullName()))
-                .ForPath(d => d.User.AvatarUrl, o => o.MapFrom(s => s.User.AvatarUrl))
-                .ForPath(d => d.Reaction, o => o.MapFrom(s => s.Reaction));
+            CreateMap<CommentReaction, GetCommentReactionResponse>();
+
 
             CreateMap<Friendship, GetFriendshipResponse>()
                 .ForPath(x => x.RequestUser.Id, o => o.MapFrom(s => s.RequestUser.Id))
@@ -57,10 +48,8 @@ namespace SocialNetwork.Business.Mapper
 
             CreateMap<Message, GetMessageResponse>()
                 .ForPath(x => x.Sender.Id, o => o.MapFrom(s => s.Sender.Id))
-                .ForPath(x => x.Sender.FullName, o => o.MapFrom(s => s.Sender.GetFullName()))
                 .ForPath(x => x.Sender.AvatarUrl, o => o.MapFrom(s => s.Sender.AvatarUrl))
                 .ForPath(x => x.Receiver.Id, o => o.MapFrom(s => s.Receiver.Id))
-                .ForPath(x => x.Receiver.FullName, o => o.MapFrom(s => s.Receiver.GetFullName()))
                 .ForPath(x => x.Receiver.AvatarUrl, o => o.MapFrom(s => s.Receiver.AvatarUrl));
 
             CreateMap<Notification, GetNotificationResponse>()
@@ -68,6 +57,8 @@ namespace SocialNetwork.Business.Mapper
                 .ForPath(x => x.FromUser.AvatarUrl, o => o.MapFrom(s => s.FromUser.AvatarUrl));
 
             CreateMap<MediaType, GetMediaTypeResponse>();
+
+            CreateMap<PostReaction, GetPostReactionResponse>();
 
         }
     }

@@ -6,7 +6,7 @@ namespace SocialNetwork.DataAccess.Repositories.Interfaces
     {
         Task<ICollection<PostReaction>> GetByPost(Guid postId);
         Task<ICollection<PostReaction>> GetByUser(string userId);
-        Task<ICollection<Reaction>> GetTypeReaction(Guid postId);
+        Task<ICollection<int>> GetTypeReaction(Guid postId);
         Task<PostReaction> GetById(Guid postId, string userId, bool noTracking = true);
         Task<bool> Delete(Guid postId, string userId);
     }

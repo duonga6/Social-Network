@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.API.Controllers.Base;
 using SocialNetwork.Business.DTOs.PostReaction.Requests;
 using SocialNetwork.Business.DTOs.PostReaction.Responses;
+using SocialNetwork.Business.DTOs.PostReactions.Responses;
+using SocialNetwork.Business.DTOs.Response;
 using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
@@ -48,61 +50,62 @@ namespace SocialNetwork.API.Controllers
         /// <summary>
         /// Update reaction for post
         /// </summary>
+        /// <param name="Id"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpPut]
-        [ProducesResponseType(typeof(DataResponse<GetReactionResponse>), 200)]
-        public async Task<IResponse> Update(UpdatePostReactionRequest request)
-        {
-            return await _postReactionService.Update(UserId, request);
-        }
-
-        /// <summary>
-        /// Get user reaction on this post
-        /// </summary>
-        /// <param name="postId"></param>
-        /// <returns></returns>
-        [HttpGet("GetByUser")]
+        [HttpPut("{Id}")]
         [ProducesResponseType(typeof(DataResponse<GetPostReactionResponse>), 200)]
-        public async Task<IResponse> GetByUser([FromQuery, Required]Guid postId)
+        public async Task<IResponse> Update(Guid Id, UpdatePostReactionRequest request)
         {
-            return await _postReactionService.GetByUser(UserId, postId);
+            return await _postReactionService.Update(UserId, Id, request);
         }
 
-        /// <summary>
-        /// Get post reaction by postId
-        /// </summary>
-        /// <param name="postId"></param>
-        /// <returns></returns>
-        [HttpGet("GetByPost/{postId}")]
-        [ProducesResponseType(typeof(DataResponse<GetPostReactionResponse>), 200)]
-        public async Task<IResponse> GetByPost(Guid postId)
-        {
-            return await _postReactionService.GetByPost(UserId, postId);
-        }
+        ///// <summary>
+        ///// Get user reaction on this post
+        ///// </summary>
+        ///// <param name="postId"></param>
+        ///// <returns></returns>
+        //[HttpGet("GetByUser")]
+        //[ProducesResponseType(typeof(DataResponse<GetPostReactionResponses>), 200)]
+        //public async Task<IResponse> GetByUser([FromQuery, Required]Guid postId)
+        //{
+        //    return await _postReactionService.GetByUser(UserId, postId);
+        //}
+
+        ///// <summary>
+        ///// Get post reaction by postId
+        ///// </summary>
+        ///// <param name="postId"></param>
+        ///// <returns></returns>
+        //[HttpGet("GetByPost/{postId}")]
+        //[ProducesResponseType(typeof(DataResponse<GetPostReactionResponse>), 200)]
+        //public async Task<IResponse> GetByPost(Guid postId)
+        //{
+        //    return await _postReactionService.GetByPost(UserId, postId);
+        //}
 
         /// <summary>
-        /// Get overview reaction: type reaction, total count
+        /// Get overview reaction: type reaction, total count, user reacted
         /// </summary>
         /// <param name="postId"></param>
         /// <returns></returns>
         [HttpGet("GetOverview/{postId}")]
-        [ProducesResponseType(typeof(DataResponse<GetOverviewReactionResponse>), 200)]
+        [ProducesResponseType(typeof(DataResponse<OverviewReactionResponse<GetPostReactionResponse>>), 200)]
         public async Task<IResponse> GetOverview(Guid postId)
         {
-            return await _postReactionService.GetOverviewReaction(UserId, postId);
+            return await _postReactionService.GetOverview(UserId, postId);
         }
 
         /// <summary>
         /// Delete post reaction
         /// </summary>
-        /// <param name="postId"></param>
+        /// <param name="Id"></param>
         /// <returns></returns>
-        [HttpDelete("{postId}")]
+        [HttpDelete("{Id}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> Delete(Guid postId)
+        public async Task<IResponse> Delete(Guid Id)
         {
-            return await _postReactionService.Delete(UserId, postId);
+            return await _postReactionService.Delete(UserId, Id);
         }
     }
 }

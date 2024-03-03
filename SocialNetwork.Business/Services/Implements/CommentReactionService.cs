@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.CommentReactions.Responses;
 using SocialNetwork.Business.DTOs.Requests;
+using SocialNetwork.Business.DTOs.Response;
 using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.Services.Implements.Base;
 using SocialNetwork.Business.Services.Interfaces;
@@ -139,9 +140,9 @@ namespace SocialNetwork.Business.Services.Implements
             int totalReaction = await _unitOfWork.CommentReactionRepository.GetCount(x => x.CommentId == id);
             var userReacted = await _unitOfWork.CommentReactionRepository.FindOneBy(x => x.CommentId == id && x.UserId == requestUserId);
 
-            var result = new GetOverviewCommentReactionResponse
+            var result = new OverviewReactionResponse<GetCommentReactionResponse>
             {
-                ReactionTypes = _mapper.Map<List<GetReactionResponse>>(reactionType),
+                ReactionTypes = reactionType.ToList(),
                 Total = totalReaction,
             };
 
@@ -150,7 +151,7 @@ namespace SocialNetwork.Business.Services.Implements
                 result.UserReacted = _mapper.Map<GetCommentReactionResponse>(userReacted);
             }
 
-            return new DataResponse<GetOverviewCommentReactionResponse>(result, 200);
+            return new DataResponse<OverviewReactionResponse<GetCommentReactionResponse>>(result, 200);
         }
     
         private async Task<bool> CheckAccess(string userId1, string userId2)

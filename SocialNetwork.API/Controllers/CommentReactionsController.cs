@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.API.Controllers.Base;
+using SocialNetwork.Business.DTOs.CommentReactions.Responses;
 using SocialNetwork.Business.DTOs.Requests;
+using SocialNetwork.Business.DTOs.Response;
 using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
@@ -43,6 +45,12 @@ namespace SocialNetwork.API.Controllers
             return await _commentReactionService.Delete(UserId, Id);
         }
 
+        /// <summary>
+        /// Get overview reaction of comment
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        [ProducesResponseType(typeof(DataResponse<OverviewReactionResponse<GetCommentReactionResponse>>), 200)]
         [HttpGet("{Id}/GetOverview")]        
         public async Task<IResponse> GetOverview(Guid Id)
         {

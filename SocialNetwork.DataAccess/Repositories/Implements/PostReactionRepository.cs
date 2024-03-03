@@ -40,10 +40,9 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return await _dbSet.AsNoTracking().Where(x => x.UserId == id).Include(x => x.Reaction).ToListAsync();
         }
 
-        public async Task<ICollection<Reaction>> GetTypeReaction(Guid postId)
+        public async Task<ICollection<int>> GetTypeReaction(Guid postId)
         {
-            var reactionId = await _dbSet.AsNoTracking().Where(x => x.PostId == postId).Select(x => x.ReactionId).Distinct().ToListAsync();
-            return await _context.Reactions.AsNoTracking().Where(x => reactionId.Contains(x.Id)).ToListAsync();
+            return await _dbSet.AsNoTracking().Where(x => x.PostId == postId).Select(x => x.ReactionId).Distinct().ToListAsync();
         }
 
         public async Task<PostReaction> GetById(Guid postId, string userId, bool noTracking = true)

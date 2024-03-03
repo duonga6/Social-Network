@@ -162,20 +162,16 @@ namespace SocialNetwork.Business.Services.Implements
 
         }
 
-        public async Task<IResponse> GetById(string loggedUserId, string requestUserId)
+        public async Task<IResponse> GetById(string id)
         {
-            if (!await CheckAccess(loggedUserId, requestUserId))
-            {
-                return new ErrorResponse(403, Messages.Forbidden);
-            }    
+            var user = await _userManager.FindByIdAsync(id);
 
-            var user = await _userManager.FindByIdAsync(requestUserId);
             if (user == null)
             {
                 return new ErrorResponse(404, Messages.NotFound());
             }
 
-            return new DataResponse<GetUserResponse>(_mapper.Map<GetUserResponse>(user), 200);
+            return new DataResponse<BasicUserResponse>(_mapper.Map<BasicUserResponse>(user), 200);
         }
 
         public async Task<IResponse> UpdateInfo(string loggedUserId, string requestUserId, UpdateUserInfoRequest request)

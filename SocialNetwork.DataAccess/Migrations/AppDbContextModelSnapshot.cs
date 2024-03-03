@@ -205,7 +205,7 @@ namespace SocialNetwork.DataAccess.Migrations
                         .IsUnique()
                         .HasFilter("[UserId] IS NOT NULL");
 
-                    b.ToTable("CommentReactions");
+                    b.ToTable("CommentReactions", (string)null);
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Friendship", b =>
@@ -242,7 +242,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("TargetUserId");
 
-                    b.ToTable("Friendships");
+                    b.ToTable("Friendships", (string)null);
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.FriendshipType", b =>
@@ -269,7 +269,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FriendshipTypes");
+                    b.ToTable("FriendshipTypes", (string)null);
 
                     b.HasData(
                         new
@@ -322,7 +322,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Genders");
+                    b.ToTable("Genders", (string)null);
 
                     b.HasData(
                         new
@@ -367,7 +367,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MediaTypes");
+                    b.ToTable("MediaTypes", (string)null);
 
                     b.HasData(
                         new
@@ -453,7 +453,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("SenderId");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Notification", b =>
@@ -492,7 +492,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("TargetUserId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Post", b =>
@@ -522,7 +522,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("AuthorId");
 
-                    b.ToTable("Posts");
+                    b.ToTable("Posts", (string)null);
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostComment", b =>
@@ -562,7 +562,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PostComments");
+                    b.ToTable("PostComments", (string)null);
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostMedia", b =>
@@ -600,7 +600,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("PostId");
 
-                    b.ToTable("PostMedias");
+                    b.ToTable("PostMedias", (string)null);
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.PostReaction", b =>
@@ -637,7 +637,7 @@ namespace SocialNetwork.DataAccess.Migrations
                         .IsUnique()
                         .HasFilter("[UserId] IS NOT NULL");
 
-                    b.ToTable("PostReactions");
+                    b.ToTable("PostReactions", (string)null);
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.Reaction", b =>
@@ -670,7 +670,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Reactions");
+                    b.ToTable("Reactions", (string)null);
 
                     b.HasData(
                         new
@@ -777,7 +777,7 @@ namespace SocialNetwork.DataAccess.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshToken");
+                    b.ToTable("RefreshToken", (string)null);
                 });
 
             modelBuilder.Entity("SocialNetwork.DataAccess.Entities.User", b =>

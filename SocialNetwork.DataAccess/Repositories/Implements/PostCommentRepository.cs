@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.DataAccess.Context;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
@@ -93,5 +94,44 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .Take(pageSize)
                 .ToListAsync();
         }
+
+        public override async Task<bool> Delete(Guid id)
+        {
+            try
+            {
+                //var entity = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
+                //if (entity == null) { return false; }
+
+                //entity.Status = 0;
+
+                await UpdateDeep(_dbSet, id);
+
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} error function: Delete", typeof(ReactionRepository));
+                throw;
+            }
+        }
+
+        private async Task UpdateDeep(DbSet<PostComment> dbSet, Guid id)
+        {
+            var comment = await _dbSet.Include(x => x.ChildrenComment).FirstOrDefaultAsync(x => x.Id == id);
+
+            if (comment != null)
+            {
+                comment.Status = 0;
+                if (comment.ChildrenComment != null)
+                {
+                    foreach (var item in comment.ChildrenComment)
+                    {
+                        await UpdateDeep(dbSet, item.Id);
+                    }
+                }
+            }
+        }
+
     }
 }

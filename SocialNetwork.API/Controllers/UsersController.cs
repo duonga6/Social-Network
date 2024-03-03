@@ -140,17 +140,17 @@ namespace SocialNetwork.API.Controllers
         [ProducesResponseType(typeof(DataResponse<GetUserResponse>), 200)]
         public async Task<IResponse> GetInfo()
         {
-            return await _userService.GetById(UserId, UserId);
+            return await _userService.GetById(UserId);
         }
 
         /// <summary>
         /// User info
         /// </summary>
         [HttpGet("{Id}")]
-        [ProducesResponseType(typeof(DataResponse<GetUserResponse>), 200)]
+        [ProducesResponseType(typeof(DataResponse<BasicUserResponse>), 200)]
         public async Task<IResponse> GetById(string Id)
         {
-            return await _userService.GetById(UserId, Id);
+            return await _userService.GetById(Id);
         }
 
         /// <summary>

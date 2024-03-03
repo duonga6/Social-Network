@@ -421,7 +421,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             var reactions = await _unitOfWork.PostReactionRepository.GetPaged(pageSize, pageNumber, x => x.PostId == postId, x => x.CreatedAt);
 
-            return new PagedResponse<List<GetPostReactionResponse>>(_mapper.Map<List<GetPostReactionResponse>>(reactions), totalItems, 200);
+            return new PagedResponse<List<GetPostReactionResponses>>(_mapper.Map<List<GetPostReactionResponses>>(reactions), totalItems, 200);
         }
        
         public async Task<IResponse> GetReactionById(string requestUserId, Guid postId, int reactionId)
@@ -444,7 +444,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(404, Messages.NotFound("Reaction"));
             } 
 
-            return new DataResponse<GetPostReactionResponse>(_mapper.Map<GetPostReactionResponse>(reaction), 200);
+            return new DataResponse<GetPostReactionResponses>(_mapper.Map<GetPostReactionResponses>(reaction), 200);
                 
         }
        
@@ -481,7 +481,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             var entityAdded = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId);
 
-            return new DataResponse<GetPostReactionResponse>(_mapper.Map<GetPostReactionResponse>(entityAdded), 201, Messages.CreatedSuccessfully);
+            return new DataResponse<GetPostReactionResponses>(_mapper.Map<GetPostReactionResponses>(entityAdded), 201, Messages.CreatedSuccessfully);
         }
        
         public async Task<IResponse> UpdateReaction(string requestUserId, Guid postId,int reactionId, CreatePostReactionRequest request)
@@ -509,7 +509,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             var entityAdded = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId);
 
-            return new DataResponse<GetPostReactionResponse>(_mapper.Map<GetPostReactionResponse>(entityAdded), 204, Messages.UpdatedSuccessfully);
+            return new DataResponse<GetPostReactionResponses>(_mapper.Map<GetPostReactionResponses>(entityAdded), 204, Messages.UpdatedSuccessfully);
         }
      
         public async Task<IResponse> DeleteReaction(string requestUserId, Guid postId,int reactionId)

@@ -90,10 +90,11 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
 
         public virtual async Task<int> GetCount(Expression<Func<TEntity, bool>> filter = null)
         {
-            return await _dbSet.Where(filter).CountAsync();
+            return await _dbSet.AsNoTracking().Where(filter).CountAsync();
         }
 
         public virtual async Task<ICollection<TEntity>> GetPaged(int pageSize, int pageNumber, Expression<Func<TEntity, bool>> filter = null, Expression<Func<TEntity, object>> orderBy = null, bool isDesc = true)
+
         {
             var query = _dbSet
                 .AsNoTracking()
@@ -114,13 +115,30 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .Take(pageSize)
                 .ToListAsync();
         }
+        
+        public async Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, object>> orderBy, Expression<Func<TEntity, bool>> filter, bool isDesc = true)
+        {
+            var query = _dbSet.AsNoTracking();
+            if (isDesc)
+            {
+                query = query.OrderByDescending(orderBy);
+            } else
+            {
+                query = query.OrderBy(orderBy);
+            }
+
+            return await query.Where(filter).Take(pageSize).ToListAsync();
+        }
+
         public async Task<int> Count(Expression<Func<TEntity, bool>> filter = null)
+
         {
             return await _dbSet
                 .AsNoTracking()
                 .Where(filter)
                 .CountAsync();
         }
+        
         public IQueryable GetQueryable()
         {
             return _dbSet.AsQueryable();

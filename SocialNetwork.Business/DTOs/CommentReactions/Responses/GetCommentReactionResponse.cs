@@ -1,12 +1,11 @@
-﻿using SocialNetwork.Business.DTOs.Users.Responses;
-
-namespace SocialNetwork.Business.DTOs.Responses
+﻿namespace SocialNetwork.Business.DTOs.Responses
 {
     public class GetCommentReactionResponse
     {
         public Guid Id { set; get; }
-        public GetReactionResponse Reaction { set; get; } = null!;
-        public BasicUserResponse User { get; set; } = null!;
+        public Guid CommentId { set; get; }
+        public int ReactionId { set; get; }
+        public string UserId { set; get; } = string.Empty;
         public DateTime CreatedAt { get; set; }
     }
 }
