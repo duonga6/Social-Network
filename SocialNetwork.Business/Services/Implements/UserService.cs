@@ -390,9 +390,7 @@ namespace SocialNetwork.Business.Services.Implements
             {
                 return new ErrorResponse(403, Messages.BadRequest);
             }
-
-            request.AuthorId = requestUserId;
-            return await _postService.Create(request);
+            return await _postService.Create(requestUserId, request);
         }
 
         public async Task<IResponse> GetPostById(string loggedUserId, string requestUserId, Guid postId)

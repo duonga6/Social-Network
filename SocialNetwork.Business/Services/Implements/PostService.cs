@@ -112,15 +112,22 @@ namespace SocialNetwork.Business.Services.Implements
             return new DataResponse<GetPostResponse>(_mapper.Map<GetPostResponse>(post), 200);
         }
      
-        public async Task<IResponse> Create(CreatePostRequest request)
+        public async Task<IResponse> Create(string requestUserId, CreatePostRequest request)
         {
-            var user = await _userManager.FindByIdAsync(request.AuthorId);
+            if (string.IsNullOrEmpty(request.Content) && request.PostMedias.Count == 0)
+            {
+                return new ErrorResponse(404, Messages.PostEmpty);
+            }
+
+            var user = await _userManager.FindByIdAsync(requestUserId);
             if (user == null)
             {
                 return new ErrorResponse(404, Messages.NotFound("User"));
             }
 
             var addEntity = _mapper.Map<Post>(request);
+            addEntity.AuthorId = requestUserId;
+
             await _unitOfWork.PostRepository.Add(addEntity);
             var result = await _unitOfWork.CompleteAsync();
 
@@ -131,7 +138,9 @@ namespace SocialNetwork.Business.Services.Implements
 
             await _notificationService.CreateNotification(addEntity.AuthorId, "", NotificationEnum.Post);
 
-            return new DataResponse<GetPostResponse>(_mapper.Map<GetPostResponse>(addEntity), 200, Messages.CreatedSuccessfully);
+            var entityAdded = await _unitOfWork.PostRepository.GetById(addEntity.Id);
+
+            return new DataResponse<GetPostResponse>(_mapper.Map<GetPostResponse>(entityAdded), 200, Messages.CreatedSuccessfully);
         }
      
         public async Task<IResponse> Update(string requestingUserId, Guid id, UpdatePostRequest request)

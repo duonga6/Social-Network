@@ -8,7 +8,7 @@ namespace SocialNetwork.Business.Services.Interfaces
     {
         Task<IResponse> GetAll(string requestUserId, string? searchString, int pageSize, int pageNumber);
         Task<IResponse> GetById(string requestingUserId, Guid id);
-        Task<IResponse> Create(CreatePostRequest request);
+        Task<IResponse> Create(string requestUserId, CreatePostRequest request);
         Task<IResponse> Update(string requestingUserId, Guid id, UpdatePostRequest request);
         Task<IResponse> Delete(string requestingUserId, Guid postId);
 

@@ -19,7 +19,7 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
             builder.HasOne(x => x.ParentComment)
                 .WithMany(x => x.ChildrenComment)
                 .HasForeignKey(x => x.ParentCommentId)
-                .OnDelete(DeleteBehavior.Cascade)
+                .OnDelete(DeleteBehavior.NoAction)
                 .IsRequired(false);
 
             builder.HasKey(x => x.Id);

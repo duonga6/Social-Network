@@ -15,8 +15,7 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 .IsRequired();
 
             builder.Property(p => p.Content)
-                .HasColumnType("nvarchar(MAX)")
-                .IsRequired();
+                .HasColumnType("nvarchar(MAX)");
 
         }
     }

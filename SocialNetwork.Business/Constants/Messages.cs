@@ -47,6 +47,7 @@
 
         // Post
         public static string PostNotOwner => "Is not the owner";
+        public static string PostEmpty => "Content or media must not empty";
 
         // Post reaction
         public static string NotOwnerPostReaction => "You are not the owner post's reaction";

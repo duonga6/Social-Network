@@ -63,14 +63,7 @@ namespace SocialNetwork.API.Controllers
         [ProducesResponseType(typeof(DataResponse<GetPostResponse>), 200)]
         public async Task<IResponse> Create([FromBody]CreatePostRequest request)
         {
-            var userId = User.GetUserId();
-            if (userId == null)
-            {
-                return new ErrorResponse(401, Messages.UnAuthorized);
-            }
-
-            request.AuthorId = userId;
-            return await _postService.Create(request);
+            return await _postService.Create(UserId, request);
         }
 
         /// <summary>

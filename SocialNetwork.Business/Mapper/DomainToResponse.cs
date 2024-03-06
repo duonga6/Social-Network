@@ -31,9 +31,11 @@ namespace SocialNetwork.Business.Mapper
             CreateMap<PostMedia, GetPostMediaResponse>();
 
             CreateMap<Post, GetPostResponse>()
-                .ForMember(d => d.PostMedias, o => o.MapFrom(s => s.PostMedias));
+                .ForMember(d => d.PostMedias, o => o.MapFrom(s => s.PostMedias))
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)));
 
-            CreateMap<PostComment, GetPostCommentResponse>();
+            CreateMap<PostComment, GetPostCommentResponse>()
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)));
 
             CreateMap<CommentReaction, GetCommentReactionResponse>();
 
