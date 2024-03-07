@@ -159,7 +159,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(403, Messages.Forbidden);
             }
 
-            foreach (var item in request.ImagesDelete)
+            foreach (var item in request.MediasDelete)
             {
                 if (!await _unitOfWork.PostImageRepository.Delete(item))
                 {
@@ -167,7 +167,7 @@ namespace SocialNetwork.Business.Services.Implements
                 }
             }
 
-            foreach (var item in request.ImagesUpdate)
+            foreach (var item in request.MediasUpdate)
             {
                 var updateImage = _mapper.Map<PostMedia>(item);
                 if (!await _unitOfWork.PostImageRepository.Update(updateImage))
@@ -176,7 +176,7 @@ namespace SocialNetwork.Business.Services.Implements
                 }
             }
 
-            foreach (var item in request.ImagesAdd)
+            foreach (var item in request.MediasAdd)
             {
                 var addImage = _mapper.Map<PostMedia>(item);
                 addImage.PostId = postUpdate.Id;
