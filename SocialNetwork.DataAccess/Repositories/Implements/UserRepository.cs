@@ -35,12 +35,14 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
 
         public async Task<User> GetById(string id, bool noTracking = true)
         {
+            var query = _dbSet.Include(x => x.Gender_FK).AsQueryable();
+            
             if (noTracking)
             {
-                return await _dbSet.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
-            }    
+                query = query.AsNoTracking();
+            }
 
-            return await _dbSet.FindAsync(id);
+            return await query.FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<ICollection<User>> GetPaged(int pageSize, int pageNumber, Expression<Func<User, bool>> filter, Expression<Func<User, object>> orderBy, bool isDesc)

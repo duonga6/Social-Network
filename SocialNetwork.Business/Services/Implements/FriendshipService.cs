@@ -357,7 +357,21 @@ namespace SocialNetwork.Business.Services.Implements
 
             return new SuccessResponse(Messages.FriendshipUnfriended, 204);
         }
-        
+
+        public async Task<IResponse> GetInfo(string requestUserId, string targetUserId)
+        {
+            var friendShip = await _unitOfWork
+                .FriendshipRepository
+                .FindOneBy(x => 
+                    (x.TargetUserId == requestUserId && x.RequestUserId == targetUserId) || 
+                    (x.TargetUserId == targetUserId && x.RequestUserId == requestUserId));
+
+            var result = _mapper.Map<GetFriendshipResponse>(friendShip);
+
+            return new DataResponse<GetFriendshipResponse>(result, 200);
+        }
+
+
         public async Task<bool> IsFriend(string userId1, string userId2)
         {
             if (userId1 == userId2)

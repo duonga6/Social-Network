@@ -22,7 +22,8 @@ namespace SocialNetwork.Business.Mapper
             CreateMap<Reaction, GetReactionResponse>();
 
             CreateMap<User, GetUserResponse>();
-            CreateMap<User, BasicUserResponse>();
+            CreateMap<User, BasicUserResponse>()
+                .ForMember(d => d.Gender, o => o.MapFrom(s => s.Gender_FK.Name));
 
             CreateMap<User, UserWithTokenResponse>();
 
@@ -40,13 +41,7 @@ namespace SocialNetwork.Business.Mapper
             CreateMap<CommentReaction, GetCommentReactionResponse>();
 
 
-            CreateMap<Friendship, GetFriendshipResponse>()
-                .ForPath(x => x.RequestUser.Id, o => o.MapFrom(s => s.RequestUser.Id))
-                .ForPath(x => x.RequestUser.FullName, o => o.MapFrom(s => s.RequestUser.GetFullName()))
-                .ForPath(x => x.RequestUser.AvatarUrl, o => o.MapFrom(s => s.RequestUser.AvatarUrl))
-                .ForPath(x => x.TargetUser.Id, o => o.MapFrom(s => s.TargetUser.Id))
-                .ForPath(x => x.TargetUser.FullName, o => o.MapFrom(s => s.TargetUser.GetFullName()))
-                .ForPath(x => x.TargetUser.AvatarUrl, o => o.MapFrom(s => s.TargetUser.AvatarUrl));
+            CreateMap<Friendship, GetFriendshipResponse>();
 
             CreateMap<Message, GetMessageResponse>()
                 .ForPath(x => x.Sender.Id, o => o.MapFrom(s => s.Sender.Id))

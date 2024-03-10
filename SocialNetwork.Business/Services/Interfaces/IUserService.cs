@@ -22,6 +22,7 @@ namespace SocialNetwork.Business.Services.Interfaces
         Task<IResponse> ConfirmEmail(ConfirmEmailRequest request);
         Task<IResponse> ResendConfirmEmail(ResendConfirmEmailRequest request);
         Task<IResponse> ChangePassword(string requestUserId, ChangePasswordRequest request);
+        Task<IResponse> GetPhoto(string requestUserId, string targetUserId, int pageSize, int pageNumber);
 
 
         Task<IResponse> AddRoles(string userId, AddRolesToUserRequest request);

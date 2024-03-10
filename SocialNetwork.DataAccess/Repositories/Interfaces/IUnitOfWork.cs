@@ -14,6 +14,7 @@
         INotificationRepository NotificationRepository { get; }
         IUserRepository UserRepository { get; }
         IMediaTypeRepository MediaTypeRepository { get; }
+        IPostMediaRepository PostMediaRepository { get; }
 
         Task<bool> CompleteAsync();
     }

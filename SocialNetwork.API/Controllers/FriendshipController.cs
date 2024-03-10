@@ -21,7 +21,6 @@ namespace SocialNetwork.API.Controllers
             _friendshipService = friendshipService;
         }
 
-        //123
         /// <summary>
         /// Get all friendship of current user
         /// </summary>
@@ -131,6 +130,19 @@ namespace SocialNetwork.API.Controllers
         public async Task<IResponse> UnblockFriend(string targetUserId)
         {
             return await _friendshipService.UnBlockFriend(UserId, targetUserId);
+        }
+
+        /// <summary>
+        /// Get friendship status with target user
+        /// </summary>
+        /// <param name="targetUserId"></param>
+        /// <returns></returns>
+        [HttpGet("GetInfo/{targetUserId}")]
+        [ProducesResponseType(typeof(DataResponse<GetFriendshipResponse>), 200)]       
+        
+        public async Task<IResponse> GetInfo(string targetUserId)
+        {
+            return await _friendshipService.GetInfo(UserId, targetUserId);
         }
     }
 }

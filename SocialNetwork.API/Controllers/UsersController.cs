@@ -8,6 +8,7 @@ using SocialNetwork.Business.DTOs.Message.Responses;
 using SocialNetwork.Business.DTOs.Notification.Responses;
 using SocialNetwork.Business.DTOs.Post.Requests;
 using SocialNetwork.Business.DTOs.Post.Responses;
+using SocialNetwork.Business.DTOs.PostMedia.Responses;
 using SocialNetwork.Business.DTOs.Token;
 using SocialNetwork.Business.DTOs.Token.Requests;
 using SocialNetwork.Business.DTOs.Users.Requests;
@@ -151,6 +152,20 @@ namespace SocialNetwork.API.Controllers
         public async Task<IResponse> GetById(string Id)
         {
             return await _userService.GetById(Id);
+        }
+
+        /// <summary>
+        /// Get user's photo contain in post
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="pageNumber"></param>
+        /// <returns></returns>
+        [HttpGet("{Id}/GetPhotos")]
+        [ProducesResponseType(typeof(PagedResponse<List<GetPostMediaResponse>>), 200)]
+        public async Task<IResponse> GetPhotos(string Id, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
+        {
+            return await _userService.GetPhoto(UserId, Id, pageSize, pageNumber);
         }
 
         /// <summary>

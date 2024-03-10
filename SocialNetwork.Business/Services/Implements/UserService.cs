@@ -7,6 +7,7 @@ using SocialNetwork.Business.DTOs.Friendship.Requests;
 using SocialNetwork.Business.DTOs.Message.Requests;
 using SocialNetwork.Business.DTOs.Post.Requests;
 using SocialNetwork.Business.DTOs.Post.Responses;
+using SocialNetwork.Business.DTOs.PostMedia.Responses;
 using SocialNetwork.Business.DTOs.Token;
 using SocialNetwork.Business.DTOs.Token.Requests;
 using SocialNetwork.Business.DTOs.Users.Requests;
@@ -19,6 +20,7 @@ using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
+using SocialNetwork.DataAccess.Utilities.Enum;
 using SocialNetwork.DataAccess.Utilities.Roles;
 using System.Linq.Expressions;
 
@@ -164,7 +166,7 @@ namespace SocialNetwork.Business.Services.Implements
 
         public async Task<IResponse> GetById(string id)
         {
-            var user = await _userManager.FindByIdAsync(id);
+            var user = await _unitOfWork.UserRepository.GetById(id);
 
             if (user == null)
             {
@@ -351,6 +353,37 @@ namespace SocialNetwork.Business.Services.Implements
             return new DataResponse<ResendConfirmEmailResponse>(resultCode, 200, Messages.GetCodeConfirmEmailSuccess);
         }
 
+        public async Task<IResponse> GetPhoto(string requestUserId, string targetUserId, int pageSize, int pageNumber)
+        {
+            var user = await _unitOfWork.UserRepository.GetById(targetUserId);
+
+            if (user == null)
+            {
+                return new ErrorResponse(404, Messages.NotFound("User " + targetUserId));
+            }
+
+            var userPostIds = (await _unitOfWork.PostRepository.FindBy(x => x.Status == 1 && x.AuthorId == targetUserId)).Select(x => x.Id).ToList();
+
+            Expression<Func<PostMedia, bool>> filter = x => x.MediaTypeId == (int)MediaTypeEnum.Image && userPostIds.Contains(x.PostId);
+
+            int totalItems = await _unitOfWork.PostMediaRepository.GetCount(filter);
+
+            int pageCount = (int)Math.Ceiling((decimal)totalItems / pageSize);
+
+
+            if (pageNumber > pageCount && pageCount > 0)
+            {
+                return new ErrorResponse(400, Messages.OutOfPage);
+            }
+
+            var postMedias = await _unitOfWork.PostMediaRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
+
+            var result = _mapper.Map<List<GetPostMediaResponse>>(postMedias);
+
+            return new PagedResponse<List<GetPostMediaResponse>>(result, totalItems, 200);
+        }
+
+
         private async Task<bool> CheckAccess(string loggedUserId, string requestUserId)
         {
             var requestUser = await _userManager.FindByIdAsync(requestUserId);
@@ -411,10 +444,10 @@ namespace SocialNetwork.Business.Services.Implements
 
         public async Task<IResponse> GetPostByUser(string loggedUserId, string requestUserId, string? searchString, int pageSize, int pageNumber)
         {
-            if (!await CheckAccessPost(loggedUserId, requestUserId))
-            {
-                return new ErrorResponse(403, Messages.Forbidden);
-            }
+            //if (!await CheckAccessPost(loggedUserId, requestUserId))
+            //{
+            //    return new ErrorResponse(403, Messages.Forbidden);
+            //}
 
             Expression<Func<Post, bool>> filter;
 
@@ -568,10 +601,10 @@ namespace SocialNetwork.Business.Services.Implements
 
         public async Task<IResponse> GetFriendshipByUser(string loggedUserId, string requestUserId, string? searchString, int pageSize, int pageNumber, FriendType type)
         {
-            if (!await CheckOwnerOrAdminAsync(loggedUserId, requestUserId))
-            {
-                return new ErrorResponse(403, Messages.BadRequest);
-            }
+            //if (!await CheckOwnerOrAdminAsync(loggedUserId, requestUserId))
+            //{
+            //    return new ErrorResponse(403, Messages.BadRequest);
+            //}
 
             return await _friendshipService.GetByUser(requestUserId, searchString, pageSize, pageNumber, type);
         }

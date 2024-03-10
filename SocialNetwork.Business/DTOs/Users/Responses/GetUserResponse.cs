@@ -11,5 +11,6 @@
         public string PhoneNumber { set; get; } = string.Empty;
         public bool EmailConfirmed { get; set; }
         public string AvatarUrl { set; get; } = string.Empty;
+        public string CoverImageUrl { set; get; } = string.Empty;
     }
 }

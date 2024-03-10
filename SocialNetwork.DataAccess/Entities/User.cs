@@ -10,6 +10,7 @@ namespace SocialNetwork.DataAccess.Entities
         public string Address { get; set; }
         public int Gender { set; get; }
         public string AvatarUrl { get; set; }
+        public string CoverImageUrl { set; get; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public DateTime DateOfBirth { get; set; }

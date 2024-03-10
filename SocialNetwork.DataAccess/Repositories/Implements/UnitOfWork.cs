@@ -20,6 +20,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         public INotificationRepository NotificationRepository { get; }
         public IUserRepository UserRepository { get; }
         public IMediaTypeRepository MediaTypeRepository { get; }
+        public IPostMediaRepository PostMediaRepository { get; }
 
         public readonly AppDbContext _context;
 
@@ -38,6 +39,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             NotificationRepository = new NotificationRepository(logger, context);
             UserRepository = new UserRepository(logger, context);
             MediaTypeRepository = new MediaTypeRepository(logger, context);
+            PostMediaRepository = new PostMediaRepository(logger, context);
         }
 
         public async Task<bool> CompleteAsync()
