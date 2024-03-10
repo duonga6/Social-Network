@@ -44,7 +44,7 @@ jobs:
           username: ${{ secrets.SERVER_USERNAME }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            docker image pull duonga6/nginx-facebook.api
+            docker image pull duonga6/facebook.api
             docker container stop facebook.api
             docker container prune -f
             docker run -d --name facebook.api --network nginx-network --restart unless-stopped -p 9999:9999 duonga6/facebook.api
