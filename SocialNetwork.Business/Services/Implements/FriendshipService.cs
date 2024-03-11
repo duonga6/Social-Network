@@ -129,30 +129,30 @@ namespace SocialNetwork.Business.Services.Implements
             return new DataResponse<GetFriendshipResponse>(_mapper.Map<GetFriendshipResponse>(friendship), 200);
         }
 
-        public async Task<IResponse> AcceptRequest(string requestUserId, string targetUserId)
+        public async Task<IResponse> AcceptRequest(string requestUserId, Guid id)
         {
-            if (!await CheckExistUser(requestUserId) || !await CheckExistUser(targetUserId))
-            {
-                return new ErrorResponse(404, Messages.NotFound("User"));
-            }
 
             var entity = await _unitOfWork.FriendshipRepository
-                    .FindOneBy(x => x.RequestUserId == targetUserId && x.TargetUserId == requestUserId, false);
+                    .GetById(id, false);
             
             if (entity == null)
             {
                 return new ErrorResponse(404, Messages.NotFound("Friendship"));
             }
 
-            if (entity.FriendshipTypeId != (int)(int)FriendshipEnum.Pending)
+            if (entity.TargetUserId != requestUserId)
+            {
+                return new ErrorResponse(400, Messages.NotFound());
+            }
+
+            if (entity.FriendshipTypeId != (int)FriendshipEnum.Pending)
             {
                 return new ErrorResponse(400, Messages.FriendshipStatusInValid);
             }
 
-            entity.FriendshipTypeId = (int)(int)FriendshipEnum.Accepted;
+            entity.FriendshipTypeId = (int)FriendshipEnum.Accepted;
             entity.UpdatedAt = DateTime.UtcNow;
 
-            await _unitOfWork.FriendshipRepository.Update(entity);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -238,15 +238,11 @@ namespace SocialNetwork.Business.Services.Implements
             return new SuccessResponse(Messages.FriendshipBlocked, 204);
         }
 
-        public async Task<IResponse> CancelRequest(string requestUserId, string targetUserId)
+        public async Task<IResponse> CancelRequest(string requestUserId, Guid id)
         {
-            if (!await CheckExistUser(requestUserId) || !await CheckExistUser(targetUserId))
-            {
-                return new ErrorResponse(404, Messages.NotFound("User"));
-            }
 
             var entity = await _unitOfWork.FriendshipRepository
-                    .FindOneBy(x => x.RequestUserId == requestUserId && x.TargetUserId == targetUserId, false);
+                    .GetById(id);
 
             if (entity == null || entity.RequestUserId != requestUserId)
             {
@@ -270,15 +266,10 @@ namespace SocialNetwork.Business.Services.Implements
 
         }
 
-        public async Task<IResponse> RefuseRequest(string requestUserId, string targetUserId)
+        public async Task<IResponse> RefuseRequest(string requestUserId, Guid id)
         {
-            if (!await CheckExistUser(requestUserId) || !await CheckExistUser(targetUserId))
-            {
-                return new ErrorResponse(404, Messages.NotFound("User"));
-            }
-
             var entity = await _unitOfWork.FriendshipRepository
-                .FindOneBy(x => x.RequestUserId == targetUserId && x.TargetUserId == requestUserId, false);
+                .GetById(id);
             
             if (entity == null || entity.TargetUserId != requestUserId)
             {
@@ -296,15 +287,11 @@ namespace SocialNetwork.Business.Services.Implements
             return new SuccessResponse(Messages.FriendshipRefused, 204);
         }
 
-        public async Task<IResponse> UnBlockFriend(string requestUserId, string targetUserId)
+        public async Task<IResponse> UnBlockFriend(string requestUserId, Guid id)
         {
-            if (!await CheckExistUser(requestUserId) || !await CheckExistUser(targetUserId))
-            {
-                return new ErrorResponse(404, Messages.NotFound("User"));
-            }
 
             var entity = await _unitOfWork.FriendshipRepository
-                .FindOneBy(x => x.RequestUserId == requestUserId && x.TargetUserId == targetUserId, false);
+                .GetById(id);
 
             if (entity == null || entity.RequestUserId != requestUserId)
             {
@@ -327,17 +314,13 @@ namespace SocialNetwork.Business.Services.Implements
             return new SuccessResponse(Messages.FriendshipUnblocked, 204);
         }
 
-        public async Task<IResponse> UnFriendRequest(string requestUserId, string targetUserId)
+        public async Task<IResponse> UnFriendRequest(string requestUserId, Guid id)
         {
-            if (!await CheckExistUser(requestUserId) || !await CheckExistUser(targetUserId))
-            {
-                return new ErrorResponse(404, Messages.NotFound("User"));
-            }
 
             var entity = await _unitOfWork.FriendshipRepository
-                .FindOneBy(x => x.RequestUserId == requestUserId && x.TargetUserId == targetUserId || x.RequestUserId == targetUserId && x.TargetUserId == requestUserId);
+                .GetById(id);
             
-            if (entity == null)
+            if (entity == null || entity.RequestUserId != requestUserId && entity.TargetUserId != requestUserId)
             {
                 return new ErrorResponse(404, Messages.NotFound("Friendship"));
             }

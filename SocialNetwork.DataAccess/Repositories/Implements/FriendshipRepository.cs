@@ -28,9 +28,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
             var entityUpdate = await _dbSet.FindAsync(entity.Id);
             if (entityUpdate == null) { return false; }
-            
-            entityUpdate.RequestUserId = entity.RequestUserId;
-            entityUpdate.TargetUserId = entity.TargetUserId;  
+
             entityUpdate.Status = entity.Status;
             entityUpdate.UpdatedAt = DateTime.UtcNow;
 

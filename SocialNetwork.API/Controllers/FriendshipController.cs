@@ -63,49 +63,49 @@ namespace SocialNetwork.API.Controllers
         /// <summary>
         /// Unfriend
         /// </summary>
-        /// <param name="targetUserId"></param>
+        /// <param name="Id"></param>
         /// <returns></returns>
-        [HttpDelete("UnFriend/{targetUserId}")]
+        [HttpDelete("UnFriend/{Id}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> UnFriend(string targetUserId)
+        public async Task<IResponse> UnFriend(Guid Id)
         {
-            return await _friendshipService.UnFriendRequest(UserId, targetUserId);
+            return await _friendshipService.UnFriendRequest(UserId, Id);
         }
 
         /// <summary>
         /// Cancel friend request
         /// </summary>
-        /// <param name="targetUserId"></param>
+        /// <param name="Id"></param>
         /// <returns></returns>
-        [HttpDelete("CancelAddFriendRequest/{targetUserId}")]
+        [HttpDelete("CancelAddFriendRequest/{Id}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> CancelRequest(string targetUserId)
+        public async Task<IResponse> CancelRequest(Guid Id)
         {
-            return await _friendshipService.CancelRequest(UserId, targetUserId);
+            return await _friendshipService.CancelRequest(UserId, Id);
         }
 
         /// <summary>
         /// Accept friend request
         /// </summary>
-        /// <param name="targetUserId"></param>
+        /// <param name="Id">Id of friendship</param>
         /// <returns></returns>
-        [HttpPost("AcceptFriend/{targetUserId}")]
+        [HttpPut("AcceptFriend/{Id}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> AcceptFriend(string targetUserId)
+        public async Task<IResponse> AcceptFriend(Guid Id)
         {
-            return await _friendshipService.AcceptRequest(UserId, targetUserId);
+            return await _friendshipService.AcceptRequest(UserId, Id);
         }
 
         /// <summary>
         /// Refuse friend request
         /// </summary>
-        /// <param name="targetUserId"></param>
+        /// <param name="Id"></param>
         /// <returns></returns>
-        [HttpDelete("RefuseFriend/{targetUserId}")]
+        [HttpDelete("RefuseFriend/{Id}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> RefuseFriend(string targetUserId)
+        public async Task<IResponse> RefuseFriend(Guid Id)
         {
-            return await _friendshipService.RefuseRequest(UserId, targetUserId);
+            return await _friendshipService.RefuseRequest(UserId, Id);
         }
 
         /// <summary>
@@ -123,13 +123,13 @@ namespace SocialNetwork.API.Controllers
         /// <summary>
         /// Unblock friend
         /// </summary>
-        /// <param name="targetUserId"></param>
+        /// <param name="Id"></param>
         /// <returns></returns>
-        [HttpPut("UnblockFriend/{targetUserId}")]
+        [HttpDelete("UnblockFriend/{Id}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> UnblockFriend(string targetUserId)
+        public async Task<IResponse> UnblockFriend(Guid Id)
         {
-            return await _friendshipService.UnBlockFriend(UserId, targetUserId);
+            return await _friendshipService.UnBlockFriend(UserId, Id);
         }
 
         /// <summary>

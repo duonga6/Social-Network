@@ -35,17 +35,6 @@ namespace SocialNetwork.Business.Services.Interfaces
         Task<IResponse> CreatePost(string loggedUserId, string requestUserId, CreatePostRequest request);
         Task<IResponse> DeletePost(string loggedUserId, string requestUserId, Guid postId);
         Task<IResponse> UpdatePost(string loggedUserId, string requestUserId, Guid postId, UpdatePostRequest request);
-
-        Task<IResponse> AddFriend(string loggedUserId, string requestUserId, BaseFriendRequest request);
-        Task<IResponse> UnFriend(string loggedUserId, string requestUserId, string targetUserId);
-        Task<IResponse> CancelRequest(string loggedUserId, string requestUserId, string targetUserId);
-        Task<IResponse> AcceptRequest(string loggedUserId, string requestUserId, string targetUserId);
-        Task<IResponse> RefuseRequest(string loggedUserId, string requestUserId, string targetUserId);
-        Task<IResponse> BlockFriend(string loggedUserId, string requestUserId, BaseFriendRequest request);
-        Task<IResponse> UnBlockFriend(string loggedUserId, string requestUserId, string targetUserId);
-        Task<IResponse> GetFriendshipByUser(string loggedUserId, string requestUserId, string? searchString, int pageSize, int pageNumber, FriendType type);
-        Task<IResponse> GetFriendshipById(string loggedUserId, string requestUserId, Guid id);
-
         Task<IResponse> SendMessage(string loggedUserId, string requestUserId, SendMessageRequest request);
         Task<IResponse> GetConversation(string loggedUserId, string requestUserId, string targetUserId, string? searchString, int pageSize, int pageNumber);
         Task<IResponse> GetMessageById(string loggedUserId, string requestUserId, Guid id);
