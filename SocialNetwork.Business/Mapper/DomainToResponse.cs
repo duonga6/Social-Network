@@ -41,7 +41,8 @@ namespace SocialNetwork.Business.Mapper
             CreateMap<CommentReaction, GetCommentReactionResponse>();
 
 
-            CreateMap<Friendship, GetFriendshipResponse>();
+            CreateMap<Friendship, GetFriendshipResponse>()
+                .ForMember(d => d.UpdatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.UpdatedAt, DateTimeKind.Utc)));
 
             CreateMap<Message, GetMessageResponse>()
                 .ForPath(x => x.Sender.Id, o => o.MapFrom(s => s.Sender.Id))

@@ -10,5 +10,7 @@ namespace SocialNetwork.DataAccess.Repositories.Interfaces
         Task<bool> Delete(string id);
         Task<User> GetById(string id, bool noTracking = true);
         Task<bool> Update(User user);
+        IQueryable<User> GetQueryable();
+        Task<ICollection<User>> FindBy(Expression<Func<User, bool>> filter = null, bool asNoTracking = true);
     }
 }

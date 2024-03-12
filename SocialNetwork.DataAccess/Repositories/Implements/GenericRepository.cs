@@ -139,7 +139,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .CountAsync();
         }
         
-        public IQueryable GetQueryable()
+        public IQueryable<TEntity> GetQueryable()
         {
             return _dbSet.AsQueryable();
         }

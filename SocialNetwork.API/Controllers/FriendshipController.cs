@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.API.Controllers.Base;
 using SocialNetwork.Business.DTOs.Friendship.Requests;
 using SocialNetwork.Business.DTOs.Friendship.Responses;
+using SocialNetwork.Business.DTOs.Users.Responses;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Utilities.Enum;
 using SocialNetwork.Business.Wrapper;
@@ -138,11 +139,23 @@ namespace SocialNetwork.API.Controllers
         /// <param name="targetUserId"></param>
         /// <returns></returns>
         [HttpGet("GetInfo/{targetUserId}")]
-        [ProducesResponseType(typeof(DataResponse<GetFriendshipResponse>), 200)]       
-        
+        [ProducesResponseType(typeof(DataResponse<GetFriendshipResponse>), 200)]
         public async Task<IResponse> GetInfo(string targetUserId)
         {
             return await _friendshipService.GetInfo(UserId, targetUserId);
+        }
+
+        /// <summary>
+        /// Get suggestion friend
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="pageNumber"></param>
+        /// <returns></returns>
+        [HttpGet("GetSuggestionFriend")]
+        [ProducesResponseType(typeof(PagedResponse<List<GetUserResponse>>), 200)]
+        public async Task<IResponse> GetSuggestionFriend([FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
+        {
+            return await _friendshipService.GetSuggestFriend(UserId, pageSize, pageNumber);
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using Org.BouncyCastle.Asn1.Ocsp;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Friendship.Requests;
 using SocialNetwork.Business.DTOs.Friendship.Responses;
@@ -14,6 +13,9 @@ using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
 using SocialNetwork.DataAccess.Utilities.Enum;
 using System.Linq.Expressions;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using SocialNetwork.Business.DTOs.Users.Responses;
 
 namespace SocialNetwork.Business.Services.Implements
 {
@@ -354,6 +356,26 @@ namespace SocialNetwork.Business.Services.Implements
             return new DataResponse<GetFriendshipResponse>(result, 200);
         }
 
+        public async Task<IResponse> GetSuggestFriend(string requestUserId, int pageSize, int pageNumber)
+        {
+            var query = from user in _unitOfWork.UserRepository.GetQueryable()
+                        where user.Id != requestUserId && !_unitOfWork.FriendshipRepository.GetQueryable()
+                                        .Any(f => (f.RequestUserId == requestUserId && f.TargetUserId == user.Id) || (f.RequestUserId == user.Id && f.TargetUserId == requestUserId))
+                        select user;
+
+            int totalItems = await query.CountAsync();
+            int pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
+
+            if (pageNumber > pageCount && pageCount != 0)
+            {
+                return new ErrorResponse(400, Messages.OutOfPage);
+            }
+
+            var friends = await query.OrderBy(x => x.CreatedAt).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+            var result = _mapper.Map<List<GetUserResponse>>(friends);
+
+            return new PagedResponse<List<GetUserResponse>>(result, totalItems, 200);
+        }
 
         public async Task<bool> IsFriend(string userId1, string userId2)
         {

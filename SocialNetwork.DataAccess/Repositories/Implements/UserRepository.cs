@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.DataAccess.Context;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
@@ -77,6 +78,17 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             updateUser.DateOfBirth = updateUser.DateOfBirth;
 
             return true;
+        }
+
+        public IQueryable<User> GetQueryable() => _dbSet.AsQueryable();
+
+        public virtual async Task<ICollection<User>> FindBy(Expression<Func<User, bool>> filter = null, bool asNoTracking = true)
+        {
+            if (asNoTracking)
+            {
+                return await _dbSet.AsNoTracking().Where(filter).ToListAsync();
+            }
+            return await _dbSet.Where(filter).ToListAsync();
         }
     }
 }
