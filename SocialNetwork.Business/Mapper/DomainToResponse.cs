@@ -1,17 +1,16 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.DTOs.Friendship.Responses;
 using SocialNetwork.Business.DTOs.MediaType.Responses;
 using SocialNetwork.Business.DTOs.Message.Responses;
 using SocialNetwork.Business.DTOs.Notification.Responses;
 using SocialNetwork.Business.DTOs.Post.Responses;
 using SocialNetwork.Business.DTOs.PostMedia.Responses;
+using SocialNetwork.Business.DTOs.PostReactions.Responses;
+using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.DTOs.Role.Responses;
 using SocialNetwork.Business.DTOs.Users.Responses;
 using SocialNetwork.DataAccess.Entities;
-using SocialNetwork.Business.DTOs.Response;
-using SocialNetwork.Business.DTOs.PostReactions.Responses;
 
 namespace SocialNetwork.Business.Mapper
 {
@@ -42,6 +41,7 @@ namespace SocialNetwork.Business.Mapper
 
 
             CreateMap<Friendship, GetFriendshipResponse>()
+                .ForMember(d => d.FriendStatus, o => o.MapFrom(x => x.FriendshipTypeId))
                 .ForMember(d => d.UpdatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.UpdatedAt, DateTimeKind.Utc)));
 
             CreateMap<Message, GetMessageResponse>()
