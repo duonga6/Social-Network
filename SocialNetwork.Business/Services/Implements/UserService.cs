@@ -173,7 +173,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(404, Messages.NotFound());
             }
 
-            return new DataResponse<BasicUserResponse>(_mapper.Map<BasicUserResponse>(user), 200);
+            return new DataResponse<GetUserResponse>(_mapper.Map<GetUserResponse>(user), 200);
         }
 
         public async Task<IResponse> UpdateInfo(string loggedUserId, string requestUserId, UpdateUserInfoRequest request)

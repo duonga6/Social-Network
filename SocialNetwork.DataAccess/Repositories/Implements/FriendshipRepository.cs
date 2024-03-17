@@ -46,11 +46,17 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
 
         public override async Task<ICollection<Friendship>> FindBy(Expression<Func<Friendship, bool>> filter = null, bool asNoTracking = true)
         {
+            var query = _dbSet
+                .Include(x => x.RequestUser)
+                .Include(x => x.TargetUser)
+                .Where(filter)
+                .OrderByDescending(x => x.CreatedAt);
+            
             if (asNoTracking)
             {
-                return await _dbSet.AsNoTracking().Where(filter).OrderByDescending(x => x.CreatedAt).ToListAsync();
+                return await query.AsNoTracking().ToListAsync();
             }
-            return await _dbSet.Where(filter).ToListAsync();
+            return await query.ToListAsync();
         }
 
         public override async Task<Friendship> GetById(Guid id, bool asNoTracking = true)

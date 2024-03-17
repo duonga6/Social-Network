@@ -148,7 +148,7 @@ namespace SocialNetwork.API.Controllers
         /// User info
         /// </summary>
         [HttpGet("{Id}")]
-        [ProducesResponseType(typeof(DataResponse<BasicUserResponse>), 200)]
+        [ProducesResponseType(typeof(DataResponse<GetUserResponse>), 200)]
         public async Task<IResponse> GetById(string Id)
         {
             return await _userService.GetById(Id);

@@ -1,13 +1,14 @@
-﻿using SocialNetwork.DataAccess.Utilities.Enum;
+﻿using SocialNetwork.Business.DTOs.Users.Responses;
+using SocialNetwork.DataAccess.Utilities.Enum;
 
 namespace SocialNetwork.Business.DTOs.Friendship.Responses
 {
     public class GetFriendshipResponse
     {
         public Guid Id { set; get; }
-        public string RequestUserId { set; get; } = string.Empty;
-        public string TargetUserId { set; get; } = string.Empty;
-        public string UpdatedAt { set; get; } = string.Empty;
+        public BasicUserResponse RequestUser { set; get; } = null!;
+        public BasicUserResponse TargetUser { set; get; } = null!;
+        public DateTime UpdatedAt { set; get; }
         public FriendshipEnum FriendStatus { set; get; }
     }
 }

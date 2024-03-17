@@ -372,9 +372,9 @@ namespace SocialNetwork.Business.Services.Implements
             }
 
             var friends = await query.OrderBy(x => x.CreatedAt).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
-            var result = _mapper.Map<List<GetUserResponse>>(friends);
+            var result = _mapper.Map<List<BasicUserResponse>>(friends);
 
-            return new PagedResponse<List<GetUserResponse>>(result, totalItems, 200);
+            return new PagedResponse<List<BasicUserResponse>>(result, totalItems, 200);
         }
 
         public async Task<bool> IsFriend(string userId1, string userId2)

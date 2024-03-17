@@ -29,12 +29,13 @@ namespace SocialNetwork.API.Controllers
         /// <param name="pageNumber">Current page</param>
         /// <param name="searchString">Search by name</param>
         /// <param name="type">Type friend to get 0: all, 1: pending from me, 2: pending from other, 3: accepted, 4: blocked</param>
+        /// <param name="userId"></param>
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResponse<List<GetFriendshipResponse>>), 200)]
-        public async Task<IResponse> Get([FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber,[FromQuery] string? searchString,[FromQuery, Required] FriendType type)
+        public async Task<IResponse> Get([FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber,[FromQuery] string? searchString,[FromQuery, Required] FriendType type,[FromQuery] string? userId)
         {
-            return await _friendshipService.GetByUser(UserId, searchString, pageSize, pageNumber, type);
+            return await _friendshipService.GetByUser(userId ?? UserId, searchString, pageSize, pageNumber, type);
         }
 
         /// <summary>
@@ -138,7 +139,7 @@ namespace SocialNetwork.API.Controllers
         /// </summary>
         /// <param name="targetUserId"></param>
         /// <returns></returns>
-        [HttpGet("GetInfo/{targetUserId}")]
+        [HttpGet("Info/{targetUserId}")]
         [ProducesResponseType(typeof(DataResponse<GetFriendshipResponse>), 200)]
         public async Task<IResponse> GetInfo(string targetUserId)
         {
@@ -151,7 +152,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="pageSize"></param>
         /// <param name="pageNumber"></param>
         /// <returns></returns>
-        [HttpGet("GetSuggestionFriend")]
+        [HttpGet("SuggestionFriend")]
         [ProducesResponseType(typeof(PagedResponse<List<GetUserResponse>>), 200)]
         public async Task<IResponse> GetSuggestionFriend([FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {

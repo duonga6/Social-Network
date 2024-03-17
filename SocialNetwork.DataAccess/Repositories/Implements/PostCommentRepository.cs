@@ -41,7 +41,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             try
             {
                 var entityUpdate = await _dbSet.FirstOrDefaultAsync(x => x.Id == entity.Id && x.Status == 1);
-                if (entityUpdate == null) 
+                if (entityUpdate == null)
                 {
                     return false;
                 }
@@ -57,7 +57,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 throw;
             }
         }
-   
+
         public async Task<ICollection<PostComment>> GetByPost(Guid postId)
         {
             var comments = await _dbSet.AsNoTracking()
@@ -133,5 +133,22 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             }
         }
 
+
+        public override async Task<ICollection<PostComment>> GetCursorPaged(int pageSize, Expression<Func<PostComment, object>> orderBy, Expression<Func<PostComment, bool>> filter, bool isDesc = true)
+        {
+            var query = _dbSet.Include(x => x.User).AsNoTracking();
+            if (isDesc)
+            {
+                query = query.OrderByDescending(orderBy);
+            }
+            else
+            {
+                query = query.OrderBy(orderBy);
+            }
+
+            return await query.Where(filter).Take(pageSize).ToListAsync();
+        }
+
     }
+
 }

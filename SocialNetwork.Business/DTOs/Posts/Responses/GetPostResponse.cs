@@ -9,6 +9,7 @@ namespace SocialNetwork.Business.DTOs.Post.Responses
         public string Content { get; set; } = string.Empty;
         public string AuthorId { set; get; } = string.Empty;
         public DateTime CreatedAt { get; set; }
+        public BasicUserResponse User { set; get; } = null!;
         public List<GetPostMediaResponse>? PostMedias { set; get; }
     }
 }

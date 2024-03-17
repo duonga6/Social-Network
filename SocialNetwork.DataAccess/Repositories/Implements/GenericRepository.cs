@@ -116,7 +116,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .ToListAsync();
         }
         
-        public async Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, object>> orderBy, Expression<Func<TEntity, bool>> filter, bool isDesc = true)
+        public virtual async Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, object>> orderBy, Expression<Func<TEntity, bool>> filter, bool isDesc = true)
         {
             var query = _dbSet.AsNoTracking();
             if (isDesc)

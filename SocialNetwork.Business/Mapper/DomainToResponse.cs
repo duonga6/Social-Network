@@ -20,9 +20,10 @@ namespace SocialNetwork.Business.Mapper
         {
             CreateMap<Reaction, GetReactionResponse>();
 
-            CreateMap<User, GetUserResponse>();
-            CreateMap<User, BasicUserResponse>()
+            CreateMap<User, GetUserResponse>()
                 .ForMember(d => d.Gender, o => o.MapFrom(s => s.Gender_FK.Name));
+
+            CreateMap<User, BasicUserResponse>();
 
             CreateMap<User, UserWithTokenResponse>();
 
@@ -32,13 +33,14 @@ namespace SocialNetwork.Business.Mapper
 
             CreateMap<Post, GetPostResponse>()
                 .ForMember(d => d.PostMedias, o => o.MapFrom(s => s.PostMedias))
+                .ForMember(d => d.User, o => o.MapFrom(s => s.Author))
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)));
 
             CreateMap<PostComment, GetPostCommentResponse>()
-                .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)));
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)))
+                .ForMember(d => d.User, o => o.MapFrom(x => x.User));
 
             CreateMap<CommentReaction, GetCommentReactionResponse>();
-
 
             CreateMap<Friendship, GetFriendshipResponse>()
                 .ForMember(d => d.FriendStatus, o => o.MapFrom(x => x.FriendshipTypeId))
