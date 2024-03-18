@@ -17,6 +17,12 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
             builder.Property(p => p.Content)
                 .HasColumnType("nvarchar(MAX)");
 
+            builder.HasOne(x => x.Group)
+                .WithMany(x => x.Posts)
+                .HasForeignKey(x => x.GroupId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
         }
     }
 }

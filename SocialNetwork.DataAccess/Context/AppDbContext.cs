@@ -37,5 +37,8 @@ namespace SocialNetwork.DataAccess.Context
         public virtual DbSet<Gender> Genders { set; get; }
         public virtual DbSet<FriendshipType> FriendshipTypes { set; get; }
         public virtual DbSet<MediaType> MediaTypes { set; get; }
+        public virtual DbSet<Group> Groups { set; get; }
+        public virtual DbSet<GroupMember> GroupMembers { set; get; }
+        public virtual DbSet<SharePost> SharePosts { set; get; }
     }
 }

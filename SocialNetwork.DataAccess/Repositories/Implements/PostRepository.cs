@@ -18,6 +18,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
             var query = _dbSet.Where(x => x.Status == 1 && x.Id == id)
                 .Include(x => x.PostMedias.Where(i => i.Status == 1))
+                .Include(x => x.Author)
                 .AsSplitQuery();
 
             if (asNoTracking)
