@@ -4,12 +4,12 @@ namespace SocialNetwork.DataAccess.Entities
 {
     public class Notification : BaseEntity<Guid>
     {
-        public string Content { get; set; }
-        public string TargetUserId { get; set; }
-        public string FromUserId { get; set; }
-        public bool Seen { get; set; }
+        public string UserId { get; set; }
+        public DateTime? ReadAt { set; get; }
+        public string NotifiableType { set; get; }
+        public Guid NotifiableId { set; get; }
 
-        public virtual User TargetUser { get; set; }
-        public virtual User FromUser { get; set; }
+        public virtual User User { get; set; }
+        public virtual NotificationDetails NotificationDetail { set; get; }
     }
 }

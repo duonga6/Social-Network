@@ -52,6 +52,13 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return true;
         }
 
+        public virtual async Task<bool> AddRange(List<TEntity> entities)
+        {
+            await _dbSet.AddRangeAsync(entities);
+            return true;
+        }
+
+
         public virtual async Task<TEntity> GetById(TKey id, bool asNoTracking = true)
         {
             if (asNoTracking)

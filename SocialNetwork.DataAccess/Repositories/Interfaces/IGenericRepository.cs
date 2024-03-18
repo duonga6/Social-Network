@@ -13,6 +13,7 @@ namespace SocialNetwork.DataAccess.Repositories.Interfaces
         Task<int> Count(Expression<Func<TEntity, bool>> filter = null);
         Task<TEntity> GetById(TKey id, bool asNoTracking = true);
         Task<bool> Add(TEntity entity);
+        Task<bool> AddRange(List<TEntity> entities);
         Task<bool> Update(TEntity entity);
         Task<bool> Delete(TKey id);
         Task<int> GetCount(Expression<Func<TEntity, bool>> filter = null);

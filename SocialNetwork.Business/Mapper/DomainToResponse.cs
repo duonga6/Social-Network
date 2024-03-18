@@ -52,9 +52,7 @@ namespace SocialNetwork.Business.Mapper
                 .ForPath(x => x.Receiver.Id, o => o.MapFrom(s => s.Receiver.Id))
                 .ForPath(x => x.Receiver.AvatarUrl, o => o.MapFrom(s => s.Receiver.AvatarUrl));
 
-            CreateMap<Notification, GetNotificationResponse>()
-                .ForPath(x => x.FromUser.Id, o => o.MapFrom(s => s.FromUser.Id))
-                .ForPath(x => x.FromUser.AvatarUrl, o => o.MapFrom(s => s.FromUser.AvatarUrl));
+            CreateMap<Notification, GetNotificationResponse>();
 
             CreateMap<MediaType, GetMediaTypeResponse>();
 

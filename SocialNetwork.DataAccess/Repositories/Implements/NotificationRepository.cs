@@ -18,15 +18,18 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             var entity = await _dbSet.FindAsync(Id);
             if (entity == null) { return false; }
 
-            entity.Seen = true;
+            entity.ReadAt = DateTime.UtcNow;
+
             return true;
         }
 
         public async Task<ICollection<Notification>> GetUserNotifications(string userId)
         {
             var notifications = await _dbSet.AsNoTracking()
-                .Where(x => x.TargetUserId == userId)
-                .Include(x => x.FromUser)
+                .Where(x => x.UserId == userId)
+                .Include(x => x.User)
+                .Include(x => x.NotificationDetail)
+                .ThenInclude(x => x.Author)
                 .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();
             return notifications;
@@ -47,8 +50,9 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             var query = _dbSet
                 .AsNoTracking()
                 .Where(filter)
-                .Include(x => x.FromUser)
-                .Include(x => x.TargetUser)
+                .Include(x => x.User)
+                .Include(x => x.NotificationDetail)
+                .ThenInclude(x => x.Author)
                 .AsQueryable();
 
             if (isDesc)

@@ -136,7 +136,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            await _notificationService.CreateNotification(addEntity.AuthorId, "", NotificationEnum.Post);
+            await _notificationService.CreateNotification(addEntity.AuthorId, "", NotificationEnum.Post, addEntity.Id);
 
             var entityAdded = await _unitOfWork.PostRepository.GetById(addEntity.Id);
 
@@ -298,7 +298,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.PostComment);
+            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.PostComment, addEntity.Id);
 
             return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(addEntity), 200, Messages.CreatedSuccessfully);
 
@@ -486,7 +486,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.PostReaction);
+            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.PostReaction, postId);
 
             var entityAdded = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId);
 

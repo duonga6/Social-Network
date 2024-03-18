@@ -24,17 +24,18 @@ namespace SocialNetwork.DataAccess.Context
             }
         }
 
-        public DbSet<Post> Posts { get; set; }
-        public DbSet<PostComment> PostComments { get; set; }
-        public DbSet<PostReaction> PostReactions { get; set; }
-        public DbSet<CommentReaction> CommentReactions { get; set; }
-        public DbSet<Reaction> Reactions { get; set; }
-        public DbSet<PostMedia> PostMedias { get; set; }
-        public DbSet<Friendship> Friendships { get; set; }
-        public DbSet<Message> Messages { get; set; }
-        public DbSet<Notification> Notifications { get; set; }
-        public DbSet<Gender> Genders { set; get; }
-        public DbSet<FriendshipType> FriendshipTypes { set; get; }
-        public DbSet<MediaType> MediaTypes { set; get; }
+        public virtual DbSet<Post> Posts { get; set; }
+        public virtual DbSet<PostComment> PostComments { get; set; }
+        public virtual DbSet<PostReaction> PostReactions { get; set; }
+        public virtual DbSet<CommentReaction> CommentReactions { get; set; }
+        public virtual DbSet<Reaction> Reactions { get; set; }
+        public virtual DbSet<PostMedia> PostMedias { get; set; }
+        public virtual DbSet<Friendship> Friendships { get; set; }
+        public virtual DbSet<Message> Messages { get; set; }
+        public virtual DbSet<Notification> Notifications { get; set; }
+        public virtual DbSet<NotificationDetails> NotificationDetails { set; get; }
+        public virtual DbSet<Gender> Genders { set; get; }
+        public virtual DbSet<FriendshipType> FriendshipTypes { set; get; }
+        public virtual DbSet<MediaType> MediaTypes { set; get; }
     }
 }

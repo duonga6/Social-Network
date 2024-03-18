@@ -30,7 +30,7 @@ namespace SocialNetwork.DataAccess.Entities
         public virtual ICollection<Friendship> Friendships2 { get; set; }
         public virtual ICollection<Message> MessagesSent { set; get; }
         public virtual ICollection<Message> MessageReceived { set; get; }
-        public virtual ICollection<Notification> NotificationsSend { set; get; }
+        public virtual ICollection<NotificationDetails> NotificationsSend { set; get; }
         public virtual ICollection<Notification> NotificationsReceive { set; get; }
         public virtual Gender Gender_FK { set; get; }
     }

@@ -23,10 +23,13 @@ namespace SocialNetwork.Business.Services.Implements
     {
         private readonly IFriendshipService _friendshipService;
         private readonly UserManager<User> _userManager;
-        public PostReactionService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<PostReactionService> logger, IFriendshipService friendshipService, UserManager<User> userManager) : base(unitOfWork, mapper, logger)
+        private readonly INotificationService _notificationService;
+
+        public PostReactionService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<PostReactionService> logger, IFriendshipService friendshipService, UserManager<User> userManager, INotificationService notificationService) : base(unitOfWork, mapper, logger)
         {
             _friendshipService = friendshipService;
             _userManager = userManager;
+            _notificationService = notificationService;
         }
 
         public async Task<IResponse> GetCount(string requestUserId, Guid postId)
@@ -166,6 +169,8 @@ namespace SocialNetwork.Business.Services.Implements
             }
 
             var addedPostReaction = await _unitOfWork.PostReactionRepository.FindOneBy(x => x.PostId == request.PostId && x.UserId == requestUserId);
+
+            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.PostReaction, post.Id);
 
             return new DataResponse<GetPostReactionResponse>(_mapper.Map<GetPostReactionResponse>(addedPostReaction), 201, Messages.CreatedSuccessfully);
 
