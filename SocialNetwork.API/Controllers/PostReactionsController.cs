@@ -90,7 +90,7 @@ namespace SocialNetwork.API.Controllers
         /// <param name="postId"></param>
         /// <returns></returns>
         [HttpGet("GetOverview/{postId}")]
-        [ProducesResponseType(typeof(DataResponse<OverviewReactionResponse<GetPostReactionResponse>>), 200)]
+        [ProducesResponseType(typeof(DataResponse<GetOverviewReactionResponse>), 200)]
         public async Task<IResponse> GetOverview(Guid postId)
         {
             return await _postReactionService.GetOverview(UserId, postId);

@@ -21,6 +21,10 @@
         /// <summary>
         /// Friend request
         /// </summary>
-        FriendRequest
+        FriendRequest,
+        /// <summary>
+        /// Share post user
+        /// </summary>
+        SharePost,
     }
 }

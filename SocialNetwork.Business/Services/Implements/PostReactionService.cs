@@ -119,23 +119,30 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.NotFriend);
             }
 
-            int reactionCount = await _unitOfWork.PostReactionRepository.GetCount(x => x.PostId == postId);
-            var reactionType = await _unitOfWork.PostReactionRepository.GetTypeReaction(postId);
+            var listReactionWithCount = new List<ReactionWithCount>();
 
-            var response = new OverviewReactionResponse<GetPostReactionResponse>
+            foreach (ReactionEnum reaction in Enum.GetValues(typeof(ReactionEnum)))
             {
-                ReactionTypes = reactionType.ToList(),
-                Total = reactionCount,
-            };
+                int reactionCount = await _unitOfWork.PostReactionRepository.GetCount(x => x.PostId == postId && x.ReactionId == (int)reaction);
+                if (reactionCount > 0)
+                {
+                    listReactionWithCount.Add(new()
+                    {
+                        ReactionId = (int)reaction,
+                        Total = reactionCount
+                    });
+                }
+            }
 
             var userReactedInPost = await _unitOfWork.PostReactionRepository.FindOneBy(x => x.PostId == postId && x.UserId == requestUserId);
 
-            if (userReactedInPost != null)
+            var response = new GetOverviewReactionResponse()
             {
-                response.UserReacted = _mapper.Map<GetPostReactionResponse>(userReactedInPost);
-            }
+                Reactions = listReactionWithCount,
+                UserReacted = _mapper.Map<UserReacted>(userReactedInPost),
+            };
 
-            return new DataResponse<OverviewReactionResponse<GetPostReactionResponse>>(response, 200);
+            return new DataResponse<GetOverviewReactionResponse>(response, 200);
         }
 
         public async Task<IResponse> Create(string requestUserId, CreatePostReactionsRequest request)

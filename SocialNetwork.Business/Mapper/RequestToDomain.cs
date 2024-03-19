@@ -6,6 +6,7 @@ using SocialNetwork.Business.DTOs.Post.Requests;
 using SocialNetwork.Business.DTOs.PostComment.Requests;
 using SocialNetwork.Business.DTOs.PostMedia.Requests;
 using SocialNetwork.Business.DTOs.PostReaction.Requests;
+using SocialNetwork.Business.DTOs.Posts.Requests;
 using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.DTOs.Users.Requests;
 using SocialNetwork.DataAccess.Entities;
@@ -38,17 +39,17 @@ namespace SocialNetwork.Business.Mapper
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(s => DateTime.UtcNow))
                 .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
 
+            CreateMap<CreateSharePostRequest, Post>()
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(s => DateTime.UtcNow))
+                .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
+
+            CreateMap<UpdateSharePostRequest, Post>()
+                .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
+
             CreateMap<UpdatePostMediaRequest, PostMedia>()
                 .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
 
             CreateMap<UpdatePostRequest, Post>()
-                .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
-
-            CreateMap<CreateCommentRequest, PostComment>()
-                .ForMember(d => d.CreatedAt, o => o.MapFrom(s => DateTime.UtcNow))
-                .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
-
-            CreateMap<UpdateCommentRequest, PostComment>()
                 .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
 
             CreateMap<CreatePostReactionRequest, PostReaction>()

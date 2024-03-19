@@ -136,7 +136,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
 
         public override async Task<ICollection<PostComment>> GetCursorPaged(int pageSize, Expression<Func<PostComment, object>> orderBy, Expression<Func<PostComment, bool>> filter, bool isDesc = true)
         {
-            var query = _dbSet.Include(x => x.User).AsNoTracking();
+            var query = _dbSet.Where(filter).Include(x => x.User).AsNoTracking();
             if (isDesc)
             {
                 query = query.OrderByDescending(orderBy);
@@ -146,7 +146,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 query = query.OrderBy(orderBy);
             }
 
-            return await query.Where(filter).Take(pageSize).ToListAsync();
+            return await query.Take(pageSize).ToListAsync();
         }
 
     }

@@ -11,5 +11,6 @@ namespace SocialNetwork.Business.DTOs.Post.Responses
         public DateTime CreatedAt { get; set; }
         public BasicUserResponse User { set; get; } = null!;
         public List<GetPostMediaResponse>? PostMedias { set; get; }
+        public GetPostResponse? SharePost { set; get; }
     }
 }

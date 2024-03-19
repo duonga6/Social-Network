@@ -39,6 +39,5 @@ namespace SocialNetwork.DataAccess.Context
         public virtual DbSet<MediaType> MediaTypes { set; get; }
         public virtual DbSet<Group> Groups { set; get; }
         public virtual DbSet<GroupMember> GroupMembers { set; get; }
-        public virtual DbSet<SharePost> SharePosts { set; get; }
     }
 }

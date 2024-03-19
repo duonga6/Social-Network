@@ -33,7 +33,6 @@ namespace SocialNetwork.DataAccess.Entities
         public virtual ICollection<NotificationDetails> NotificationsSend { set; get; }
         public virtual ICollection<Notification> NotificationsReceive { set; get; }
         public virtual Gender Gender_FK { set; get; }
-        public virtual ICollection<SharePost> SharePosts { set; get; }
         public virtual ICollection<GroupMember> GroupMembers{ set; get; }
     }
 }

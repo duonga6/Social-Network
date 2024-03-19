@@ -23,6 +23,12 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 .OnDelete(DeleteBehavior.NoAction)
                 .IsRequired(false);
 
+            builder.HasOne(x => x.SharePost)
+                .WithOne()
+                .HasForeignKey<Post>(x => x.SharePostId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
         }
     }
 }

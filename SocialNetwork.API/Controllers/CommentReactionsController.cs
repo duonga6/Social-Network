@@ -50,7 +50,7 @@ namespace SocialNetwork.API.Controllers
         /// </summary>
         /// <param name="Id"></param>
         /// <returns></returns>
-        [ProducesResponseType(typeof(DataResponse<OverviewReactionResponse<GetCommentReactionResponse>>), 200)]
+        [ProducesResponseType(typeof(DataResponse<GetOverviewReactionResponse>), 200)]
         [HttpGet("{Id}/GetOverview")]        
         public async Task<IResponse> GetOverview(Guid Id)
         {

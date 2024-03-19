@@ -58,6 +58,9 @@ namespace SocialNetwork.Business.Mapper
 
             CreateMap<PostReaction, GetPostReactionResponse>();
 
+            CreateMap<PostReaction, UserReacted>();
+            CreateMap<CommentReaction, UserReacted>();
+
         }
     }
 }

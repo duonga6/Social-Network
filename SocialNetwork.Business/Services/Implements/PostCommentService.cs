@@ -15,6 +15,7 @@ using SocialNetwork.DataAccess.Repositories.Interfaces;
 using SocialNetwork.DataAccess.Utilities.Enum;
 using SocialNetwork.DataAccess.Utilities.Roles;
 using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 
 namespace SocialNetwork.Business.Services.Implements
 {
@@ -135,6 +136,7 @@ namespace SocialNetwork.Business.Services.Implements
         public async Task<IResponse> GetCursor(string requestUserId, int pageSize, DateTime? cursor, bool desc, Guid postId, Guid? parentId)
         {
             var post = await _unitOfWork.PostRepository.GetById(postId);
+
             if (post == null)
             {
                 return new ErrorResponse(404, Messages.NotFound("Post"));
@@ -146,6 +148,7 @@ namespace SocialNetwork.Business.Services.Implements
             }
 
             Expression<Func<PostComment, bool>> filter = x => x.PostId == postId && x.ParentCommentId == parentId && x.Status == 1;
+
             int totalItems = await _unitOfWork.PostCommentRepository.GetCount(filter);
 
             if (cursor != null)
@@ -158,14 +161,26 @@ namespace SocialNetwork.Business.Services.Implements
                 .GetCursorPaged(pageSize, x => x.CreatedAt, filter, desc);
 
             bool hasNext = true;
-            if (comments.Count < pageSize)
+
+            // Check has next
+            var query = _unitOfWork.PostCommentRepository.GetQueryable();
+            var checkCount = await query.AsNoTracking().Where(filter).OrderByDescending(x => x.CreatedAt).Take(pageSize + 1).CountAsync();
+
+            if (checkCount <= comments.Count)
             {
                 hasNext = false;
             }
 
+            var endCursor = comments.LastOrDefault()?.CreatedAt;
+
+            if (endCursor != null)
+            {
+                endCursor = DateTime.SpecifyKind(endCursor.Value, DateTimeKind.Utc);
+            }
+
             var response = _mapper.Map<List<GetPostCommentResponse>>(comments);
 
-            return new CursorResponse<List<GetPostCommentResponse>>(response, comments.LastOrDefault()?.CreatedAt, hasNext, totalItems);
+            return new CursorResponse<List<GetPostCommentResponse>>(response, endCursor, hasNext, totalItems);
         }
 
         public async Task<IResponse> GetById(string requestUserId, Guid id)

@@ -11,6 +11,7 @@ using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
+using SocialNetwork.DataAccess.Utilities.Enum;
 
 namespace SocialNetwork.Business.Services.Implements
 {
@@ -136,22 +137,32 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.NotFriend);
             }
 
-            var reactionType = await _unitOfWork.CommentReactionRepository.GetTypeReaction(id);
-            int totalReaction = await _unitOfWork.CommentReactionRepository.GetCount(x => x.CommentId == id);
             var userReacted = await _unitOfWork.CommentReactionRepository.FindOneBy(x => x.CommentId == id && x.UserId == requestUserId);
 
-            var result = new OverviewReactionResponse<GetCommentReactionResponse>
-            {
-                ReactionTypes = reactionType.ToList(),
-                Total = totalReaction,
-            };
+            var listReactionWithCount = new List<ReactionWithCount>();
 
-            if (userReacted != null)
+            foreach(ReactionEnum reaction in Enum.GetValues(typeof(ReactionEnum)))
             {
-                result.UserReacted = _mapper.Map<GetCommentReactionResponse>(userReacted);
+                var reactionCount = await _unitOfWork.CommentReactionRepository.GetCount(x => x.CommentId == id && x.ReactionId == (int)reaction);
+                
+                if (reactionCount > 0)
+                {
+                    listReactionWithCount.Add(new()
+                    {
+                        ReactionId = (int)reaction,
+                        Total = reactionCount,
+                    });
+                }
+                
             }
 
-            return new DataResponse<OverviewReactionResponse<GetCommentReactionResponse>>(result, 200);
+            var result = new GetOverviewReactionResponse()
+            {
+               Reactions = listReactionWithCount,
+               UserReacted = _mapper.Map<UserReacted>(userReacted),
+            };
+
+            return new DataResponse<GetOverviewReactionResponse>(result, 200);
         }
     
         private async Task<bool> CheckAccess(string userId1, string userId2)

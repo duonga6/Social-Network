@@ -17,6 +17,8 @@ using SocialNetwork.DataAccess.Repositories.Interfaces;
 using SocialNetwork.DataAccess.Utilities.Enum;
 using SocialNetwork.DataAccess.Utilities.Roles;
 using System.Linq.Expressions;
+using SocialNetwork.Business.DTOs.PostComment.Requests;
+using SocialNetwork.Business.DTOs.Posts.Requests;
 
 namespace SocialNetwork.Business.Services.Implements
 {
@@ -119,12 +121,6 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(404, Messages.PostEmpty);
             }
 
-            var user = await _userManager.FindByIdAsync(requestUserId);
-            if (user == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound("User"));
-            }
-
             var addEntity = _mapper.Map<Post>(request);
             addEntity.AuthorId = requestUserId;
 
@@ -142,7 +138,33 @@ namespace SocialNetwork.Business.Services.Implements
 
             return new DataResponse<GetPostResponse>(_mapper.Map<GetPostResponse>(entityAdded), 200, Messages.CreatedSuccessfully);
         }
-     
+
+        public async Task<IResponse> CreateShare(string requestUserId, CreateSharePostRequest request)
+        {
+            var postShare = await _unitOfWork.PostRepository.GetById(request.SharePostId);
+            if (postShare == null)
+            {
+                return new ErrorResponse(404, Messages.NotFound("Post share"));
+            }
+
+            var addEntity = _mapper.Map<Post>(request);
+            addEntity.AuthorId = requestUserId;
+
+            await _unitOfWork.PostRepository.Add(addEntity);
+            
+            if (!await _unitOfWork.CompleteAsync())
+            {
+                return new ErrorResponse(400, Messages.AddError);
+            }
+
+            var addedEntity = await _unitOfWork.PostRepository.GetById(addEntity.Id);
+
+            await _notificationService.CreateNotification(requestUserId, postShare.AuthorId, NotificationEnum.SharePost, addedEntity.Id);
+
+            return new DataResponse<GetPostResponse>(_mapper.Map<GetPostResponse>(addedEntity), 200, Messages.CreatedSuccessfully);
+        }
+
+
         public async Task<IResponse> Update(string requestingUserId, Guid id, UpdatePostRequest request)
         {
             var postUpdate = _mapper.Map<Post>(request);
@@ -275,7 +297,7 @@ namespace SocialNetwork.Business.Services.Implements
             return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(result), 200);
         }
         
-        public async Task<IResponse> CreateComment(string requestUserId, Guid postId, CreateCommentRequest request)
+        public async Task<IResponse> CreateComment(string requestUserId, Guid postId, CreatePostCommentRequest request)
         {
             var post = await _unitOfWork.PostRepository.GetById(postId);
 
@@ -330,7 +352,7 @@ namespace SocialNetwork.Business.Services.Implements
 
         }
         
-        public async Task<IResponse> UpdateComment(string requestUserId, Guid postId, Guid commentId, UpdateCommentRequest request)
+        public async Task<IResponse> UpdateComment(string requestUserId, Guid postId, Guid commentId, UpdatePostCommentRequest request)
         {
             var entity = await _unitOfWork.PostCommentRepository.GetById(commentId, false);
             if (entity == null)

@@ -13,6 +13,8 @@ using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
 using SocialNetwork.DataAccess.Utilities.Roles;
 using System.ComponentModel.DataAnnotations;
+using SocialNetwork.Business.DTOs.PostComment.Requests;
+using SocialNetwork.Business.DTOs.Posts.Requests;
 
 namespace SocialNetwork.API.Controllers
 {
@@ -64,6 +66,13 @@ namespace SocialNetwork.API.Controllers
         public async Task<IResponse> Create([FromBody]CreatePostRequest request)
         {
             return await _postService.Create(UserId, request);
+        }
+
+        [HttpPost("Share")]
+        [ProducesResponseType(typeof(DataResponse<GetPostResponse>), 200)]
+        public async Task<IResponse> Share([FromBody]CreateSharePostRequest request)
+        {
+            return await _postService.CreateShare(UserId, request);
         }
 
         /// <summary>
@@ -143,7 +152,7 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPost("{Id}/Comments")]
         [ProducesResponseType(typeof(DataResponse<GetPostCommentResponse>), 200)]
-        public async Task<IResponse> CreateComment(Guid Id, [FromBody] CreateCommentRequest request)
+        public async Task<IResponse> CreateComment(Guid Id, [FromBody] CreatePostCommentRequest request)
         {
             var userId = User.GetUserId();
 
@@ -159,7 +168,7 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPut("{Id}/Comments/{commentId}")]
         [ProducesResponseType(typeof(DataResponse<GetPostCommentResponse>), 200)]
-        public async Task<IResponse> UpdateComment(Guid Id, Guid commentId, [FromBody] UpdateCommentRequest request)
+        public async Task<IResponse> UpdateComment(Guid Id, Guid commentId, [FromBody] UpdatePostCommentRequest request)
         {
             var userId = User.GetUserId();
 
