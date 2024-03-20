@@ -123,18 +123,19 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .ToListAsync();
         }
         
-        public virtual async Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, object>> orderBy, Expression<Func<TEntity, bool>> filter, bool isDesc = true)
+        public virtual async Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, bool>> filter, bool getNext = true)
         {
-            var query = _dbSet.AsNoTracking();
-            if (isDesc)
+            var query = _dbSet.AsNoTracking().Where(filter);
+            if (getNext)
             {
-                query = query.OrderByDescending(orderBy);
-            } else
+                return await query.OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.Id).Take(pageSize).ToListAsync();
+            } 
+            else
             {
-                query = query.OrderBy(orderBy);
+                var result =  await query.OrderBy(x => x.CreatedAt).ThenBy(x => x.Id).Take(pageSize).ToListAsync();
+                result.Reverse();
+                return result;
             }
-
-            return await query.Where(filter).Take(pageSize).ToListAsync();
         }
 
         public async Task<int> Count(Expression<Func<TEntity, bool>> filter = null)

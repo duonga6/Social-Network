@@ -133,7 +133,7 @@ namespace SocialNetwork.Business.Services.Implements
             return new PagedResponse<List<GetPostCommentResponse>>(commentsResponse, totalItems, 200);
         }
 
-        public async Task<IResponse> GetCursor(string requestUserId, int pageSize, DateTime? cursor, bool desc, Guid postId, Guid? parentId)
+        public async Task<IResponse> GetCursor(string requestUserId, int pageSize, DateTime? cursor, bool getNext, Guid postId, Guid? parentId)
         {
             var post = await _unitOfWork.PostRepository.GetById(postId);
 
@@ -158,13 +158,22 @@ namespace SocialNetwork.Business.Services.Implements
 
             var comments = await _unitOfWork
                 .PostCommentRepository
-                .GetCursorPaged(pageSize, x => x.CreatedAt, filter, desc);
+                .GetCursorPaged(pageSize, filter, getNext);
 
             bool hasNext = true;
 
             // Check has next
-            var query = _unitOfWork.PostCommentRepository.GetQueryable();
-            var checkCount = await query.AsNoTracking().Where(filter).OrderByDescending(x => x.CreatedAt).Take(pageSize + 1).CountAsync();
+            var query = _unitOfWork.PostCommentRepository.GetQueryable().AsNoTracking().Where(filter);
+
+            if (getNext)
+            {
+                query = query.OrderByDescending(x => x.CreatedAt);
+            } else
+            {
+                query = query.OrderBy(x => x.CreatedAt);
+            }
+
+            var checkCount = await query.Take(pageSize + 1).CountAsync();
 
             if (checkCount <= comments.Count)
             {

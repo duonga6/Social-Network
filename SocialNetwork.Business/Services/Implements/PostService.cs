@@ -97,7 +97,21 @@ namespace SocialNetwork.Business.Services.Implements
 
             return new PagedResponse<List<GetPostResponse>>(postsResponse, totalItems, 200);
         }
-      
+
+        public async Task<IResponse> GetCursor(string requestUserId, int pageSize, DateTime? cursor, bool desc, string? searchString)
+        {
+            Expression<Func<Post, bool>> filter = x => x.Status == 1;
+            int totalItem = await _unitOfWork.PostRepository.GetCount(filter);
+
+            if (cursor != null)
+            {
+                filter = filter.And(x => x.CreatedAt < cursor);
+            }
+
+            return new SuccessResponse("OK", 200);
+        }
+
+
         public async Task<IResponse> GetById(string requestingUserId, Guid id)
         {
             var post = await _unitOfWork.PostRepository.GetById(id);

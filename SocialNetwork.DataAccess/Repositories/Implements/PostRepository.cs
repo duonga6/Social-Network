@@ -92,7 +92,10 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .Where(filter)
                 .Include(x => x.Author)
                 .Include(x => x.PostMedias)
-                .AsSplitQuery();
+                .Include(x => x.SharePost)
+                    .ThenInclude(x => x.PostMedias.Where(p => p.Status == 1))
+                .Include(x => x.SharePost.Author)
+                .AsQueryable();
 
             if (isDesc)
             {
