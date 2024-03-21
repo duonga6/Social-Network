@@ -26,12 +26,13 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return await _dbSet.AsNoTracking().Where(filter).CountAsync();
         }
 
-        public async Task<bool> Delete(string id)
+        public async Task Delete(string id)
         {
             var user = await _dbSet.FindAsync(id);
-            user.Status = 0;
-
-            return true;
+            if (user != null)
+            {
+                user.Status = 0;
+            }
         }
 
         public async Task<User> GetById(string id, bool noTracking = true)
@@ -67,17 +68,18 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .ToListAsync();
         }
 
-        public async Task<bool> Update(User user)
+        public async Task Update(User user)
         {
             var updateUser = await _dbSet.FindAsync(user.Id);
 
-            updateUser.FirstName = user.FirstName;
-            updateUser.LastName = user.LastName;
-            updateUser.Address = user.Address;
-            updateUser.PhoneNumber = updateUser.PhoneNumber;
-            updateUser.DateOfBirth = updateUser.DateOfBirth;
-
-            return true;
+            if (updateUser != null)
+            {
+                updateUser.FirstName = user.FirstName;
+                updateUser.LastName = user.LastName;
+                updateUser.Address = user.Address;
+                updateUser.PhoneNumber = updateUser.PhoneNumber;
+                updateUser.DateOfBirth = updateUser.DateOfBirth;
+            }
         }
 
         public IQueryable<User> GetQueryable() => _dbSet.AsQueryable();

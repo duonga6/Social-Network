@@ -46,18 +46,15 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return await _dbSet.FirstOrDefaultAsync(filter);
         }
 
-        public virtual async Task<bool> Add(TEntity entity)
+        public virtual async Task Add(TEntity entity)
         {
             await _dbSet.AddAsync(entity);
-            return true;
         }
 
-        public virtual async Task<bool> AddRange(List<TEntity> entities)
+        public virtual async Task AddRange(List<TEntity> entities)
         {
             await _dbSet.AddRangeAsync(entities);
-            return true;
         }
-
 
         public virtual async Task<TEntity> GetById(TKey id, bool asNoTracking = true)
         {
@@ -72,27 +69,15 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         }
 
         // No implement
-        public virtual Task<bool> Update(TEntity entity)
+        public virtual Task Update(TEntity entity)
         {
             throw new NotImplementedException();
         }
 
-        public virtual async Task<bool> Delete(TKey id)
+        public virtual async Task Delete(TKey id)
         {
-            try
-            {
-                var entity = await _dbSet.FindAsync(id);
-                if (entity == null) { return false; }
-
-                _dbSet.Remove(entity);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "{Repo} error function: Delete", typeof(ReactionRepository));
-                throw;
-            }
+            var entity = await _dbSet.FindAsync(id);
+            _dbSet.Remove(entity);
         }
 
         public virtual async Task<int> GetCount(Expression<Func<TEntity, bool>> filter = null)

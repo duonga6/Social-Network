@@ -34,5 +34,6 @@ namespace SocialNetwork.DataAccess.Entities
         public virtual ICollection<Notification> NotificationsReceive { set; get; }
         public virtual Gender Gender_FK { set; get; }
         public virtual ICollection<GroupMember> GroupMembers{ set; get; }
+        public virtual ICollection<PostMedia> PostMedias { set; get; }
     }
 }

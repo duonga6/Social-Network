@@ -12,10 +12,10 @@ namespace SocialNetwork.DataAccess.Repositories.Interfaces
         Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, bool>> filter, bool getNext = true);
         Task<int> Count(Expression<Func<TEntity, bool>> filter = null);
         Task<TEntity> GetById(TKey id, bool asNoTracking = true);
-        Task<bool> Add(TEntity entity);
-        Task<bool> AddRange(List<TEntity> entities);
-        Task<bool> Update(TEntity entity);
-        Task<bool> Delete(TKey id);
+        Task Add(TEntity entity);
+        Task AddRange(List<TEntity> entities);
+        Task Update(TEntity entity);
+        Task Delete(TKey id);
         Task<int> GetCount(Expression<Func<TEntity, bool>> filter = null);
         IQueryable<TEntity> GetQueryable();
     }

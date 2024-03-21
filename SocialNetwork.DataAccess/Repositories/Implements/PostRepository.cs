@@ -63,25 +63,13 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return await query.ToListAsync();
         }
         
-        public override async Task<bool> Update(Post post)
+        public override async Task Update(Post post)
         {
-            try
+            var updatePost = await _dbSet.FirstOrDefaultAsync(x => x.Id == post.Id && x.AuthorId == post.AuthorId && x.Status == 1);
+            if (updatePost != null)
             {
-                var updatePost = await _dbSet.FirstOrDefaultAsync(x => x.Id == post.Id && x.AuthorId == post.AuthorId && x.Status == 1);
-                if (updatePost == null)
-                {
-                    return false;
-                }
-
                 updatePost.Content = post.Content;
                 updatePost.UpdatedAt = DateTime.UtcNow;
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "{Repo} error function Update", typeof(PostRepository));
-                throw;
             }
         }
 
@@ -111,6 +99,16 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
+        }
+        
+        public override async Task Delete(Guid id)
+        {
+            var post = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (post != null) {
+                post.Status = 0;
+            }
+
         }
     }
 }

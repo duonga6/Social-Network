@@ -18,14 +18,15 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return await _dbSet.FirstOrDefaultAsync(x => x.Token == Token && x.JwtId == Jti);
         }
 
-        public async Task<bool> RevokeToken(RefreshToken token)
+        public async Task RevokeToken(RefreshToken token)
         {
             var tokenRevoke = await _dbSet.FirstOrDefaultAsync(x => x.Id == token.Id);
+            if (tokenRevoke != null)
+            {
+                tokenRevoke.IsUsed = true;
+                tokenRevoke.IsRevoked = true;
+            }
 
-            tokenRevoke.IsUsed = true;
-            tokenRevoke.IsRevoked = true;
-
-            return true;
 
         }
     }

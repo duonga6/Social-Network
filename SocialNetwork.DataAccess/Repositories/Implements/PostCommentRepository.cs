@@ -36,25 +36,13 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return await _dbSet.FirstOrDefaultAsync(x => x.Id == id && x.Status == 1);
         }
 
-        public override async Task<bool> Update(PostComment entity)
+        public override async Task Update(PostComment entity)
         {
-            try
+            var entityUpdate = await _dbSet.FirstOrDefaultAsync(x => x.Id == entity.Id && x.Status == 1);
+            if (entityUpdate != null)
             {
-                var entityUpdate = await _dbSet.FirstOrDefaultAsync(x => x.Id == entity.Id && x.Status == 1);
-                if (entityUpdate == null)
-                {
-                    return false;
-                }
-
                 entityUpdate.Content = entity.Content;
                 entityUpdate.UpdatedAt = DateTime.UtcNow;
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "{Repo} error function Update", typeof(PostCommentRepository));
-                throw;
             }
         }
 
@@ -95,25 +83,9 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .ToListAsync();
         }
 
-        public override async Task<bool> Delete(Guid id)
+        public override async Task Delete(Guid id)
         {
-            try
-            {
-                //var entity = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
-                //if (entity == null) { return false; }
-
-                //entity.Status = 0;
-
-                await UpdateDeep(_dbSet, id);
-
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "{Repo} error function: Delete", typeof(ReactionRepository));
-                throw;
-            }
+            await UpdateDeep(_dbSet, id);
         }
 
         private async Task UpdateDeep(DbSet<PostComment> dbSet, Guid id)

@@ -71,16 +71,10 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return true;
         }
 
-        public async Task<bool> Delete(Guid postId, string userId)
+        public async Task Delete(Guid postId, string userId)
         {
             var entity = await _dbSet.FirstOrDefaultAsync(x => x.PostId == postId && x.UserId == userId);
-            if (entity == null)
-            {
-                return false;
-            }
-
             _dbSet.Remove(entity);
-            return true;
         }
 
         public override async Task<PostReaction> FindOneBy(Expression<Func<PostReaction, bool>> filter = null, bool asNoTracking = true)

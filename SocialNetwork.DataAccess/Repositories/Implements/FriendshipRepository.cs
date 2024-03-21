@@ -24,15 +24,14 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return await _dbSet.ToListAsync();
         }
 
-        public override async Task<bool> Update(Friendship entity)
+        public override async Task Update(Friendship entity)
         {
             var entityUpdate = await _dbSet.FindAsync(entity.Id);
-            if (entityUpdate == null) { return false; }
-
-            entityUpdate.Status = entity.Status;
-            entityUpdate.UpdatedAt = DateTime.UtcNow;
-
-            return true;
+            if (entityUpdate != null) 
+            { 
+                entityUpdate.Status = entity.Status;
+                entityUpdate.UpdatedAt = DateTime.UtcNow;
+            }
         }
 
         public async Task<ICollection<Friendship>> GetAllFriendship(string userId)

@@ -24,23 +24,13 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                     .ToListAsync();
         }
 
-        public override async Task<bool> Update(PostMedia post)
+        public override async Task Update(PostMedia post)
         {
-            try
-            {
-                var entity = await _dbSet.FirstOrDefaultAsync(x => x.Id == post.Id && x.Status == 1);
-                if (entity == null) { return false; }
-
+            var entity = await _dbSet.FirstOrDefaultAsync(x => x.Id == post.Id && x.Status == 1);
+            if (entity == null) 
+            { 
                 entity.Url = post.Url;
                 entity.UpdatedAt = DateTime.UtcNow;
-
-                return true;
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "{repo} error function Update", typeof(PostImageRepository));
-                throw;
             }
         }
     }

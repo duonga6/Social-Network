@@ -13,14 +13,13 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
         }
 
-        public async Task<bool> Seen(Guid Id)
+        public async Task Seen(Guid Id)
         {
             var entity = await _dbSet.FindAsync(Id);
-            if (entity == null) { return false; }
-
-            entity.ReadAt = DateTime.UtcNow;
-
-            return true;
+            if (entity != null) 
+            { 
+                entity.ReadAt = DateTime.UtcNow;
+            }
         }
 
         public async Task<ICollection<Notification>> GetUserNotifications(string userId)

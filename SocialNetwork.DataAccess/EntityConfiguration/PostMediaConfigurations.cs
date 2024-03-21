@@ -26,6 +26,12 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
             builder.Property(i => i.Title)
                 .HasMaxLength(200)
                 .IsRequired(false);
+
+            builder.HasOne(x => x.User)
+               .WithMany(x => x.PostMedias)
+               .HasForeignKey(x => x.UserId)
+               .OnDelete(DeleteBehavior.NoAction)
+               .IsRequired(true);
         }
     }
 }

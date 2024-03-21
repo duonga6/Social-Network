@@ -13,15 +13,9 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
         }
 
-        public override async Task<bool> Add(CommentReaction entity)
+        public override async Task Add(CommentReaction entity)
         {
-            if (await _dbSet.AnyAsync(x => x.UserId == entity.UserId && x.CommentId == entity.CommentId)) 
-            {
-                return false;
-            }
-
             await _dbSet.AddAsync(entity);
-            return true;
         }
 
         public override async Task<CommentReaction> GetById(Guid id, bool asNoTracking = true)
@@ -49,24 +43,16 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .FirstOrDefaultAsync(x => x.CommentId == commentId && x.UserId == userId && x.ReactionId == reactionId);
         }
     
-        public override async Task<bool> Update(CommentReaction entity)
+        public override async Task Update(CommentReaction entity)
         {
             var entityUpdate = await _dbSet.FirstOrDefaultAsync(x => x.CommentId == entity.CommentId && x.UserId == entity.UserId && x.ReactionId == entity.ReactionId);
-            if (entityUpdate == null) { return false; }
+            
+            if (entityUpdate != null) 
+            { 
+                entityUpdate.UpdatedAt = DateTime.UtcNow;
+                entityUpdate.ReactionId = entity.ReactionId;
+            }
 
-            entityUpdate.UpdatedAt = DateTime.UtcNow;
-            entityUpdate.ReactionId = entity.ReactionId;
-
-            return true;
-        }
-
-        public async Task<bool> Delete(Guid commentId, string userId, int reactionId)
-        {
-            var entity = await _dbSet.FirstOrDefaultAsync(x => x.CommentId == commentId && x.UserId == userId && x.ReactionId == reactionId);
-            if (entity == null) return false;
-
-            _dbSet.Remove(entity);
-            return true;
         }
 
         public async Task<ICollection<CommentReaction>> GetByComment(Guid commentId)
@@ -76,11 +62,6 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .Include(x => x.Reaction)
                 .Include(x => x.User)
                 .ToListAsync();
-        }
-
-        public async Task<ICollection<int>> GetTypeReaction(Guid commentId)
-        {
-            return await _dbSet.AsNoTracking().Where(x => x.CommentId == commentId).Select(x => x.ReactionId).Distinct().ToListAsync();
         }
 
         public override async Task<ICollection<CommentReaction>> GetPaged(int pageSize, int pageNumber, Expression<Func<CommentReaction, bool>> filter = null, Expression<Func<CommentReaction, object>> orderBy = null, bool isDesc = true)

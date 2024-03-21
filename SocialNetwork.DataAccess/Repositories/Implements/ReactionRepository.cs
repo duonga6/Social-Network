@@ -29,23 +29,14 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             return await _dbSet.ToListAsync();
         }
 
-        public override async Task<bool> Update(Reaction entity)
+        public override async Task Update(Reaction entity)
         {
-            try
+            var result = await _dbSet.FirstOrDefaultAsync(x => x.Id == entity.Id);
+            if (result != null)
             {
-                var result = await _dbSet.FirstOrDefaultAsync(x => x.Id == entity.Id);
-                if (result == null) return false;
-
                 result.Name = entity.Name;
                 result.UpdatedAt = DateTime.UtcNow;
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "{Repo} error function: Update", typeof(ReactionRepository));
-                throw;
-            }
+            } 
         }
 
     }
