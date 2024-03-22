@@ -382,5 +382,24 @@ namespace SocialNetwork.API.Controllers
         }
 
         #endregion
+
+        #region Friend
+
+        /// <summary>
+        /// Get friend of user
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="searchString"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="pageNumber"></param>
+        /// <returns></returns>
+        [HttpGet("{Id}/Friendships")]
+        [ProducesResponseType(typeof(PagedResponse<List<GetFriendshipResponse>>), 200)]
+        public async Task<IResponse> GetFriends(string Id, [FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
+        {
+            return await _userService.GetFriends(UserId, Id, pageSize, pageNumber, searchString);
+        }
+
+        #endregion
     }
 }

@@ -111,7 +111,6 @@ namespace SocialNetwork.Business.Services.Implements
             return new SuccessResponse("OK", 200);
         }
 
-
         public async Task<IResponse> GetById(string requestingUserId, Guid id)
         {
             var post = await _unitOfWork.PostRepository.GetById(id);
@@ -136,6 +135,10 @@ namespace SocialNetwork.Business.Services.Implements
             }
 
             var addEntity = _mapper.Map<Post>(request);
+            foreach (var media in addEntity.PostMedias)
+            {
+                media.UserId = requestUserId;
+            }
             addEntity.AuthorId = requestUserId;
 
             await _unitOfWork.PostRepository.Add(addEntity);
@@ -178,45 +181,40 @@ namespace SocialNetwork.Business.Services.Implements
             return new DataResponse<GetPostResponse>(_mapper.Map<GetPostResponse>(addedEntity), 200, Messages.CreatedSuccessfully);
         }
 
-
         public async Task<IResponse> Update(string requestingUserId, Guid id, UpdatePostRequest request)
         {
-            var postUpdate = _mapper.Map<Post>(request);
-            postUpdate.Id = id;
-            postUpdate.AuthorId = requestingUserId;
-
-            if (!await _unitOfWork.PostRepository.Update(postUpdate))
+            var post = await _unitOfWork.PostRepository.GetById(id);
+            if (post == null)
             {
                 return new ErrorResponse(404, Messages.NotFound("Post"));
             }
-            
-            if (!await CheckPermission(requestingUserId, postUpdate.AuthorId))
+
+            if (!await CheckPermission(requestingUserId, post.AuthorId))
             {
                 return new ErrorResponse(403, Messages.Forbidden);
             }
 
+            var postUpdate = _mapper.Map<Post>(request);
+            postUpdate.Id = id;
+
+            await _unitOfWork.PostRepository.Update(postUpdate);
+
             foreach (var item in request.MediasDelete)
             {
-                if (!await _unitOfWork.PostImageRepository.Delete(item))
-                {
-                    return new ErrorResponse(404, Messages.NotFound("Image delete"));
-                }
+                await _unitOfWork.PostMediaRepository.Delete(item);
             }
 
             foreach (var item in request.MediasUpdate)
             {
                 var updateImage = _mapper.Map<PostMedia>(item);
-                if (!await _unitOfWork.PostImageRepository.Update(updateImage))
-                {
-                    return new ErrorResponse(404, Messages.NotFound("Image update"));
-                }
+                await _unitOfWork.PostMediaRepository.Update(updateImage);
             }
 
             foreach (var item in request.MediasAdd)
             {
                 var addImage = _mapper.Map<PostMedia>(item);
                 addImage.PostId = postUpdate.Id;
-                await _unitOfWork.PostImageRepository.Add(addImage);
+                await _unitOfWork.PostMediaRepository.Add(addImage);
             }
 
             var result = await _unitOfWork.CompleteAsync();
@@ -499,21 +497,19 @@ namespace SocialNetwork.Business.Services.Implements
             if (post == null)
             {
                 return new ErrorResponse(404, Messages.NotFound("Post"));
-            }    
+            }
 
-            if (!await CheckPermissionWithFriendAccess(requestUserId, post.AuthorId))
+            var checkExist = await _unitOfWork.PostReactionRepository.FindOneBy(x => x.PostId == postId && x.UserId == requestUserId);
+            if (checkExist != null)
             {
-                return new ErrorResponse(400, Messages.NotFriend);
-            }    
+                return new ErrorResponse(400, Messages.PostReactionExist);
+            }
 
             var entity = _mapper.Map<PostReaction>(request);
             entity.UserId = requestUserId;
             entity.PostId = postId;
 
-            if (!await _unitOfWork.PostReactionRepository.Add(entity))
-            {
-                return new ErrorResponse(400, Messages.PostReactionExist);
-            }    
+            await _unitOfWork.PostReactionRepository.Add(entity);
 
             var result = await _unitOfWork.CompleteAsync();
 
@@ -529,7 +525,7 @@ namespace SocialNetwork.Business.Services.Implements
             return new DataResponse<GetPostReactionResponses>(_mapper.Map<GetPostReactionResponses>(entityAdded), 201, Messages.CreatedSuccessfully);
         }
        
-        public async Task<IResponse> UpdateReaction(string requestUserId, Guid postId,int reactionId, CreatePostReactionRequest request)
+        public async Task<IResponse> UpdateReaction(string requestUserId, Guid postId, int reactionId, CreatePostReactionRequest request)
         {
             var checkExits = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId);
             if (checkExits == null)
@@ -541,10 +537,7 @@ namespace SocialNetwork.Business.Services.Implements
             entity.UserId = requestUserId;
             entity.PostId = postId;
 
-            if (!await _unitOfWork.PostReactionRepository.Update(entity))
-            {
-                return new ErrorResponse(404, Messages.NotFound());
-            }    
+            await _unitOfWork.PostReactionRepository.Update(entity);
 
             var result = await _unitOfWork.CompleteAsync();
             if (!result)

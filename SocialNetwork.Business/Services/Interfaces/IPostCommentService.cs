@@ -21,8 +21,8 @@ namespace SocialNetwork.Business.Services.Interfaces
         Task<IResponse> GetReactions(string requestUserId, Guid postId, int pageSize, int pageNumber);
         Task<IResponse> GetReactionById(string requestUserId, Guid commentId, int reactionId);
         Task<IResponse> CreateReaction(string requestUserId, Guid commentId, CreateCommentReactionRequest request);
-        Task<IResponse> UpdateReaction(string requestUserId, Guid commentId, CreateCommentReactionRequest request);
-        Task<IResponse> DeleteReaction(string requestUserId, Guid commentId, int reactionId);
+        Task<IResponse> UpdateReaction(string requestUserId, Guid commentId, Guid commentReactionId, CreateCommentReactionRequest request);
+        Task<IResponse> DeleteReaction(string requestUserId, Guid commentId, Guid commentReactionId);
 
     }
 }

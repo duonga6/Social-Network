@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
+using LinqKit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
-using SocialNetwork.Business.DTOs.Friendship.Requests;
+using SocialNetwork.Business.DTOs.Friendship.Responses;
 using SocialNetwork.Business.DTOs.Message.Requests;
 using SocialNetwork.Business.DTOs.Post.Requests;
 using SocialNetwork.Business.DTOs.Post.Responses;
@@ -15,7 +16,6 @@ using SocialNetwork.Business.DTOs.Users.Responses;
 using SocialNetwork.Business.Helper;
 using SocialNetwork.Business.Services.Implements.Base;
 using SocialNetwork.Business.Services.Interfaces;
-using SocialNetwork.Business.Utilities.Enum;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
 using SocialNetwork.DataAccess.Entities;
@@ -356,15 +356,12 @@ namespace SocialNetwork.Business.Services.Implements
         public async Task<IResponse> GetPhoto(string requestUserId, string targetUserId, int pageSize, int pageNumber)
         {
             var user = await _unitOfWork.UserRepository.GetById(targetUserId);
-
             if (user == null)
             {
-                return new ErrorResponse(404, Messages.NotFound("User " + targetUserId));
+                return new ErrorResponse(404, Messages.NotFound("User"));
             }
 
-            var userPostIds = (await _unitOfWork.PostRepository.FindBy(x => x.Status == 1 && x.AuthorId == targetUserId)).Select(x => x.Id).ToList();
-
-            Expression<Func<PostMedia, bool>> filter = x => x.MediaTypeId == (int)MediaTypeEnum.Image && userPostIds.Contains(x.PostId);
+            Expression<Func<PostMedia, bool>> filter = x => x.MediaTypeId == (int)MediaTypeEnum.Image && x.UserId == targetUserId;
 
             int totalItems = await _unitOfWork.PostMediaRepository.GetCount(filter);
 
@@ -382,7 +379,6 @@ namespace SocialNetwork.Business.Services.Implements
 
             return new PagedResponse<List<GetPostMediaResponse>>(result, totalItems, 200);
         }
-
 
         private async Task<bool> CheckAccess(string loggedUserId, string requestUserId)
         {
@@ -626,7 +622,40 @@ namespace SocialNetwork.Business.Services.Implements
 
         #endregion
 
-    
+        #region Friend
+
+        public async Task<IResponse> GetFriends(string requestUserId, string targetUserId, int pageSize, int pageNumber, string? searchString)
+        {
+            Expression<Func<Friendship, bool>> filter;
+            if (searchString != null)
+            {
+                filter = x => (x.RequestUserId == targetUserId && (x.TargetUser.FirstName.Contains(searchString) || x.TargetUser.LastName.Contains(searchString))) ||
+                              (x.TargetUserId == targetUserId && (x.RequestUser.FirstName.Contains(searchString) || x.RequestUser.LastName.Contains(searchString)));
+            }
+            else
+            {
+                filter = x => x.RequestUserId == targetUserId || x.TargetUserId == targetUserId;
+            }
+
+            filter = filter.And(x => x.FriendshipTypeId == (int)FriendshipEnum.Accepted);
+
+            int totalItem = await _unitOfWork.FriendshipRepository.GetCount(filter);
+            int pageCount = (int)Math.Ceiling((double)totalItem / pageSize);
+
+            if (pageNumber > pageCount && pageCount > 0)
+            {
+                return new ErrorResponse(404, Messages.OutOfPage);
+            }
+
+            var friends = await _unitOfWork.FriendshipRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
+            var result = _mapper.Map<List<GetFriendshipResponse>>(friends);
+
+            return new PagedResponse<List<GetFriendshipResponse>>(result, totalItem, 200);
+        }
+
+
+        #endregion
+
         private async Task<bool> IsFriend(string userId1, string userId2)
         {
             var result = await _unitOfWork.FriendshipRepository.FindOneBy(x => x.RequestUserId == userId1 && x.TargetUserId == userId2 || x.RequestUserId == userId1 && x.TargetUserId == userId2);

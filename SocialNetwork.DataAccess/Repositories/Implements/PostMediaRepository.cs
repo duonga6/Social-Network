@@ -10,10 +10,5 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         public PostMediaRepository(ILogger logger, AppDbContext context) : base(logger, context)
         {
         }
-
-        public async Task DeleteByPostId(Guid postId)
-        {
-            await _dbSet.Where(x => x.PostId == postId).UpdateFromQueryAsync(x => new() { Status = 0 });
-        }
     }
 }

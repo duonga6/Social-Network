@@ -33,9 +33,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResponse<List<GetFriendshipResponse>>), 200)]
-        public async Task<IResponse> Get([FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber,[FromQuery] string? searchString,[FromQuery, Required] FriendType type,[FromQuery] string? userId)
+        public async Task<IResponse> Get([FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber,[FromQuery] string? searchString,[FromQuery, Required] FriendType type)
         {
-            return await _friendshipService.GetByUser(userId ?? UserId, searchString, pageSize, pageNumber, type);
+            return await _friendshipService.GetByUser(UserId, searchString, pageSize, pageNumber, type);
         }
 
         /// <summary>

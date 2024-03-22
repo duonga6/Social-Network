@@ -10,7 +10,6 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
     {
         public IReactionRepository ReactionRepository { get; }
         public IRefreshTokenRepository RefreshTokenRepository { get; }
-        public IPostImageRepository PostImageRepository { get; }
         public IPostRepository PostRepository { get; }
         public IPostCommentRepository PostCommentRepository { get; }
         public IPostReactionRepository PostReactionRepository { get; }
@@ -29,7 +28,6 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             _context = context;
             ReactionRepository = new ReactionRepository(logger, context);
             RefreshTokenRepository = new RefreshTokenRepository(logger, context);
-            PostImageRepository = new PostImageRepository(logger, context);
             PostRepository = new PostRepository(logger, context);
             PostCommentRepository = new PostCommentRepository(logger, context);
             PostReactionRepository = new PostReactionRepository(logger, context);

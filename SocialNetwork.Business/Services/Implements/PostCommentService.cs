@@ -440,15 +440,22 @@ namespace SocialNetwork.Business.Services.Implements
             return new DataResponse<GetCommentReactionResponse>(_mapper.Map<GetCommentReactionResponse>(addedEntity), 204, Messages.CreatedSuccessfully);
         }
 
-        public async Task<IResponse> UpdateReaction(string requestUserId, Guid commentId, CreateCommentReactionRequest request)
+        public async Task<IResponse> UpdateReaction(string requestUserId, Guid commentId, Guid commentReactionId, CreateCommentReactionRequest request)
         {
-            var reaction = await _unitOfWork.CommentReactionRepository.GetById(commentId, requestUserId, request.ReactionId);
+            var comment = await _unitOfWork.PostCommentRepository.GetById(commentId, false);
+            if (comment == null)
+            {
+                return new ErrorResponse(404, Messages.NotFound("Comment"));
+            }
+            var reaction = await _unitOfWork.CommentReactionRepository.GetById(commentReactionId);
+
             if (reaction == null)
             {
-                return new ErrorResponse(404, Messages.NotFound());
+                return new ErrorResponse(404, Messages.NotFound("Reaction"));
             }
 
             _mapper.Map(request, reaction);
+            await _unitOfWork.CommentReactionRepository.Update(reaction);
 
             var result = await _unitOfWork.CompleteAsync();
 
@@ -460,15 +467,21 @@ namespace SocialNetwork.Business.Services.Implements
             return new DataResponse<GetCommentReactionResponse>(_mapper.Map<GetCommentReactionResponse>(reaction), 204, Messages.UpdatedSuccessfully);
         }
 
-        public async Task<IResponse> DeleteReaction(string requestUserId, Guid commentId, int reactionId)
+        public async Task<IResponse> DeleteReaction(string requestUserId, Guid commentId, Guid commentReactionId)
         {
-            var reaction = await _unitOfWork.CommentReactionRepository.GetById(commentId, requestUserId, reactionId);
+            var comment = await _unitOfWork.PostCommentRepository.GetById(commentId);
+            if (comment == null)
+            {
+                return new ErrorResponse(404, Messages.NotFound("Comment"));
+            }
+
+            var reaction = await _unitOfWork.CommentReactionRepository.GetById(commentId);
             if (reaction == null)
             {
                 return new ErrorResponse(404, Messages.NotFound());
             }
 
-            await _unitOfWork.CommentReactionRepository.Delete(commentId, requestUserId, reaction.ReactionId);
+            await _unitOfWork.CommentReactionRepository.Delete(commentReactionId);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)

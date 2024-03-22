@@ -196,28 +196,29 @@ namespace SocialNetwork.API.Controllers
         /// Update reaction for comment (owner reaction)
         /// </summary>
         /// <param name="Id"></param>
+        /// <param name="commentReactionId"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpPut("{Id}/Reactions/{reactionId}")]
+        [HttpPut("{Id}/Reactions/{commentReactionId}")]
         [ProducesResponseType(typeof(DataResponse<GetCommentReactionResponse>), 200)]
-        public async Task<IResponse> UpdateReaction(Guid Id, [FromBody] CreateCommentReactionRequest request)
+        public async Task<IResponse> UpdateReaction(Guid Id, Guid commentReactionId, [FromBody] CreateCommentReactionRequest request)
         {
             var userId = User.GetUserId();
-            return await _postCommentService.UpdateReaction(userId, Id, request);
+            return await _postCommentService.UpdateReaction(userId, Id, commentReactionId, request);
         }
 
         /// <summary>
         /// Delete reaction for comment (owner reaction)
         /// </summary>
         /// <param name="Id"></param>
-        /// <param name="reactionId"></param>
+        /// <param name="commentReactionId"></param>
         /// <returns></returns>
-        [HttpDelete("{Id}/Reactions/{reactionId}")]
+        [HttpDelete("{Id}/Reactions/{commentReactionId}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> DeleteReaction(Guid Id, int reactionId)
+        public async Task<IResponse> DeleteReaction(Guid Id, Guid commentReactionId)
         {
             var userId = User.GetUserId();
-            return await _postCommentService.DeleteReaction(userId, Id, reactionId);
+            return await _postCommentService.DeleteReaction(userId, Id, commentReactionId);
         }
 
         #endregion

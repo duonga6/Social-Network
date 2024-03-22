@@ -43,5 +43,7 @@ namespace SocialNetwork.Business.Services.Interfaces
         Task<IResponse> GetNotifications(string loggedUserId, string requestUserId, string? searchString, int pageSize, int pageNumber);
         Task<IResponse> GetNotificationsById(string loggedUserId, string requestUserId, Guid id);
         Task<IResponse> SeenNotifications(string loggedUserId, string requestUserId, Guid id);
+
+        Task<IResponse> GetFriends(string requestUserId, string targetUserId, int pageSize, int pageNumber, string? searchString);
     }
 }
