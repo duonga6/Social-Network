@@ -58,7 +58,7 @@ namespace SocialNetwork.Business.Services.Implements
                                 UserId = targetId,
                                 NotificationDetail = new NotificationDetails
                                 {
-                                     Url = "",
+                                     Url = "/post/" + notifiableId.ToString(),
                                      AuthorId = fromUserId,
                                      Content = content,
                                 }
@@ -71,6 +71,7 @@ namespace SocialNetwork.Business.Services.Implements
                 case NotificationEnum.PostComment:
                     {
                         content = @$"""{fromUser.GetFullName()}"" đã đã bình luận về bài viết của bạn.";
+                        var comment = await _unitOfWork.PostCommentRepository.GetById(notifiableId);
 
                         var notification = new Notification
                         {
@@ -79,7 +80,7 @@ namespace SocialNetwork.Business.Services.Implements
                             UserId = toUserId,
                             NotificationDetail = new NotificationDetails
                             {
-                                Url = "",
+                                Url = $"/post/{comment.PostId}?commentId={notifiableId}",
                                 AuthorId = fromUserId,
                                 Content = content,
                             }
@@ -91,6 +92,7 @@ namespace SocialNetwork.Business.Services.Implements
                 case NotificationEnum.PostCommentReaction:
                     {
                         content = @$"""{fromUser.GetFullName()}"" đã bày tỏ cảm xúc về bình luận của bạn.";
+                        var comment = await _unitOfWork.PostCommentRepository.GetById(notifiableId);
 
                         var notification = new Notification
                         {
@@ -99,7 +101,7 @@ namespace SocialNetwork.Business.Services.Implements
                             UserId = toUserId,
                             NotificationDetail = new NotificationDetails
                             {
-                                Url = "",
+                                Url = $"/post/{comment.PostId}?commentId={notifiableId}",
                                 AuthorId = fromUserId,
                                 Content = content,
                             }
@@ -119,7 +121,7 @@ namespace SocialNetwork.Business.Services.Implements
                             UserId = toUserId,
                             NotificationDetail = new NotificationDetails
                             {
-                                Url = "",
+                                Url = $"/friends/request?id={notifiableId}",
                                 AuthorId = fromUserId,
                                 Content = content,
                             }
@@ -139,7 +141,27 @@ namespace SocialNetwork.Business.Services.Implements
                             UserId = toUserId,
                             NotificationDetail = new NotificationDetails
                             {
-                                Url = "",
+                                Url = "/post/" + notifiableId.ToString(),
+                                AuthorId = fromUserId,
+                                Content = content,
+                            }
+                        };
+
+                        await _unitOfWork.NotificationRepository.Add(notification);
+                        return await _unitOfWork.CompleteAsync();
+                    }
+                case NotificationEnum.SharePost:
+                    {
+                        content = @$"""{fromUser.GetFullName()}"" đã chia sẻ bài viết của bạn.";
+
+                        var notification = new DataAccess.Entities.Notification
+                        {
+                            NotifiableId = notifiableId,
+                            NotifiableType = "POST REACTION",
+                            UserId = toUserId,
+                            NotificationDetail = new NotificationDetails
+                            {
+                                Url = "/post/" + notifiableId.ToString(),
                                 AuthorId = fromUserId,
                                 Content = content,
                             }

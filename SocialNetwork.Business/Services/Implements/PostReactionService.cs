@@ -148,6 +148,7 @@ namespace SocialNetwork.Business.Services.Implements
         public async Task<IResponse> Create(string requestUserId, CreatePostReactionsRequest request)
         {
             var post = await _unitOfWork.PostRepository.GetById(request.PostId);
+
             if (post == null)
             {
                 return new ErrorResponse(404, Messages.NotFound("Post"));
