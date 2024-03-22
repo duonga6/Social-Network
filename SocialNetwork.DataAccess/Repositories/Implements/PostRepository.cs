@@ -21,7 +21,8 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .Include(x => x.Author)
                 .Include(x => x.SharePost)
                 .ThenInclude(x => x.PostMedias.Where(i => i.Status == 1))
-                .AsSplitQuery();
+                .Include(x => x.SharePost.Author)
+                .AsQueryable();
 
             if (asNoTracking)
             {

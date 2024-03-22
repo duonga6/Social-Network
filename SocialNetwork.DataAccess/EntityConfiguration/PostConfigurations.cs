@@ -29,6 +29,9 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 .OnDelete(DeleteBehavior.NoAction)
                 .IsRequired(false);
 
+            builder.HasIndex(x => x.SharePostId)
+                .IsUnique(false);
+
         }
     }
 }
