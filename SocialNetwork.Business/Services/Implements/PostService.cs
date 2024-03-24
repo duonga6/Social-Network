@@ -149,11 +149,13 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            await _notificationService.CreateNotification(addEntity.AuthorId, "", NotificationEnum.CREATE_POST, addEntity);
-
             var entityAdded = await _unitOfWork.PostRepository.GetById(addEntity.Id);
 
-            return new DataResponse<GetPostResponse>(_mapper.Map<GetPostResponse>(entityAdded), 200, Messages.CreatedSuccessfully);
+            var response = _mapper.Map<GetPostResponse>(entityAdded);
+
+            await _notificationService.CreateNotification(addEntity.AuthorId, "", NotificationEnum.CREATE_POST, response);
+
+            return new DataResponse<GetPostResponse>(response, 200, Messages.CreatedSuccessfully);
         }
 
         public async Task<IResponse> CreateShare(string requestUserId, CreateSharePostRequest request)
@@ -176,9 +178,11 @@ namespace SocialNetwork.Business.Services.Implements
 
             var addedEntity = await _unitOfWork.PostRepository.GetById(addEntity.Id);
 
-            await _notificationService.CreateNotification(requestUserId, postShare.AuthorId, NotificationEnum.SHARE_POST, addedEntity);
+            var response = _mapper.Map<GetPostResponse>(addedEntity);
 
-            return new DataResponse<GetPostResponse>(_mapper.Map<GetPostResponse>(addedEntity), 200, Messages.CreatedSuccessfully);
+            await _notificationService.CreateNotification(requestUserId, postShare.AuthorId, NotificationEnum.SHARE_POST, response);
+
+            return new DataResponse<GetPostResponse>(response, 200, Messages.CreatedSuccessfully);
         }
 
         public async Task<IResponse> Update(string requestingUserId, Guid id, UpdatePostRequest request)
@@ -332,9 +336,11 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.POST_COMMENT, addEntity);
+            var response = _mapper.Map<GetPostCommentResponse>(addEntity);
 
-            return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(addEntity), 200, Messages.CreatedSuccessfully);
+            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.POST_COMMENT, response);
+
+            return new DataResponse<GetPostCommentResponse>(response, 200, Messages.CreatedSuccessfully);
 
         }
         
@@ -519,10 +525,10 @@ namespace SocialNetwork.Business.Services.Implements
             }
 
             var entityAdded = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId);
+            var response = _mapper.Map<GetPostReactionResponses>(entityAdded);
+            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.POST_REACTION, response);
 
-            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.POST_REACTION, entityAdded);
-
-            return new DataResponse<GetPostReactionResponses>(_mapper.Map<GetPostReactionResponses>(entityAdded), 201, Messages.CreatedSuccessfully);
+            return new DataResponse<GetPostReactionResponses>(response, 201, Messages.CreatedSuccessfully);
         }
        
         public async Task<IResponse> UpdateReaction(string requestUserId, Guid postId, int reactionId, CreatePostReactionRequest request)

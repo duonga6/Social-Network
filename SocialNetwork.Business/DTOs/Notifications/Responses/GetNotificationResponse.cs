@@ -1,4 +1,4 @@
-﻿using SocialNetwork.Business.DTOs.Notifications.Responses;
+﻿using SocialNetwork.Business.DTOs.Users.Responses;
 
 namespace SocialNetwork.Business.DTOs.Notification.Responses
 {
@@ -6,8 +6,9 @@ namespace SocialNetwork.Business.DTOs.Notification.Responses
     {
         public Guid Id { get; set; }
         public DateTime? ReadAt { set; get; }
-        public string NotifiableType { set; get; } = string.Empty;
-        public Guid NotifiableId { set; get; }
-        public GetNotificationDetailResponse Detail { set; get; } = null!;
+        public string NotificationType { set; get; } = string.Empty;
+        public string Content { set; get; } = string.Empty;
+        public string JsonDetail { set; get; } = string.Empty;
+        public BasicUserResponse FromUser { set; get; } = null!;
     }
 }

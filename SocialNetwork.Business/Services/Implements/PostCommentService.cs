@@ -69,9 +69,11 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.POST_COMMENT, addComment);
+            var response = _mapper.Map<GetPostCommentResponse>(addComment);
 
-            return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(addComment), 200, Messages.CreatedSuccessfully);
+            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.POST_COMMENT, response);
+
+            return new DataResponse<GetPostCommentResponse>(response, 200, Messages.CreatedSuccessfully);
         }
 
         public async Task<IResponse> Delete(string requestUserId, Guid id)
@@ -436,9 +438,11 @@ namespace SocialNetwork.Business.Services.Implements
 
             var addedEntity = await _unitOfWork.CommentReactionRepository.GetById(commentId, requestUserId, addEntity.ReactionId);
 
-            await _notificationService.CreateNotification(requestUserId, comment.UserId, NotificationEnum.COMMENT_REACTION, addEntity);
+            var response = _mapper.Map<GetCommentReactionResponse>(addedEntity);
 
-            return new DataResponse<GetCommentReactionResponse>(_mapper.Map<GetCommentReactionResponse>(addedEntity), 204, Messages.CreatedSuccessfully);
+            await _notificationService.CreateNotification(requestUserId, comment.UserId, NotificationEnum.COMMENT_REACTION, response);
+
+            return new DataResponse<GetCommentReactionResponse>(response, 204, Messages.CreatedSuccessfully);
         }
 
         public async Task<IResponse> UpdateReaction(string requestUserId, Guid commentId, Guid commentReactionId, CreateCommentReactionRequest request)

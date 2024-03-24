@@ -4,7 +4,6 @@ using SocialNetwork.Business.DTOs.Friendship.Responses;
 using SocialNetwork.Business.DTOs.MediaType.Responses;
 using SocialNetwork.Business.DTOs.Message.Responses;
 using SocialNetwork.Business.DTOs.Notification.Responses;
-using SocialNetwork.Business.DTOs.Notifications.Responses;
 using SocialNetwork.Business.DTOs.Post.Responses;
 using SocialNetwork.Business.DTOs.PostMedia.Responses;
 using SocialNetwork.Business.DTOs.PostReactions.Responses;

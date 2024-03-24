@@ -11,7 +11,6 @@ using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
 using SocialNetwork.DataAccess.Entities;
-using SocialNetwork.DataAccess.Entities.Base;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
 using SocialNetwork.DataAccess.Utilities.Enum;
 using System.Linq.Expressions;
@@ -26,7 +25,7 @@ namespace SocialNetwork.Business.Services.Implements
             _userManager = userManager;
         }
 
-        public async Task<bool> CreateNotification(string fromUserId, string toUserId, NotificationEnum type, BaseEntity<Guid> notifiable)
+        public async Task<bool> CreateNotification(string fromUserId, string toUserId, NotificationEnum type, dynamic notifiable)
         {
             if (fromUserId == toUserId)
             {
@@ -35,7 +34,10 @@ namespace SocialNetwork.Business.Services.Implements
 
             var fromUser = await _userManager.FindByIdAsync(fromUserId);
             var toUser = await _userManager.FindByIdAsync(toUserId);
-            var jsonDetail = JsonConvert.SerializeObject(notifiable);
+            var jsonDetail = JsonConvert.SerializeObject(notifiable, new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            });
 
             if (fromUser == null || toUser == null)
             {
@@ -50,7 +52,7 @@ namespace SocialNetwork.Business.Services.Implements
             {
                 case NotificationEnum.CREATE_POST:
                     {
-                        content = @$"""{fromUser.GetFullName()}"" đã thêm một bài viết.";
+                        content = @$"<strong>{fromUser.GetFullName()}</strong> đã thêm một bài viết.";
 
                         var friendOfFromUser = (await _unitOfWork.FriendshipRepository.GetAllFriendship(fromUserId)).Select(x => x.RequestUserId == fromUserId ? x.TargetUserId : x.RequestUserId);
 
@@ -58,8 +60,8 @@ namespace SocialNetwork.Business.Services.Implements
                         {
                             notifications.Add(new Notification
                             {
-                                NotifiableId = notifiable.Id,
-                                NotifiableType = type.ToString(),
+                                NotifiableId = notifiable.Id.ToString(),
+                                NotificationType = type.ToString(),
                                 FromId = fromUserId,
                                 Content = content,
                                 JsonDetail = jsonDetail,
@@ -69,12 +71,12 @@ namespace SocialNetwork.Business.Services.Implements
                     }
                 case NotificationEnum.POST_COMMENT:
                     {
-                        content = @$"""{fromUser.GetFullName()}"" đã đã bình luận về bài viết của bạn.";
+                        content = @$"<strong>{fromUser.GetFullName()}</strong> đã đã bình luận về bài viết của bạn.";
 
                         notifications.Add(new Notification
                         {
-                            NotifiableId = notifiable.Id,
-                            NotifiableType = type.ToString(),
+                            NotifiableId = notifiable.Id.ToString(),
+                            NotificationType = type.ToString(),
                             FromId = fromUserId,
                             ToId = toUserId,
                             Content = content,
@@ -84,12 +86,12 @@ namespace SocialNetwork.Business.Services.Implements
                     }
                 case NotificationEnum.COMMENT_REACTION:
                     {
-                        content = @$"""{fromUser.GetFullName()}"" đã bày tỏ cảm xúc về bình luận của bạn.";
+                        content = @$"<strong>{fromUser.GetFullName()}</strong> đã bày tỏ cảm xúc về bình luận của bạn.";
 
-                        notifications.Add( new Notification
+                        notifications.Add( new Notification 
                         {
-                            NotifiableId = notifiable.Id,
-                            NotifiableType = type.ToString(),
+                            NotifiableId = notifiable.Id.ToString(),
+                            NotificationType = type.ToString(),
                             FromId = fromUserId,
                             ToId = toUserId,
                             Content = content,
@@ -99,12 +101,12 @@ namespace SocialNetwork.Business.Services.Implements
                     }
                 case NotificationEnum.FRIEND_REQUEST:
                     {
-                        content = @$"""{fromUser.GetFullName()}"" đã gửi cho bạn lời mời kết bạn.";
+                        content = @$"<strong>{fromUser.GetFullName()}</strong> đã gửi cho bạn lời mời kết bạn.";
 
                         notifications.Add(new Notification 
-                        { 
-                            NotifiableId = notifiable.Id,
-                            NotifiableType = type.ToString(),
+                        {
+                            NotifiableId = notifiable.Id.ToString(),
+                            NotificationType = type.ToString(),
                             FromId = fromUserId,
                             ToId = toUserId,
                             Content = content,
@@ -114,11 +116,11 @@ namespace SocialNetwork.Business.Services.Implements
                     }
                 case NotificationEnum.POST_REACTION:
                     {
-                        content = @$"""{fromUser.GetFullName()}"" đã bày tỏ cảm xúc về bài viết của bạn.";
+                        content = @$"<strong>{fromUser.GetFullName()}<strong> đã bày tỏ cảm xúc về bài viết của bạn.";
 
-                        notifications.Add(new Notification { 
-                            NotifiableId = notifiable.Id,
-                            NotifiableType = type.ToString(),
+                        notifications.Add(new Notification {
+                            NotifiableId = notifiable.Id.ToString(),
+                            NotificationType = type.ToString(),
                             FromId = fromUserId,
                             ToId = toUserId,
                             Content = content,
@@ -128,12 +130,12 @@ namespace SocialNetwork.Business.Services.Implements
                     }
                 case NotificationEnum.SHARE_POST:
                     {
-                        content = @$"""{fromUser.GetFullName()}"" đã chia sẻ bài viết của bạn.";
+                        content = @$"<strong>{fromUser.GetFullName()}</strong> đã chia sẻ bài viết của bạn.";
 
                         notifications.Add(new Notification 
-                        { 
-                            NotifiableId = notifiable.Id,
-                            NotifiableType = type.ToString(),
+                        {
+                            NotifiableId = notifiable.Id.ToString(),
+                            NotificationType = type.ToString(),
                             FromId = fromUserId,
                             ToId = toUserId,
                             Content = content,

@@ -7,8 +7,8 @@ namespace SocialNetwork.DataAccess.Entities
         public string FromId { get; set; }
         public string ToId { set; get; }
         public DateTime? ReadAt { set; get; }
-        public string NotifiableType { set; get; }
-        public Guid NotifiableId { set; get; }
+        public string NotifiableId { set;get; }
+        public string NotificationType { set; get; }
         public string Content { set; get; }
         public string JsonDetail { set; get; }
         public virtual User FromUser { get; set; }
