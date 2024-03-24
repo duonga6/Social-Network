@@ -43,9 +43,11 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(404, Messages.NotFound("Post")); 
             }
 
+            PostComment? parentComment = null;
+
             if (request.ParentCommentId != null)
             {
-                var parentComment = await _unitOfWork.PostCommentRepository.FindOneBy(x => x.Id == request.ParentCommentId && x.Status == 1);
+                parentComment = await _unitOfWork.PostCommentRepository.FindOneBy(x => x.Id == request.ParentCommentId && x.Status == 1);
                 if (parentComment == null)
                 {
                     return new ErrorResponse(404, Messages.NotFound("Parent comment"));
@@ -59,6 +61,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             var addComment = _mapper.Map<PostComment>(request);
             addComment.UserId = requestUserId;
+            addComment.Path = parentComment == null ? addComment.Id.ToString() : parentComment.Path + $";{addComment.Id}";
 
             await _unitOfWork.PostCommentRepository.Add(addComment);
 

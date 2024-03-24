@@ -8,6 +8,7 @@ namespace SocialNetwork.DataAccess.Entities
 
         public string UserId { set; get; }
         public virtual User User { set; get; }
+        public string Path { set; get; }
 
         public Guid PostId { set; get; }
         public virtual Post Post { set; get; }
