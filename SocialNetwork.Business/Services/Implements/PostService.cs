@@ -149,7 +149,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            await _notificationService.CreateNotification(addEntity.AuthorId, "", NotificationEnum.Post, addEntity.Id);
+            await _notificationService.CreateNotification(addEntity.AuthorId, "", NotificationEnum.CREATE_POST, addEntity);
 
             var entityAdded = await _unitOfWork.PostRepository.GetById(addEntity.Id);
 
@@ -176,7 +176,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             var addedEntity = await _unitOfWork.PostRepository.GetById(addEntity.Id);
 
-            await _notificationService.CreateNotification(requestUserId, postShare.AuthorId, NotificationEnum.SharePost, addedEntity.Id);
+            await _notificationService.CreateNotification(requestUserId, postShare.AuthorId, NotificationEnum.SHARE_POST, addedEntity);
 
             return new DataResponse<GetPostResponse>(_mapper.Map<GetPostResponse>(addedEntity), 200, Messages.CreatedSuccessfully);
         }
@@ -332,7 +332,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.PostComment, addEntity.Id);
+            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.POST_COMMENT, addEntity);
 
             return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(addEntity), 200, Messages.CreatedSuccessfully);
 
@@ -518,9 +518,9 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.PostReaction, postId);
-
             var entityAdded = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId);
+
+            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.POST_REACTION, entityAdded);
 
             return new DataResponse<GetPostReactionResponses>(_mapper.Map<GetPostReactionResponses>(entityAdded), 201, Messages.CreatedSuccessfully);
         }

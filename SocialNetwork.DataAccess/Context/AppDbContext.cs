@@ -33,7 +33,6 @@ namespace SocialNetwork.DataAccess.Context
         public virtual DbSet<Friendship> Friendships { get; set; }
         public virtual DbSet<Message> Messages { get; set; }
         public virtual DbSet<Notification> Notifications { get; set; }
-        public virtual DbSet<NotificationDetails> NotificationDetails { set; get; }
         public virtual DbSet<Gender> Genders { set; get; }
         public virtual DbSet<FriendshipType> FriendshipTypes { set; get; }
         public virtual DbSet<MediaType> MediaTypes { set; get; }

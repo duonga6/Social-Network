@@ -69,7 +69,7 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.PostComment, addComment.Id);
+            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.POST_COMMENT, addComment);
 
             return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(addComment), 200, Messages.CreatedSuccessfully);
         }
@@ -316,6 +316,7 @@ namespace SocialNetwork.Business.Services.Implements
         {
             return await _commentReactionService.GetOverview(requestUserId, commentId);
         }
+        
         private async Task<bool> CheckAccessPost(string requestUserId, string targetUserId)
         {
             var requestUser = await _userManager.FindByIdAsync(targetUserId);
@@ -435,7 +436,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             var addedEntity = await _unitOfWork.CommentReactionRepository.GetById(commentId, requestUserId, addEntity.ReactionId);
 
-            await _notificationService.CreateNotification(requestUserId, comment.UserId, NotificationEnum.PostCommentReaction, addEntity.Id);
+            await _notificationService.CreateNotification(requestUserId, comment.UserId, NotificationEnum.COMMENT_REACTION, addEntity);
 
             return new DataResponse<GetCommentReactionResponse>(_mapper.Map<GetCommentReactionResponse>(addedEntity), 204, Messages.CreatedSuccessfully);
         }

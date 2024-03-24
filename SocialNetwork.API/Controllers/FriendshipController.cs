@@ -29,7 +29,6 @@ namespace SocialNetwork.API.Controllers
         /// <param name="pageNumber">Current page</param>
         /// <param name="searchString">Search by name</param>
         /// <param name="type">Type friend to get 0: all, 1: pending from me, 2: pending from other, 3: accepted, 4: blocked</param>
-        /// <param name="userId"></param>
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResponse<List<GetFriendshipResponse>>), 200)]

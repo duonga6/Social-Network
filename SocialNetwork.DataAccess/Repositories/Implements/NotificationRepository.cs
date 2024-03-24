@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.DataAccess.Context;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
@@ -25,10 +26,9 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         public async Task<ICollection<Notification>> GetUserNotifications(string userId)
         {
             var notifications = await _dbSet.AsNoTracking()
-                .Where(x => x.UserId == userId)
-                .Include(x => x.User)
-                .Include(x => x.NotificationDetail)
-                .ThenInclude(x => x.Author)
+                .Where(x => x.ToId == userId)
+                .Include(x => x.FromUser)
+                .Include(x => x.ToUser)
                 .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();
             return notifications;
@@ -49,9 +49,8 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             var query = _dbSet
                 .AsNoTracking()
                 .Where(filter)
-                .Include(x => x.User)
-                .Include(x => x.NotificationDetail)
-                .ThenInclude(x => x.Author)
+                .Include(x => x.FromUser)
+                .Include(x => x.ToUser)
                 .AsQueryable();
 
             if (isDesc)
@@ -69,5 +68,26 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
                 .Take(pageSize)
                 .ToListAsync();
         }
+
+        public override async Task<ICollection<Notification>> GetCursorPaged(int pageSize, Expression<Func<Notification, bool>> filter, bool getNext = true)
+        {
+            var query = _dbSet
+                .AsNoTracking()
+                .Where(filter)
+                .Include(x => x.FromUser)
+                .Include(x => x.ToUser);
+
+            if (getNext)
+            {
+                return await query.OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.Id).Take(pageSize).ToListAsync();
+            }
+            else
+            {
+                var result = await query.OrderBy(x => x.CreatedAt).ThenBy(x => x.Id).Take(pageSize).ToListAsync();
+                result.Reverse();
+                return result;
+            }
+        }
+
     }
 }

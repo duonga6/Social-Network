@@ -178,7 +178,10 @@ namespace SocialNetwork.Business.Services.Implements
 
             var addedPostReaction = await _unitOfWork.PostReactionRepository.FindOneBy(x => x.PostId == request.PostId && x.UserId == requestUserId);
 
-            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.PostReaction, post.Id);
+            if (requestUserId != post.AuthorId)
+            {
+                await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.POST_REACTION, addedPostReaction);
+            }
 
             return new DataResponse<GetPostReactionResponse>(_mapper.Map<GetPostReactionResponse>(addedPostReaction), 201, Messages.CreatedSuccessfully);
 

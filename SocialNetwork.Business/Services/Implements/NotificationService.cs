@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using LinqKit;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Notification.Responses;
 using SocialNetwork.Business.Services.Implements.Base;
@@ -9,6 +11,7 @@ using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Interfaces;
 using SocialNetwork.DataAccess.Entities;
+using SocialNetwork.DataAccess.Entities.Base;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
 using SocialNetwork.DataAccess.Utilities.Enum;
 using System.Linq.Expressions;
@@ -23,7 +26,7 @@ namespace SocialNetwork.Business.Services.Implements
             _userManager = userManager;
         }
 
-        public async Task<bool> CreateNotification(string fromUserId, string toUserId, NotificationEnum type, Guid notifiableId)
+        public async Task<bool> CreateNotification(string fromUserId, string toUserId, NotificationEnum type, BaseEntity<Guid> notifiable)
         {
             if (fromUserId == toUserId)
             {
@@ -32,6 +35,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             var fromUser = await _userManager.FindByIdAsync(fromUserId);
             var toUser = await _userManager.FindByIdAsync(toUserId);
+            var jsonDetail = JsonConvert.SerializeObject(notifiable);
 
             if (fromUser == null || toUser == null)
             {
@@ -39,11 +43,12 @@ namespace SocialNetwork.Business.Services.Implements
             }
 
             List<Notification> notifications = new List<Notification>();
+
             string content = "";
 
             switch (type)
             {
-                case NotificationEnum.Post:
+                case NotificationEnum.CREATE_POST:
                     {
                         content = @$"""{fromUser.GetFullName()}"" đã thêm một bài viết.";
 
@@ -53,135 +58,102 @@ namespace SocialNetwork.Business.Services.Implements
                         {
                             notifications.Add(new Notification
                             {
-                                NotifiableId = notifiableId,
-                                NotifiableType = "POST",
-                                UserId = targetId,
-                                NotificationDetail = new NotificationDetails
-                                {
-                                     Url = "/post/" + notifiableId.ToString(),
-                                     AuthorId = fromUserId,
-                                     Content = content,
-                                }
+                                NotifiableId = notifiable.Id,
+                                NotifiableType = type.ToString(),
+                                FromId = fromUserId,
+                                Content = content,
+                                JsonDetail = jsonDetail,
                             });
                         }
-
-                        await _unitOfWork.NotificationRepository.AddRange(notifications);
-                        return await _unitOfWork.CompleteAsync();
+                        break;
                     }
-                case NotificationEnum.PostComment:
+                case NotificationEnum.POST_COMMENT:
                     {
                         content = @$"""{fromUser.GetFullName()}"" đã đã bình luận về bài viết của bạn.";
-                        var comment = await _unitOfWork.PostCommentRepository.GetById(notifiableId);
 
-                        var notification = new Notification
+                        notifications.Add(new Notification
                         {
-                            NotifiableId = notifiableId,
-                            NotifiableType = "POST COMMENT",
-                            UserId = toUserId,
-                            NotificationDetail = new NotificationDetails
-                            {
-                                Url = $"/post/{comment.PostId}?commentId={notifiableId}",
-                                AuthorId = fromUserId,
-                                Content = content,
-                            }
-                        };
-
-                        await _unitOfWork.NotificationRepository.Add(notification);
-                        return await _unitOfWork.CompleteAsync();
+                            NotifiableId = notifiable.Id,
+                            NotifiableType = type.ToString(),
+                            FromId = fromUserId,
+                            ToId = toUserId,
+                            Content = content,
+                            JsonDetail = jsonDetail,
+                        });
+                        break;
                     }
-                case NotificationEnum.PostCommentReaction:
+                case NotificationEnum.COMMENT_REACTION:
                     {
                         content = @$"""{fromUser.GetFullName()}"" đã bày tỏ cảm xúc về bình luận của bạn.";
-                        var comment = await _unitOfWork.PostCommentRepository.GetById(notifiableId);
 
-                        var notification = new Notification
+                        notifications.Add( new Notification
                         {
-                            NotifiableId = notifiableId,
-                            NotifiableType = "POST COMMENT REACTION",
-                            UserId = toUserId,
-                            NotificationDetail = new NotificationDetails
-                            {
-                                Url = $"/post/{comment.PostId}?commentId={notifiableId}",
-                                AuthorId = fromUserId,
-                                Content = content,
-                            }
-                        };
-
-                        await _unitOfWork.NotificationRepository.Add(notification);
-                        return await _unitOfWork.CompleteAsync();
+                            NotifiableId = notifiable.Id,
+                            NotifiableType = type.ToString(),
+                            FromId = fromUserId,
+                            ToId = toUserId,
+                            Content = content,
+                            JsonDetail = jsonDetail,
+                        });
+                        break;
                     }
-                case NotificationEnum.FriendRequest:
+                case NotificationEnum.FRIEND_REQUEST:
                     {
                         content = @$"""{fromUser.GetFullName()}"" đã gửi cho bạn lời mời kết bạn.";
 
-                        var notification = new Notification
-                        {
-                            NotifiableId = notifiableId,
-                            NotifiableType = "FRIEND REQUEST",
-                            UserId = toUserId,
-                            NotificationDetail = new NotificationDetails
-                            {
-                                Url = $"/friends/request?id={notifiableId}",
-                                AuthorId = fromUserId,
-                                Content = content,
-                            }
-                        };
-
-                        await _unitOfWork.NotificationRepository.Add(notification);
-                        return await _unitOfWork.CompleteAsync();
+                        notifications.Add(new Notification 
+                        { 
+                            NotifiableId = notifiable.Id,
+                            NotifiableType = type.ToString(),
+                            FromId = fromUserId,
+                            ToId = toUserId,
+                            Content = content,
+                            JsonDetail = jsonDetail 
+                        });
+                        break;
                     }
-                case NotificationEnum.PostReaction:
+                case NotificationEnum.POST_REACTION:
                     {
                         content = @$"""{fromUser.GetFullName()}"" đã bày tỏ cảm xúc về bài viết của bạn.";
 
-                        var notification = new DataAccess.Entities.Notification
-                        {
-                            NotifiableId = notifiableId,
-                            NotifiableType = "POST REACTION",
-                            UserId = toUserId,
-                            NotificationDetail = new NotificationDetails
-                            {
-                                Url = "/post/" + notifiableId.ToString(),
-                                AuthorId = fromUserId,
-                                Content = content,
-                            }
-                        };
-
-                        await _unitOfWork.NotificationRepository.Add(notification);
-                        return await _unitOfWork.CompleteAsync();
+                        notifications.Add(new Notification { 
+                            NotifiableId = notifiable.Id,
+                            NotifiableType = type.ToString(),
+                            FromId = fromUserId,
+                            ToId = toUserId,
+                            Content = content,
+                            JsonDetail = jsonDetail 
+                        });
+                        break;
                     }
-                case NotificationEnum.SharePost:
+                case NotificationEnum.SHARE_POST:
                     {
                         content = @$"""{fromUser.GetFullName()}"" đã chia sẻ bài viết của bạn.";
 
-                        var notification = new DataAccess.Entities.Notification
-                        {
-                            NotifiableId = notifiableId,
-                            NotifiableType = "POST REACTION",
-                            UserId = toUserId,
-                            NotificationDetail = new NotificationDetails
-                            {
-                                Url = "/post/" + notifiableId.ToString(),
-                                AuthorId = fromUserId,
-                                Content = content,
-                            }
-                        };
-
-                        await _unitOfWork.NotificationRepository.Add(notification);
-                        return await _unitOfWork.CompleteAsync();
+                        notifications.Add(new Notification 
+                        { 
+                            NotifiableId = notifiable.Id,
+                            NotifiableType = type.ToString(),
+                            FromId = fromUserId,
+                            ToId = toUserId,
+                            Content = content,
+                            JsonDetail = jsonDetail 
+                        });
+                        break;
                     }
-                default:
-                    return false;
+
             }
+            await _unitOfWork.NotificationRepository.AddRange(notifications);
+            return await _unitOfWork.CompleteAsync();
         }
 
         public async Task<IResponse> GetNotifications(string userId, string? searchString, int pageSize, int pageNumber)
         {
-            Expression<Func<Notification, bool>> filter = x => x.UserId == userId;
+            Expression<Func<Notification, bool>> filter = x => x.ToId == userId;
 
             if (searchString != null)
             {
-                filter = filter.And(x => x.NotificationDetail.Content.Contains(searchString));
+                filter = filter.And(x => x.Content.Contains(searchString));
             }   
 
             int totalItems = await _unitOfWork.NotificationRepository.Count(filter);
@@ -201,7 +173,7 @@ namespace SocialNetwork.Business.Services.Implements
         public async Task<IResponse> SeenNotification(string userId, Guid id)
         {
             var notification = await _unitOfWork.NotificationRepository.GetById(id);
-            if (notification.UserId != userId) return new ErrorResponse(404, Messages.NotFound());
+            if (notification.ToId != userId) return new ErrorResponse(404, Messages.NotFound());
 
             //if (notification.Seen)
             //{
@@ -224,7 +196,7 @@ namespace SocialNetwork.Business.Services.Implements
         {
             var notification = await _unitOfWork.NotificationRepository.GetById(id);
 
-            if (notification == null || notification.UserId != userId)
+            if (notification == null || notification.ToId != userId)
             {
                 return new ErrorResponse(404, Messages.NotFound());
             }
@@ -232,5 +204,55 @@ namespace SocialNetwork.Business.Services.Implements
             return new DataResponse<GetNotificationResponse>(_mapper.Map<GetNotificationResponse>(notification), 200);
 
         }
+    
+        public async Task<IResponse> GetCursor(string requestUserId, int pageSize, DateTime? cursor, bool getNext)
+        {
+            Expression<Func<Notification, bool>> filter = x => x.ToId == requestUserId;
+
+            int totalItems = await _unitOfWork.NotificationRepository.GetCount(filter);
+
+            if (cursor != null)
+            {
+                filter = filter.And(x => x.CreatedAt < cursor);
+            }
+
+            var notifications = await _unitOfWork
+                .NotificationRepository
+                .GetCursorPaged(pageSize, filter, getNext);
+
+            bool hasNext = true;
+
+            // Check has next
+            var query = _unitOfWork.NotificationRepository.GetQueryable().AsNoTracking().Where(filter);
+
+            if (getNext)
+            {
+                query = query.OrderByDescending(x => x.CreatedAt);
+            }
+            else
+            {
+                query = query.OrderBy(x => x.CreatedAt);
+            }
+
+            var checkCount = await query.Take(pageSize + 1).CountAsync();
+
+            if (checkCount <= notifications.Count)
+            {
+                hasNext = false;
+            }
+
+            var endCursor = notifications.LastOrDefault()?.CreatedAt;
+
+            if (endCursor != null)
+            {
+                endCursor = DateTime.SpecifyKind(endCursor.Value, DateTimeKind.Utc);
+            }
+
+            var response = _mapper.Map<List<GetNotificationResponse>>(notifications);
+
+            return new CursorResponse<List<GetNotificationResponse>>(response, endCursor, hasNext, totalItems);
+
+        }
+
     }
 }

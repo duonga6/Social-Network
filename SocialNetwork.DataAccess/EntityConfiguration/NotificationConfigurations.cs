@@ -8,9 +8,17 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
     {
         public void Configure(EntityTypeBuilder<Notification> builder)
         {
-            builder.HasOne(n => n.User)
+            builder.Property(x => x.ToId).IsRequired(false);
+
+            builder.HasOne(n => n.ToUser)
                 .WithMany(u => u.NotificationsReceive)
-                .HasForeignKey(n => n.UserId)
+                .HasForeignKey(n => n.ToId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
+            builder.HasOne(n => n.FromUser)
+                .WithMany(u => u.NotificationSend)
+                .HasForeignKey(n => n.FromId)
                 .OnDelete(DeleteBehavior.NoAction)
                 .IsRequired();
         }

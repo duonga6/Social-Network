@@ -1,17 +1,13 @@
-﻿namespace SocialNetwork.Business.DTOs.Notification.Responses
+﻿using SocialNetwork.Business.DTOs.Notifications.Responses;
+
+namespace SocialNetwork.Business.DTOs.Notification.Responses
 {
     public class GetNotificationResponse
     {
         public Guid Id { get; set; }
-        public NotificationUser FromUser { get; set; } = null!;
-        public string Content { get; set; } = string.Empty;
-        public bool Seen { get; set; }
+        public DateTime? ReadAt { set; get; }
+        public string NotifiableType { set; get; } = string.Empty;
+        public Guid NotifiableId { set; get; }
+        public GetNotificationDetailResponse Detail { set; get; } = null!;
     }
-
-    public class NotificationUser
-    {
-        public string Id { get; set; } = string.Empty;
-        public string AvatarUrl { get; set; } = string.Empty;
-    }
-
 }

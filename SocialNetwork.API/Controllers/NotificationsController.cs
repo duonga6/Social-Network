@@ -29,7 +29,6 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResponse<List<GetNotificationResponse>>), 200)]
-
         public async Task<IResponse> GetAll([FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
             return await _notificationService.GetNotifications(UserId, searchString, pageSize, pageNumber);
@@ -59,5 +58,20 @@ namespace SocialNetwork.API.Controllers
         {
             return await _notificationService.SeenNotification(UserId, Id);
         }
+
+        /// <summary>
+        /// Get user's notification with cursor pagnigaion
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="endCursor"></param>
+        /// <param name="getNext"></param>
+        /// <returns></returns>
+        [HttpGet("GetCursor")]
+        [ProducesResponseType(typeof(CursorResponse<List<GetNotificationResponse>>), 200)]
+        public async Task<IResponse> GetCursor([FromQuery, Required, Range(1, int.MaxValue)] int pageSize, DateTime? endCursor, bool getNext = true)
+        {
+            return await _notificationService.GetCursor(UserId, pageSize, endCursor, getNext);
+        }
+        
     }
 }

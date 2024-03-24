@@ -5,26 +5,26 @@
         /// <summary>
         /// Create post
         /// </summary>
-        Post,
+        CREATE_POST,
         /// <summary>
         /// Comment of post
         /// </summary>
-        PostComment,
+        POST_COMMENT,
         /// <summary>
         /// Reaction of comment
         /// </summary>
-        PostCommentReaction,
+        COMMENT_REACTION,
         /// <summary>
         /// Reaction of post
         /// </summary>
-        PostReaction,
+        POST_REACTION,
         /// <summary>
         /// Friend request
         /// </summary>
-        FriendRequest,
+        FRIEND_REQUEST,
         /// <summary>
         /// Share post user
         /// </summary>
-        SharePost,
+        SHARE_POST,
     }
 }
