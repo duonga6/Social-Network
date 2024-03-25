@@ -34,10 +34,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             var fromUser = await _userManager.FindByIdAsync(fromUserId);
             var toUser = await _userManager.FindByIdAsync(toUserId);
-            var jsonDetail = JsonConvert.SerializeObject(notifiable, new JsonSerializerSettings
-            {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-            });
+            var jsonDetail = JsonConvert.SerializeObject(notifiable);
 
             if (fromUser == null)
             {

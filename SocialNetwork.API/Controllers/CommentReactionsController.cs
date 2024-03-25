@@ -69,5 +69,18 @@ namespace SocialNetwork.API.Controllers
         {
             return await _commentReactionService.Update(UserId, id, request);
         }
+        
+        /// <summary>
+        /// Get comment reaction by ID
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        [HttpGet("{Id}")]
+        [ProducesResponseType(typeof(DataResponse<GetCommentReactionResponse>), 200)]        
+        public async Task<IResponse> GetById(Guid Id)
+        {
+            return await _commentReactionService.GetById(UserId, Id);
+        }
+        
     }
 }

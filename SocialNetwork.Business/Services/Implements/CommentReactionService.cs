@@ -18,9 +18,11 @@ namespace SocialNetwork.Business.Services.Implements
     public class CommentReactionService : BaseServices<CommentReactionService>, ICommentReactionService
     {
         private readonly IFriendshipService _friendshipService;
-        public CommentReactionService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<CommentReactionService> logger, IFriendshipService friendshipService) : base(unitOfWork, mapper, logger)
+        private readonly INotificationService _notificationService;
+        public CommentReactionService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<CommentReactionService> logger, IFriendshipService friendshipService, INotificationService notificationService) : base(unitOfWork, mapper, logger)
         {
             _friendshipService = friendshipService;
+            _notificationService = notificationService;
         }
 
         public async Task<IResponse> Create(string requestUserId, CreateCommentReactionRequests request)
@@ -61,8 +63,11 @@ namespace SocialNetwork.Business.Services.Implements
             }
 
             var reactionAdded = await _unitOfWork.CommentReactionRepository.GetById(reactionAdd.Id);
+            var response = _mapper.Map<GetCommentReactionResponse>(reactionAdded);
 
-            return new DataResponse<GetCommentReactionResponse>(_mapper.Map<GetCommentReactionResponse>(reactionAdded), 201, Messages.CreatedSuccessfully);
+            await _notificationService.CreateNotification(requestUserId, comment.UserId, NotificationEnum.COMMENT_REACTION, response);
+
+            return new DataResponse<GetCommentReactionResponse>(response, 201, Messages.CreatedSuccessfully);
         }
 
         public async Task<IResponse> Delete(string requestUserId, Guid id)
@@ -89,9 +94,18 @@ namespace SocialNetwork.Business.Services.Implements
             return new SuccessResponse(Messages.DeletedSuccessfully, 204);
         }
 
-        public Task<IResponse> GetById(string requestUserId, Guid id)
+        public async Task<IResponse> GetById(string requestUserId, Guid id)
         {
-            throw new NotImplementedException();
+            var entity = await _unitOfWork.CommentReactionRepository.GetById(id);
+
+            if (entity == null)
+            {
+                return new ErrorResponse(404, Messages.NotFound());
+            }
+
+            var response = _mapper.Map<GetCommentReactionResponse>(entity);
+
+            return new DataResponse<GetCommentReactionResponse>(response, 200);
         }
 
         public async Task<IResponse> Update(string requestUserId, Guid id, UpdateCommentReactionRequest request)

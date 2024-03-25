@@ -53,7 +53,8 @@ namespace SocialNetwork.Business.Mapper
                 .ForPath(x => x.Receiver.Id, o => o.MapFrom(s => s.Receiver.Id))
                 .ForPath(x => x.Receiver.AvatarUrl, o => o.MapFrom(s => s.Receiver.AvatarUrl));
 
-            CreateMap<Notification, GetNotificationResponse>();
+            CreateMap<Notification, GetNotificationResponse>()
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)));
 
             CreateMap<MediaType, GetMediaTypeResponse>();
 
@@ -61,8 +62,6 @@ namespace SocialNetwork.Business.Mapper
 
             CreateMap<PostReaction, UserReacted>();
             CreateMap<CommentReaction, UserReacted>();
-
-            CreateMap<Notification, GetNotificationResponse>();
 
         }
     }

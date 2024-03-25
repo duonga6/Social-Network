@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using SocialNetwork.API.Infrastructure.Extensions;
+using SocialNetwork.API.Infrastructure.SignalR;
 using SocialNetwork.Business;
 using SocialNetwork.DataAccess;
 using SocialNetwork.DataAccess.Context;
@@ -58,7 +58,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddServicesDAL(builder.Configuration);
 builder.Services.AddServicesBLL(builder.Configuration);
 builder.Services.ConfigureAuth(builder.Configuration);
-
+builder.Services.RegistrationSignalR();
 
 
 var app = builder.Build();
@@ -94,6 +94,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<CenterHub>("/hub");
 
 using (var scopeService = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
 {
