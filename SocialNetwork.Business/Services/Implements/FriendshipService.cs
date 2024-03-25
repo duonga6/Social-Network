@@ -170,6 +170,7 @@ namespace SocialNetwork.Business.Services.Implements
 
         public async Task<IResponse> AddFriendRequest(string requestUserId, BaseFriendRequest request)
         {
+
             if (!await CheckExistUser(requestUserId) || !await CheckExistUser(request.TargetUserId))
             {
                 return new ErrorResponse(404, Messages.NotFound("User"));
@@ -208,6 +209,7 @@ namespace SocialNetwork.Business.Services.Implements
 
             return new DataResponse<GetFriendshipResponse>(response, 200, Messages.FriendshipSent);
         }
+            
 
         public async Task<IResponse> BlockFriend(string requestUserId, BaseFriendRequest request)
         {

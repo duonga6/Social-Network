@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using SocialNetwork.DataAccess.Context;
 using SocialNetwork.DataAccess.Entities;
@@ -21,7 +23,8 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         public IMediaTypeRepository MediaTypeRepository { get; }
         public IPostMediaRepository PostMediaRepository { get; }
 
-        public readonly AppDbContext _context;
+        private readonly AppDbContext _context;
+        private IDbContextTransaction _transaction;
 
         public UnitOfWork(AppDbContext context, ILogger<UnitOfWork> logger)
         {
@@ -44,6 +47,18 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
             var result = await _context.SaveChangesAsync();
             return result > 0;
+        }
+
+
+        public async Task BeginTransaction()
+        {
+            _transaction = await _context.Database.BeginTransactionAsync();
+        }
+
+        public async Task Commit()
+        {
+            await _context.SaveChangesAsync();
+            await _transaction.CommitAsync();
         }
 
         public void Dispose()

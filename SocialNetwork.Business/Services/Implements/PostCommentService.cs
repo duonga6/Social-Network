@@ -37,10 +37,11 @@ namespace SocialNetwork.Business.Services.Implements
         #region Comment
         public async Task<IResponse> Create(string requestUserId, CreatePostCommentRequest request)
         {
+
             var post = await _unitOfWork.PostRepository.GetById(request.PostId);
-            if (post == null) 
-            { 
-                return new ErrorResponse(404, Messages.NotFound("Post")); 
+            if (post == null)
+            {
+                return new ErrorResponse(404, Messages.NotFound("Post"));
             }
 
             PostComment? parentComment = null;
@@ -57,7 +58,7 @@ namespace SocialNetwork.Business.Services.Implements
             if (!await CheckAccessPost(requestUserId, post.AuthorId))
             {
                 return new ErrorResponse(400, Messages.NotFriend);
-            }    
+            }
 
             var addComment = _mapper.Map<PostComment>(request);
             addComment.Id = Guid.NewGuid();

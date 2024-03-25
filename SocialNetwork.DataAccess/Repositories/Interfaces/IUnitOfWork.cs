@@ -16,5 +16,8 @@
         IPostMediaRepository PostMediaRepository { get; }
 
         Task<bool> CompleteAsync();
+
+        Task BeginTransaction();
+        Task Commit();
     }
 }
