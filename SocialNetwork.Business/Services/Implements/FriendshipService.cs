@@ -21,10 +21,13 @@ namespace SocialNetwork.Business.Services.Implements
 {
     public class FriendshipService : BaseServices<FriendshipService>, IFriendshipService
     {
-        private readonly UserManager<User> _userManager; 
-        public FriendshipService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<FriendshipService> logger, UserManager<User> userManager) : base(unitOfWork, mapper, logger)
+        private readonly UserManager<User> _userManager;
+        private readonly INotificationService _notificationService;
+
+        public FriendshipService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<FriendshipService> logger, UserManager<User> userManager, INotificationService notificationService) : base(unitOfWork, mapper, logger)
         {
             _userManager = userManager;
+            _notificationService = notificationService;
         }
 
         public async Task<IResponse> GetByUser(string requestUserId, string? searchString, int pageSize, int pageNumber, FriendType type)
@@ -199,7 +202,11 @@ namespace SocialNetwork.Business.Services.Implements
                 return new ErrorResponse(501, Messages.STWrong);
             }
 
-            return new DataResponse<GetFriendshipResponse>(_mapper.Map<GetFriendshipResponse>(newFriendShip), 200, Messages.FriendshipSent);
+            var response = _mapper.Map<GetFriendshipResponse>(newFriendShip);
+
+            await _notificationService.CreateNotification(requestUserId, request.TargetUserId, NotificationEnum.FRIEND_REQUEST, response);
+
+            return new DataResponse<GetFriendshipResponse>(response, 200, Messages.FriendshipSent);
         }
 
         public async Task<IResponse> BlockFriend(string requestUserId, BaseFriendRequest request)

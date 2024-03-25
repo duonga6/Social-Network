@@ -6,7 +6,7 @@ namespace SocialNetwork.Business.DTOs.Responses
     {
         public Guid Id { get; set; }
         public string Content { get; set; } = string.Empty;
-        public string Path { set; get; } = string.Empty;
+        public string[] Path { set; get; } = null!;
         public Guid PostId { get; set; }
         public BasicUserResponse User { set; get; } = null!;
         public DateTime CreatedAt { get; set; }

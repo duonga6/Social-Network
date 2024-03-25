@@ -60,6 +60,7 @@ namespace SocialNetwork.Business.Services.Implements
             }    
 
             var addComment = _mapper.Map<PostComment>(request);
+            addComment.Id = Guid.NewGuid();
             addComment.UserId = requestUserId;
             addComment.Path = parentComment == null ? addComment.Id.ToString() : parentComment.Path + $";{addComment.Id}";
 
@@ -74,7 +75,10 @@ namespace SocialNetwork.Business.Services.Implements
 
             var response = _mapper.Map<GetPostCommentResponse>(addComment);
 
-            await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.POST_COMMENT, response);
+            if (addComment.UserId != parentComment?.UserId)
+            {
+                await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.POST_COMMENT, response);
+            }
 
             return new DataResponse<GetPostCommentResponse>(response, 200, Messages.CreatedSuccessfully);
         }

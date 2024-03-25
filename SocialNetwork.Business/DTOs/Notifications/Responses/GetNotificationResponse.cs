@@ -6,6 +6,7 @@ namespace SocialNetwork.Business.DTOs.Notification.Responses
     {
         public Guid Id { get; set; }
         public DateTime? ReadAt { set; get; }
+        public DateTime CreatedAt { set; get; }
         public string NotificationType { set; get; } = string.Empty;
         public string Content { set; get; } = string.Empty;
         public string JsonDetail { set; get; } = string.Empty;

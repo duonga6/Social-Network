@@ -38,7 +38,8 @@ namespace SocialNetwork.Business.Mapper
 
             CreateMap<PostComment, GetPostCommentResponse>()
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)))
-                .ForMember(d => d.User, o => o.MapFrom(x => x.User));
+                .ForMember(d => d.User, o => o.MapFrom(x => x.User))
+                .ForMember(d => d.Path, o => o.MapFrom(x => x.Path.Split(new char[]  { ';' }).Select(x => x.ToLower()).ToArray()));
 
             CreateMap<CommentReaction, GetCommentReactionResponse>();
 

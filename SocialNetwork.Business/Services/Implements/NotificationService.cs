@@ -39,7 +39,7 @@ namespace SocialNetwork.Business.Services.Implements
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore
             });
 
-            if (fromUser == null || toUser == null)
+            if (fromUser == null)
             {
                 return false;
             }
@@ -54,7 +54,7 @@ namespace SocialNetwork.Business.Services.Implements
                     {
                         content = @$"<strong>{fromUser.GetFullName()}</strong> đã thêm một bài viết.";
 
-                        var friendOfFromUser = (await _unitOfWork.FriendshipRepository.GetAllFriendship(fromUserId)).Select(x => x.RequestUserId == fromUserId ? x.TargetUserId : x.RequestUserId);
+                        var friendOfFromUser = (await _unitOfWork.FriendshipRepository.GetAllFriendship(fromUserId)).Select(x => x.RequestUserId == fromUserId ? x.TargetUserId : x.RequestUserId).ToList();
 
                         foreach (var targetId in friendOfFromUser)
                         {
@@ -63,6 +63,7 @@ namespace SocialNetwork.Business.Services.Implements
                                 NotifiableId = notifiable.Id.ToString(),
                                 NotificationType = type.ToString(),
                                 FromId = fromUserId,
+                                ToId = targetId,
                                 Content = content,
                                 JsonDetail = jsonDetail,
                             });
@@ -116,7 +117,7 @@ namespace SocialNetwork.Business.Services.Implements
                     }
                 case NotificationEnum.POST_REACTION:
                     {
-                        content = @$"<strong>{fromUser.GetFullName()}<strong> đã bày tỏ cảm xúc về bài viết của bạn.";
+                        content = @$"<strong>{fromUser.GetFullName()}</strong> đã bày tỏ cảm xúc về bài viết của bạn.";
 
                         notifications.Add(new Notification {
                             NotifiableId = notifiable.Id.ToString(),
