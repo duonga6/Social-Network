@@ -11,5 +11,6 @@ namespace SocialNetwork.Business.DTOs.Notification.Responses
         public string Content { set; get; } = string.Empty;
         public string JsonDetail { set; get; } = string.Empty;
         public BasicUserResponse FromUser { set; get; } = null!;
+        public string ToId { set; get; } = string.Empty;
     }
 }

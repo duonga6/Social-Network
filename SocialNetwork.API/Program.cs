@@ -12,13 +12,20 @@ builder.Services.AddCors();
 
 // Add services to the container.
 
+builder.Services.AddCors(options =>
+{
+
+    options.AddPolicy("Cors", policy =>
+    {
+        policy.WithOrigins("http://localhost:8080").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+    });
+});
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    
-
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1",
@@ -80,11 +87,9 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Social Network API");
 });
 
+app.MapHub<CenterHub>("/hub");
 
-app.UseCors(options =>
-{
-    options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
-});
+app.UseCors("Cors");
 
 app.UseStaticFiles();
 
@@ -95,7 +100,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapHub<CenterHub>("/hub");
 
 using (var scopeService = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
 {

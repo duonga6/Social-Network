@@ -20,9 +20,12 @@ namespace SocialNetwork.Business.Services.Implements
     internal class NotificationService : BaseServices<NotificationService>, INotificationService
     {
         private readonly UserManager<User> _userManager;
-        public NotificationService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<NotificationService> logger, UserManager<User> userManager) : base(unitOfWork, mapper, logger)
+        private readonly IHubControl _centerHub;
+
+        public NotificationService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<NotificationService> logger, UserManager<User> userManager, IHubControl centerHub) : base(unitOfWork, mapper, logger)
         {
             _userManager = userManager;
+            _centerHub = centerHub;
         }
 
         public async Task<bool> CreateNotification(string fromUserId, string toUserId, NotificationEnum type, dynamic notifiable)
@@ -31,6 +34,7 @@ namespace SocialNetwork.Business.Services.Implements
             {
                 return false;
             }
+
 
             var fromUser = await _userManager.FindByIdAsync(fromUserId);
             var toUser = await _userManager.FindByIdAsync(toUserId);
@@ -144,7 +148,15 @@ namespace SocialNetwork.Business.Services.Implements
 
             }
             await _unitOfWork.NotificationRepository.AddRange(notifications);
-            return await _unitOfWork.CompleteAsync();
+            await _unitOfWork.CompleteAsync();
+
+            var notificationMapped = _mapper.Map<List<GetNotificationResponse>>(notifications);
+            foreach(var notification in notificationMapped)
+            {
+                await _centerHub.NewNotification(notification.ToId, notification);
+            }
+
+            return true;
         }
 
         public async Task<IResponse> GetNotifications(string userId, string? searchString, int pageSize, int pageNumber)

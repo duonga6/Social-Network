@@ -14,12 +14,12 @@ namespace SocialNetwork.API.Infrastructure.Extensions
                 opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 opt.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(jwt =>
+            }).AddJwtBearer(options =>
             {
                 var key = Encoding.UTF8.GetBytes(configuration.GetSection("JWTSettings:SecurityKey").Value!);
 
-                jwt.SaveToken = true;
-                jwt.TokenValidationParameters = new TokenValidationParameters
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = false, // dev
                     ValidateAudience = false, // dev
@@ -29,6 +29,26 @@ namespace SocialNetwork.API.Infrastructure.Extensions
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero   // Thời gian delay giữa client và server
                 };
+
+                // Config cho web socket
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+
+                        // If the request is for our hub...
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) &&
+                            (path.StartsWithSegments("/hub")))
+                        {
+                            // Read the token out of the query string
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
+
             });
         }
     }
