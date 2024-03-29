@@ -10,6 +10,12 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
         {
             builder.Property(x => x.Name)
                 .IsRequired();
+
+            builder.HasOne(x => x.CreatedBy)
+                .WithMany(x => x.GroupOwner)
+                .HasForeignKey(x => x.CreatedId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired();
         }
     }
 }

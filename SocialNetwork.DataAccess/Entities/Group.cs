@@ -6,8 +6,14 @@ namespace SocialNetwork.DataAccess.Entities
     {
         public string Name { set; get; }
         public string Description { set; get; }
+        public string CreatedId { set; get; }
+        public bool PrivateGroup{ set; get; }
+        public bool OtherCanSee { set; get; }
+        public string CoverImage { set; get; }
 
+        public virtual User CreatedBy { set; get; }
         public virtual ICollection<Post> Posts { set; get; }
         public virtual ICollection<GroupMember> GroupMembers { set; get; }
+        public virtual ICollection<GroupAdministrator> GroupAdministrators { set; get; }
     }
 }

@@ -46,41 +46,16 @@ namespace SocialNetwork.Business.Services.Implements
         #region Post
         public async Task<IResponse> GetAll(string requestUserId, string? searchString, int pageSize, int pageNumber)
         {
-            if (await _userManager.FindByIdAsync(requestUserId) == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound("User"));
-            }
-
-            Expression<Func<Post, bool>> filter;
-
-            Expression<Func<Post, bool>> active = x => x.Status == 1;
             Expression<Func<Post, bool>> search = x => x.Content.Contains(searchString!) || (x.Author.FirstName + x.Author.LastName).Contains(searchString!);
             Expression<Func<Post, bool>> isFriendOrOwner = x => x.AuthorId == requestUserId ||
             (x.Author.Friendships1.Any(m => (m.RequestUserId == requestUserId || m.TargetUserId == requestUserId) && m.FriendshipTypeId == (int)FriendshipEnum.Accepted) || 
             x.Author.Friendships2.Any(m => (m.RequestUserId == requestUserId || m.TargetUserId == requestUserId) && m.FriendshipTypeId == (int)FriendshipEnum.Accepted));
 
-            if (await CheckAdmin(requestUserId))
-            {
-                if (searchString == null)
-                {
-                    filter = active;
-                }
-                else
-                {
-                    filter = search.And(active);
-                }
-            }   
-            else
-            {
+            Expression<Func<Post, bool>> filter = isFriendOrOwner.And(x => x.Status == 1);
 
-                if (searchString == null)
-                {
-                    filter = isFriendOrOwner.And(active);
-                }
-                else
-                {
-                    filter = isFriendOrOwner.And(search).And(active);
-                }    
+            if (searchString != null)
+            {
+                filter = isFriendOrOwner.And(search);
             }
 
             int totalItems = await _unitOfWork.PostRepository.Count(filter);

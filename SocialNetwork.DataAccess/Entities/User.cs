@@ -35,5 +35,7 @@ namespace SocialNetwork.DataAccess.Entities
         public virtual Gender Gender_FK { set; get; }
         public virtual ICollection<GroupMember> GroupMembers{ set; get; }
         public virtual ICollection<PostMedia> PostMedias { set; get; }
+        public virtual ICollection<Group> GroupOwner { set; get; }
+        public virtual ICollection<GroupAdministrator> GroupAdministrators { set; get; }
     }
 }
