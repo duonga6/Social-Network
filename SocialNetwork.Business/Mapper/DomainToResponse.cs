@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using SocialNetwork.Business.DTOs.Friendship.Responses;
+using SocialNetwork.Business.DTOs.Groups.Responses;
 using SocialNetwork.Business.DTOs.MediaType.Responses;
 using SocialNetwork.Business.DTOs.Message.Responses;
 using SocialNetwork.Business.DTOs.Notification.Responses;
@@ -63,6 +64,8 @@ namespace SocialNetwork.Business.Mapper
             CreateMap<PostReaction, UserReacted>();
 
             CreateMap<CommentReaction, UserReacted>();
+
+            CreateMap<Group, GetGroupResponse>();
 
         }
     }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.CommentReactions.Requests;
+using SocialNetwork.Business.DTOs.Groups.Request;
 using SocialNetwork.Business.DTOs.Message.Requests;
 using SocialNetwork.Business.DTOs.Post.Requests;
 using SocialNetwork.Business.DTOs.PostComment.Requests;
@@ -82,6 +83,12 @@ namespace SocialNetwork.Business.Mapper
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(s => DateTime.UtcNow))
                 .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
 
+            CreateMap<CreateGroupRequest, Group>()
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(s => DateTime.UtcNow))
+                .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
+
+            CreateMap<UpdateGroupRequest, Group>()
+                .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
         }
     }
 }

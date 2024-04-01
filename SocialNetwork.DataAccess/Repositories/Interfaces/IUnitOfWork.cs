@@ -14,10 +14,16 @@
         IUserRepository UserRepository { get; }
         IMediaTypeRepository MediaTypeRepository { get; }
         IPostMediaRepository PostMediaRepository { get; }
+        IGroupRepository GroupRepository{ get; }
+        IGroupAdminRepository GroupAdminRepository { get; }
+        IGroupMemberRepository GroupMemberRepository { get; }
 
         Task<bool> CompleteAsync();
 
         Task BeginTransaction();
+
         Task Commit();
+
+        Task Rollback();
     }
 }

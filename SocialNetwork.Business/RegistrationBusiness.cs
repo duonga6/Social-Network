@@ -28,6 +28,7 @@ namespace SocialNetwork.Business
             services.AddScoped<IMediaTypeService, MediaTypeService>();
             services.AddScoped<IPostReactionService, PostReactionService>();
             services.AddScoped<ICommentReactionService, CommentReactionService>();
+            services.AddScoped<IGroupService, GroupService>();
         }
     }
 }

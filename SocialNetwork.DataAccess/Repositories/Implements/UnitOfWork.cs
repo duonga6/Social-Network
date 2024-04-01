@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
+﻿using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using SocialNetwork.DataAccess.Context;
-using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Interfaces;
 
 namespace SocialNetwork.DataAccess.Repositories.Implements
@@ -22,6 +19,10 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         public IUserRepository UserRepository { get; }
         public IMediaTypeRepository MediaTypeRepository { get; }
         public IPostMediaRepository PostMediaRepository { get; }
+        public IGroupRepository GroupRepository { get; }
+        public IGroupAdminRepository GroupAdminRepository { get; }
+        public IGroupMemberRepository GroupMemberRepository { get; }
+
 
         private readonly AppDbContext _context;
         private IDbContextTransaction _transaction;
@@ -41,6 +42,9 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             UserRepository = new UserRepository(logger, context);
             MediaTypeRepository = new MediaTypeRepository(logger, context);
             PostMediaRepository = new PostMediaRepository(logger, context);
+            GroupRepository = new GroupRepository(logger, context);
+            GroupAdminRepository = new GroupAdminRepository(logger, context);
+            GroupMemberRepository = new GroupMemberRepository(logger, context);
         }
 
         public async Task<bool> CompleteAsync()
@@ -59,6 +63,16 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         {
             await _context.SaveChangesAsync();
             await _transaction.CommitAsync();
+        }
+
+        public async Task Rollback()
+        {
+            if (_transaction != null)
+            {
+                await _transaction.RollbackAsync();
+                await _transaction.DisposeAsync();
+                _transaction = null;
+            }
         }
 
         public void Dispose()
