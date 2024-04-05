@@ -21,6 +21,7 @@
         public static string STWrong => "Something went wrong";
         public static string OutOfPage => "The page number is out of page range";
         public static string EmailSent => "Email sent";
+        public static string PermissionDenied(string resource = "") => "Permission denied " + resource;
 
         // Reaction
         public static string ReactionExist => "Name and Code are already exist";
@@ -77,5 +78,9 @@
 
         // Notification
         public static string NotificationSeen => "Notification has been seen";
+
+
+        // Group 
+        public static string GroupInvitedExisted => "User is already in this group";
     }
 }

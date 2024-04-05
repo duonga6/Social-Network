@@ -26,5 +26,9 @@
         /// Share post user
         /// </summary>
         SHARE_POST,
+        /// <summary>
+        /// When user request invite group
+        /// </summary>
+        GROUP_INVITE_REQUEST,
     }
 }

@@ -37,5 +37,6 @@ namespace SocialNetwork.DataAccess.Entities
         public virtual ICollection<PostMedia> PostMedias { set; get; }
         public virtual ICollection<Group> GroupOwner { set; get; }
         public virtual ICollection<GroupAdministrator> GroupAdministrators { set; get; }
+        public virtual ICollection<GroupInvite> GroupInvites { set; get; }
     }
 }

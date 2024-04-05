@@ -17,6 +17,7 @@
         IGroupRepository GroupRepository{ get; }
         IGroupAdminRepository GroupAdminRepository { get; }
         IGroupMemberRepository GroupMemberRepository { get; }
+        IGroupInviteRepository GroupInviteRepository { get; }
 
         Task<bool> CompleteAsync();
 

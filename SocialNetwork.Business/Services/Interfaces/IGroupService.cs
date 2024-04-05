@@ -1,4 +1,5 @@
-﻿using SocialNetwork.Business.DTOs.Groups.Request;
+﻿using SocialNetwork.Business.DTOs.GroupInvites.Requests;
+using SocialNetwork.Business.DTOs.Groups.Request;
 using SocialNetwork.Business.Wrapper.Interfaces;
 
 namespace SocialNetwork.Business.Services.Interfaces

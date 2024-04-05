@@ -22,6 +22,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
         public IGroupRepository GroupRepository { get; }
         public IGroupAdminRepository GroupAdminRepository { get; }
         public IGroupMemberRepository GroupMemberRepository { get; }
+        public IGroupInviteRepository GroupInviteRepository { get; }
 
 
         private readonly AppDbContext _context;
@@ -45,6 +46,7 @@ namespace SocialNetwork.DataAccess.Repositories.Implements
             GroupRepository = new GroupRepository(logger, context);
             GroupAdminRepository = new GroupAdminRepository(logger, context);
             GroupMemberRepository = new GroupMemberRepository(logger, context);
+            GroupInviteRepository = new GroupInviteRepository(logger, context);
         }
 
         public async Task<bool> CompleteAsync()

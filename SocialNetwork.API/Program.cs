@@ -18,6 +18,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("Cors", policy =>
     {
         policy.WithOrigins("http://localhost:8080").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+        policy.WithOrigins("https://facebook.duonga6.top").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
     });
 });
 

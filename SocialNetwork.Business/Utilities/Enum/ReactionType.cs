@@ -1,6 +1,6 @@
 ﻿namespace SocialNetwork.Business.Utilities.Enum
 {
-    public enum ReactionTypeRequest
+    public enum ReactionType
     {
         Like = 1,
         Love = 2,

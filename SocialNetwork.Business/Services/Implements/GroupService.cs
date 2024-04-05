@@ -2,6 +2,8 @@
 using LinqKit;
 using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
+using SocialNetwork.Business.DTOs.GroupInvites.Requests;
+using SocialNetwork.Business.DTOs.GroupInvites.Responses;
 using SocialNetwork.Business.DTOs.Groups.Request;
 using SocialNetwork.Business.DTOs.Groups.Responses;
 using SocialNetwork.Business.Services.Implements.Base;

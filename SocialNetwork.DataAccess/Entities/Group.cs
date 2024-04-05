@@ -15,5 +15,6 @@ namespace SocialNetwork.DataAccess.Entities
         public virtual ICollection<Post> Posts { set; get; }
         public virtual ICollection<GroupMember> GroupMembers { set; get; }
         public virtual ICollection<GroupAdministrator> GroupAdministrators { set; get; }
+        public virtual ICollection<GroupInvite> GroupInvites { get; set; }
     }
 }
