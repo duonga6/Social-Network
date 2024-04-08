@@ -1,4 +1,4 @@
-﻿namespace SocialNetwork.Business.DTOs.Users.Responses
+﻿namespace SocialNetwork.Business.DTOs.Responses
 {
     public class ResendConfirmEmailResponse
     {

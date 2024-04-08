@@ -1,4 +1,4 @@
-﻿namespace SocialNetwork.Business.DTOs.PostMedia.Responses
+﻿namespace SocialNetwork.Business.DTOs.Responses
 {
     public class GetPostMediaResponse
     {

@@ -1,4 +1,4 @@
-﻿namespace SocialNetwork.Business.DTOs.Role.Responses
+﻿namespace SocialNetwork.Business.DTOs.Responses
 {
     public class GetRoleResponse
     {

@@ -1,6 +1,4 @@
-﻿using SocialNetwork.Business.DTOs.Users.Responses;
-
-namespace SocialNetwork.Business.DTOs.Responses
+﻿namespace SocialNetwork.Business.DTOs.Responses
 {
     public class GetPostCommentResponse
     {

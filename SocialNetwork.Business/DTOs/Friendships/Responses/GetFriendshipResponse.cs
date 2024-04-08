@@ -1,7 +1,6 @@
-﻿using SocialNetwork.Business.DTOs.Users.Responses;
-using SocialNetwork.DataAccess.Utilities.Enum;
+﻿using SocialNetwork.DataAccess.Utilities.Enum;
 
-namespace SocialNetwork.Business.DTOs.Friendship.Responses
+namespace SocialNetwork.Business.DTOs.Responses
 {
     public class GetFriendshipResponse
     {

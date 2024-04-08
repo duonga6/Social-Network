@@ -5,6 +5,7 @@ using SocialNetwork.API.Infrastructure.SignalR;
 using SocialNetwork.Business;
 using SocialNetwork.DataAccess;
 using SocialNetwork.DataAccess.Context;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors();

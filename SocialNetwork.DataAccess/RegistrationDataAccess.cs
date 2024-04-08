@@ -2,8 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using SocialNetwork.DataAccess.Context;
-using SocialNetwork.DataAccess.Repositories.Implements;
-using SocialNetwork.DataAccess.Repositories.Interfaces;
+using SocialNetwork.DataAccess.Repositories.Concrete;
+using SocialNetwork.DataAccess.Repositories.Abstract;
 using SocialNetwork.DataAccess.Entities;
 using Microsoft.AspNetCore.Identity;
 

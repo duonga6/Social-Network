@@ -1,4 +1,4 @@
-﻿namespace SocialNetwork.Business.DTOs.MediaType.Responses
+﻿namespace SocialNetwork.Business.DTOs.Responses
 {
     public class GetMediaTypeResponse
     {

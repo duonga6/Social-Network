@@ -1,8 +1,7 @@
-﻿using SocialNetwork.Business.DTOs.PostMedia.Requests;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
-namespace SocialNetwork.Business.DTOs.Post.Requests
+namespace SocialNetwork.Business.DTOs.Requests
 {
     public class UpdatePostRequest
     {

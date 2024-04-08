@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SocialNetwork.Business.DTOs.Friendship.Requests
+namespace SocialNetwork.Business.DTOs.Requests
 {
     public class BaseFriendRequest
     {

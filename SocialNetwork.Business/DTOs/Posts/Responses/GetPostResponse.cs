@@ -1,7 +1,4 @@
-﻿using SocialNetwork.Business.DTOs.PostMedia.Responses;
-using SocialNetwork.Business.DTOs.Users.Responses;
-
-namespace SocialNetwork.Business.DTOs.Post.Responses
+﻿namespace SocialNetwork.Business.DTOs.Responses
 {
     public class GetPostResponse
     {

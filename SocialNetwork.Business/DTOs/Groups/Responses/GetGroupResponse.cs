@@ -1,4 +1,4 @@
-﻿namespace SocialNetwork.Business.DTOs.Groups.Responses
+﻿namespace SocialNetwork.Business.DTOs.Responses
 {
     public class GetGroupResponse
     {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using SocialNetwork.Business.Services.Implements;
+using SocialNetwork.Business.Services.Concrete;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Settings;
 

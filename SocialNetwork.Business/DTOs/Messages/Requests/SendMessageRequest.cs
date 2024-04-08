@@ -1,7 +1,7 @@
 ﻿using SocialNetwork.DataAccess.Utilities.Enum;
 using System.ComponentModel.DataAnnotations;
 
-namespace SocialNetwork.Business.DTOs.Message.Requests
+namespace SocialNetwork.Business.DTOs.Requests
 {
     public class SendMessageRequest
     {

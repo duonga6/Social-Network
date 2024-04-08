@@ -1,4 +1,4 @@
-﻿namespace SocialNetwork.Business.Wrapper.Interfaces
+﻿namespace SocialNetwork.Business.Wrapper.Abstract
 {
     public interface IResponse
     {

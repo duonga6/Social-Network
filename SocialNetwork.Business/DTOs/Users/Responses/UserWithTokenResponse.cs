@@ -1,4 +1,4 @@
-﻿namespace SocialNetwork.Business.DTOs.Users.Responses
+﻿namespace SocialNetwork.Business.DTOs.Responses
 {
     public class UserWithTokenResponse
     {
@@ -11,6 +11,6 @@
         public string PhoneNumber { set; get; } = string.Empty;
         public bool EmailConfirmed { get; set; }
         public string AvatarUrl { set; get; } = string.Empty;
-        public Token.Token Token { set; get; } = null!;
+        public Token Token { set; get; } = null!;
     }
 }

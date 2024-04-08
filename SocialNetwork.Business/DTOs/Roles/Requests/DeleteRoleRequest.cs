@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SocialNetwork.Business.DTOs.Role.Request
+namespace SocialNetwork.Business.DTOs.Requests
 {
     public class DeleteRoleRequest
     {

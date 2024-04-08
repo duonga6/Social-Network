@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SocialNetwork.Business.DTOs.Users.Requests
+namespace SocialNetwork.Business.DTOs.Requests
 {
     /// <summary>
     /// Login model

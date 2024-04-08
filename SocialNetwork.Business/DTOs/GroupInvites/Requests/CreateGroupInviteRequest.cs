@@ -1,4 +1,4 @@
-﻿namespace SocialNetwork.Business.DTOs.GroupInvites.Requests
+﻿namespace SocialNetwork.Business.DTOs.Requests
 {
     public class CreateGroupInviteRequest
     {

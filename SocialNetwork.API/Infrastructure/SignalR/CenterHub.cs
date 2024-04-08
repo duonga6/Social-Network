@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using SocialNetwork.API.Utilities;
-using SocialNetwork.Business.DTOs.Notification.Responses;
-using SocialNetwork.Business.Services.Interfaces;
 
 namespace SocialNetwork.API.Infrastructure.SignalR
 {

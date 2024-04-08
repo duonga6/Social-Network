@@ -1,9 +1,4 @@
-﻿
-using SocialNetwork.Business.DTOs.PostReactions.Responses;
-using SocialNetwork.Business.DTOs.Responses;
-using SocialNetwork.Business.DTOs.Users.Responses;
-
-namespace SocialNetwork.Business.DTOs.Response
+﻿namespace SocialNetwork.Business.DTOs.Responses
 {
     public class OverviewReactionResponse<T> where T : class
     {

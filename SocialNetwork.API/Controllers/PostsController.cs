@@ -3,18 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.API.Controllers.Base;
 using SocialNetwork.API.Utilities;
 using SocialNetwork.Business.Constants;
-using SocialNetwork.Business.DTOs.Post.Requests;
-using SocialNetwork.Business.DTOs.Post.Responses;
+using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.DTOs.Responses;
-using SocialNetwork.Business.DTOs.PostReaction.Requests;
-using SocialNetwork.Business.DTOs.PostReaction.Responses;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
-using SocialNetwork.Business.Wrapper.Interfaces;
-using SocialNetwork.DataAccess.Utilities.Roles;
+using SocialNetwork.Business.Wrapper.Abstract;
 using System.ComponentModel.DataAnnotations;
-using SocialNetwork.Business.DTOs.PostComment.Requests;
-using SocialNetwork.Business.DTOs.Posts.Requests;
 
 namespace SocialNetwork.API.Controllers
 {

@@ -2,17 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.API.Controllers.Base;
 using SocialNetwork.API.Utilities;
-using SocialNetwork.Business.DTOs.CommentReactions.Requests;
+using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.DTOs.Responses;
-using SocialNetwork.Business.DTOs.PostComment.Requests;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
-using SocialNetwork.Business.Wrapper.Interfaces;
-using SocialNetwork.DataAccess.Utilities.Roles;
+using SocialNetwork.Business.Wrapper.Abstract;
 using System.ComponentModel.DataAnnotations;
-using SocialNetwork.Business.DTOs.CommentReactions.Responses;
-using SocialNetwork.Business.DTOs.Response;
-
 namespace SocialNetwork.API.Controllers
 {
     [Authorize]

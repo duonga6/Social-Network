@@ -1,4 +1,4 @@
-﻿namespace SocialNetwork.Business.DTOs.Posts.Requests
+﻿namespace SocialNetwork.Business.DTOs.Requests
 {
     public class UpdateSharePostRequest
     {

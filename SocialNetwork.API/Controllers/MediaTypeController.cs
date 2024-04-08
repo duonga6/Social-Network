@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.API.Controllers.Base;
-using SocialNetwork.Business.DTOs.MediaType.Responses;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
-using SocialNetwork.Business.Wrapper.Interfaces;
+using SocialNetwork.Business.Wrapper.Abstract;
+using SocialNetwork.Business.DTOs.Responses;
 
 namespace SocialNetwork.API.Controllers
 {

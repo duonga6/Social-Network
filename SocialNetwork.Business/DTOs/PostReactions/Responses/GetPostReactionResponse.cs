@@ -1,6 +1,6 @@
 ﻿using SocialNetwork.Business.DTOs.Responses;
 
-namespace SocialNetwork.Business.DTOs.PostReactions.Responses
+namespace SocialNetwork.Business.DTOs.Responses
 {
     public class GetPostReactionResponse
     {

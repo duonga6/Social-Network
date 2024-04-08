@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.API.Controllers.Base;
-using SocialNetwork.Business.DTOs.Friendship.Requests;
-using SocialNetwork.Business.DTOs.Friendship.Responses;
-using SocialNetwork.Business.DTOs.Users.Responses;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Utilities.Enum;
 using SocialNetwork.Business.Wrapper;
-using SocialNetwork.Business.Wrapper.Interfaces;
+using SocialNetwork.Business.Wrapper.Abstract;
 using System.ComponentModel.DataAnnotations;
+using SocialNetwork.Business.DTOs.Requests;
+using SocialNetwork.Business.DTOs.Responses;
 
 namespace SocialNetwork.API.Controllers
 {

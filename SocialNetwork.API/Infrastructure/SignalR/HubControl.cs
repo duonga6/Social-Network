@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using SocialNetwork.Business.DTOs.Notification.Responses;
+using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.Services.Interfaces;
 
 namespace SocialNetwork.API.Infrastructure.SignalR

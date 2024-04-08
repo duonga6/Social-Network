@@ -1,15 +1,6 @@
 ﻿using AutoMapper;
 using SocialNetwork.Business.Constants;
-using SocialNetwork.Business.DTOs.CommentReactions.Requests;
-using SocialNetwork.Business.DTOs.Groups.Request;
-using SocialNetwork.Business.DTOs.Message.Requests;
-using SocialNetwork.Business.DTOs.Post.Requests;
-using SocialNetwork.Business.DTOs.PostComment.Requests;
-using SocialNetwork.Business.DTOs.PostMedia.Requests;
-using SocialNetwork.Business.DTOs.PostReaction.Requests;
-using SocialNetwork.Business.DTOs.Posts.Requests;
 using SocialNetwork.Business.DTOs.Requests;
-using SocialNetwork.Business.DTOs.Users.Requests;
 using SocialNetwork.DataAccess.Entities;
 
 namespace SocialNetwork.Business.Mapper

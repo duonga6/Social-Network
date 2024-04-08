@@ -1,4 +1,4 @@
-﻿using SocialNetwork.Business.Wrapper.Interfaces;
+﻿using SocialNetwork.Business.Wrapper.Abstract;
 
 namespace SocialNetwork.Business.Wrapper
 {
