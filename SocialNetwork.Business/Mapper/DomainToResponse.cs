@@ -55,7 +55,8 @@ namespace SocialNetwork.Business.Mapper
 
             CreateMap<CommentReaction, UserReacted>();
 
-            CreateMap<Group, GetGroupResponse>();
+            CreateMap<Group, GetGroupResponse>()
+                .ForMember(d => d.User, o => o.MapFrom(x => x.CreatedBy));
 
         }
     }

@@ -14,21 +14,6 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         {
         }
 
-        public async Task<Reaction> GetById(int id)
-        {
-            return await _dbSet.FirstAsync(x => x.Id == id);
-        }
-
-        public override async Task<ICollection<Reaction>> GetAll(bool asNoTracking = true)
-        {
-            if (asNoTracking)
-            {
-                return await _dbSet.AsNoTracking().ToListAsync();
-            }
-
-            return await _dbSet.ToListAsync();
-        }
-
         public override async Task Update(Reaction entity)
         {
             var result = await _dbSet.FirstOrDefaultAsync(x => x.Id == entity.Id);

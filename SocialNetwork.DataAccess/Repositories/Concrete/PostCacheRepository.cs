@@ -17,7 +17,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             _cacheService = cacheService;
         }
 
-        public override async Task<Post> GetById(Guid id, bool asNoTracking = true)
+        public override async Task<Post> GetById(Guid id)
         {
             string key = "post-" + id.ToString();
 

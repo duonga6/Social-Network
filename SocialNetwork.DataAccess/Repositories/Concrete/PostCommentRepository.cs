@@ -14,26 +14,9 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         {
         }
 
-        public override async Task<ICollection<PostComment>> GetAll(bool asNoTracking = true)
+        public override async Task<PostComment> GetById(Guid id)
         {
-            if (asNoTracking)
-            {
-                return await _dbSet.Where(x => x.Status == 1)
-                    .AsNoTracking()
-                    .ToListAsync();
-            }
-
-            return await _dbSet.Where(x => x.Status == 1)
-                    .ToListAsync();
-        }
-
-        public override async Task<PostComment> GetById(Guid id, bool asNoTracking = true)
-        {
-            if (asNoTracking)
-            {
-                return await _dbSet.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && x.Status == 1);
-            }
-            return await _dbSet.FirstOrDefaultAsync(x => x.Id == id && x.Status == 1);
+           return await _dbSet.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && x.Status == 1);
         }
 
         public override async Task Update(PostComment entity)

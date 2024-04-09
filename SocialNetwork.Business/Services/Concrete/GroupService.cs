@@ -84,7 +84,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(501, Messages.DeleteError);
             }
 
-            return new SuccessResponse(Messages.DeletedSuccessfully, 204);
+            return new SuccessResponse(Messages.DeletedSuccessfully, 200);
         }
 
         public async Task<IResponse> Get(string requestId, string? searchString, int pageSize, int pageNumber, GroupType type)

@@ -20,34 +20,19 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             _dbSet = context.Set<TEntity>();
         }
 
-        public virtual async Task<ICollection<TEntity>> GetAll(bool asNoTracking = true)
+        public virtual async Task<ICollection<TEntity>> GetAll()
         {
-            if (asNoTracking)
-            {
-                return await _dbSet.AsNoTracking().ToListAsync();
-            }
-
-            return await _dbSet.ToListAsync();
+            return await _dbSet.AsNoTracking().ToListAsync();
         }
 
-        public virtual async Task<ICollection<TEntity>> FindBy(Expression<Func<TEntity, bool>> filter = null, bool asNoTracking = true)
+        public virtual async Task<ICollection<TEntity>> FindBy(Expression<Func<TEntity, bool>> filter = null)
         {
-            if (asNoTracking)
-            {
-                return await _dbSet.AsNoTracking().Where(filter).ToListAsync();
-            }
-
-            return await _dbSet.Where(filter).ToListAsync();
+            return await _dbSet.AsNoTracking().Where(filter).ToListAsync();
         }
 
-        public virtual async Task<TEntity> FindOneBy(Expression<Func<TEntity, bool>> filter = null, bool asNoTracking = true)
+        public virtual async Task<TEntity> FindOneBy(Expression<Func<TEntity, bool>> filter = null)
         {
-            if (asNoTracking)
-            {
-                return await _dbSet.AsNoTracking().FirstOrDefaultAsync(filter);
-            }
-
-            return await _dbSet.FirstOrDefaultAsync(filter);
+            return await _dbSet.AsNoTracking().FirstOrDefaultAsync(filter);
         }
 
         public virtual async Task Add(TEntity entity)
@@ -60,16 +45,9 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             await _dbSet.AddRangeAsync(entities);
         }
 
-        public virtual async Task<TEntity> GetById(TKey id, bool asNoTracking = true)
+        public virtual async Task<TEntity> GetById(TKey id)
         {
-            if (asNoTracking)
-            {
-                return await _dbSet.AsNoTracking().FirstOrDefaultAsync(x => x.Id.Equals(id));
-            }   
-            else
-            {
-                return await _dbSet.FindAsync(id);
-            }
+            return await GetById(id, Array.Empty<Expression<Func<TEntity, object>>>());
         }
 
         // No implement
@@ -90,26 +68,8 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         }
 
         public virtual async Task<ICollection<TEntity>> GetPaged(int pageSize, int pageNumber, Expression<Func<TEntity, bool>> filter = null, Expression<Func<TEntity, object>> orderBy = null, bool isDesc = true)
-
         {
-            var query = _dbSet
-                .AsNoTracking()
-                .Where(filter);
-
-            if (isDesc)
-            {
-                query = query.OrderByDescending(orderBy);
-            }
-            else
-            {
-                query = query.OrderBy(orderBy);
-
-            }
-
-            return await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+            return await GetPaged(pageSize, pageNumber, Array.Empty<Expression<Func<TEntity, object>>>(), filter, orderBy, isDesc);   
         }
         
         public virtual async Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, bool>> filter, bool getNext = true)
@@ -126,19 +86,36 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 return result;
             }
         }
-
-        public async Task<int> Count(Expression<Func<TEntity, bool>> filter = null)
-
-        {
-            return await _dbSet
-                .AsNoTracking()
-                .Where(filter)
-                .CountAsync();
-        }
         
         public IQueryable<TEntity> GetQueryable()
         {
             return _dbSet.AsQueryable();
+        }
+
+        public async Task<TEntity> GetById(TKey id, Expression<Func<TEntity, object>>[] includes)
+        {
+            var query = _dbSet.AsNoTracking().Where(x => x.Id.Equals(id) && x.Status == 1);
+
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+
+            return await query.FirstOrDefaultAsync();
+        }
+
+        public async Task<ICollection<TEntity>> GetPaged(int pageSize, int pageNumber, Expression<Func<TEntity, object>>[] includes, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>> orderby, bool isDesc = true)
+        {
+            var query = _dbSet.AsNoTracking().Where(filter);
+            
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+
+            query = isDesc ? query.OrderByDescending(orderby) : query.OrderBy(orderby);
+
+            return await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
         }
     }
 }

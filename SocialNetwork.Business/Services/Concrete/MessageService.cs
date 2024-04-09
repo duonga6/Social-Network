@@ -43,7 +43,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(500, Messages.STWrong);
             }
 
-            return new SuccessResponse(Messages.MessageRevoked, 204);
+            return new SuccessResponse(Messages.MessageRevoked, 200);
 
         }
 
@@ -71,7 +71,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 x.Content.Contains(searchString);
             }
 
-            int totalItems = await _unitOfWork.MessageRepository.Count(filter);
+            int totalItems = await _unitOfWork.MessageRepository.GetCount(filter);
             int pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
 
             if (pageCount < pageNumber && pageCount != 0)

@@ -34,14 +34,10 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             return notifications;
         }
 
-        public override async Task<Notification> GetById(Guid id, bool asNoTracking = true)
+        public override async Task<Notification> GetById(Guid id)
         {
-            if (asNoTracking)
-            {
                 return await _dbSet.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
-            }
 
-            return await _dbSet.FirstOrDefaultAsync(x => x.Id == id && x.Status == 1);
         }
 
         public override async Task<ICollection<Notification>> GetPaged(int pageSize, int pageNumber, Expression<Func<Notification, bool>> filter = null, Expression<Func<Notification, object>> orderBy = null, bool isDesc = true)

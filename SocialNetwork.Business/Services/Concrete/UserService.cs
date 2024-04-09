@@ -188,7 +188,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
             var userUpdated = await _userManager.FindByIdAsync(requestUserId);
 
-            return new DataResponse<GetUserResponse>(_mapper.Map<GetUserResponse>(userUpdated), 204, Messages.UpdatedSuccessfully);
+            return new DataResponse<GetUserResponse>(_mapper.Map<GetUserResponse>(userUpdated), 200, Messages.UpdatedSuccessfully);
 
         }
 
@@ -213,7 +213,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.STWrong);
             }
 
-            return new SuccessResponse(Messages.DeletedSuccessfully, 204);
+            return new SuccessResponse(Messages.DeletedSuccessfully, 200);
         }
 
         public async Task<IResponse> ChangePassword(string loggedUserId, ChangePasswordRequest request)
@@ -236,7 +236,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, result.GetErrors());
             }
 
-            return new SuccessResponse(Messages.ChangePasswordSuccessfully, 204);
+            return new SuccessResponse(Messages.ChangePasswordSuccessfully, 200);
         }
 
         public async Task<IResponse> AddRoles(string userId, AddRolesToUserRequest request)
@@ -448,7 +448,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 filter = x => x.AuthorId == requestUserId && x.Status == 1;
             }
 
-            int totalItems = await _unitOfWork.PostRepository.Count(filter);
+            int totalItems = await _unitOfWork.PostRepository.GetCount(filter);
             int pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
 
             if (pageNumber > pageCount && pageCount != 0)
@@ -491,7 +491,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.DeleteError);
             }
 
-            return new SuccessResponse(Messages.DeletedSuccessfully, 204);
+            return new SuccessResponse(Messages.DeletedSuccessfully, 200);
         }
 
         private async Task<bool> CheckAccessPost(string loggedUserId, string requestUserId)

@@ -15,15 +15,6 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         {
         }
 
-        public override async Task<ICollection<Friendship>> GetAll(bool asNoTracking = true)
-        {
-            if (asNoTracking)
-            {
-                return await _dbSet.AsNoTracking().ToListAsync();
-            }   
-            return await _dbSet.ToListAsync();
-        }
-
         public override async Task Update(Friendship entity)
         {
             var entityUpdate = await _dbSet.FindAsync(entity.Id);
@@ -43,29 +34,20 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             return friends;
         }
 
-        public override async Task<ICollection<Friendship>> FindBy(Expression<Func<Friendship, bool>> filter = null, bool asNoTracking = true)
+        public override async Task<ICollection<Friendship>> FindBy(Expression<Func<Friendship, bool>> filter = null)
         {
             var query = _dbSet
+                .Where(filter)
                 .Include(x => x.RequestUser)
                 .Include(x => x.TargetUser)
-                .Where(filter)
                 .OrderByDescending(x => x.CreatedAt);
             
-            if (asNoTracking)
-            {
                 return await query.AsNoTracking().ToListAsync();
-            }
-            return await query.ToListAsync();
         }
 
-        public override async Task<Friendship> GetById(Guid id, bool asNoTracking = true)
+        public override async Task<Friendship> GetById(Guid id)
         {
-            if (asNoTracking)
-            {
                 return await _dbSet.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
-            }    
-
-            return await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public override async Task<ICollection<Friendship>> GetPaged(int pageSize,

@@ -14,7 +14,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         {
         }
 
-        public override async Task<Post> GetById(Guid id, bool asNoTracking = true)
+        public override async Task<Post> GetById(Guid id)
         {
             var query = _dbSet.Where(x => x.Status == 1 && x.Id == id)
                 .Include(x => x.PostMedias.Where(i => i.Status == 1))
@@ -24,42 +24,17 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 .Include(x => x.SharePost.Author)
                 .AsQueryable();
 
-            if (asNoTracking)
-            {
-                return await query
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync();
-            }
-
             return await query
+                    .AsNoTracking()
                     .FirstOrDefaultAsync();
         }
 
-        public override async Task<ICollection<Post>> FindBy(Expression<Func<Post, bool>> filter = null, bool asNoTracking = true)
+        public override async Task<ICollection<Post>> FindBy(Expression<Func<Post, bool>> filter = null)
         {
             var query = _dbSet.Where(filter)
                 .Include(x => x.PostMedias.Where(i => i.Status == 1))
                 .OrderByDescending(x => x.CreatedAt)
                 .AsSplitQuery();
-
-            if (asNoTracking)
-            {
-                return await query.AsNoTracking().ToListAsync();
-            }    
-
-            return await query.ToListAsync();
-        }
-
-        public override async Task<ICollection<Post>> GetAll(bool asNoTracking)
-        {
-            var query = _dbSet.Where(x => x.Status == 1)
-                .Include(x => x.PostMedias.Where(i => i.Status == 1))
-                .AsSplitQuery();
-
-            if ( asNoTracking)
-            {
-                return await query.AsNoTracking().ToListAsync();
-            }
 
             return await query.ToListAsync();
         }

@@ -186,7 +186,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> Update(string requestUserId, Guid id,UpdatePostReactionRequest request)
         {
-            var postReaction = await _unitOfWork.PostReactionRepository.GetById(id, false);
+            var postReaction = await _unitOfWork.PostReactionRepository.GetById(id);
 
             if (postReaction == null)
             {
@@ -199,6 +199,7 @@ namespace SocialNetwork.Business.Services.Concrete
             }
 
             postReaction.ReactionId = request.ReactionId;
+            await _unitOfWork.PostReactionRepository.Update(postReaction);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -232,7 +233,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(500, Messages.STWrong);
             }
 
-            return new SuccessResponse(Messages.DeletedSuccessfully, 204);
+            return new SuccessResponse(Messages.DeletedSuccessfully, 200);
 
         }
 
@@ -263,7 +264,7 @@ namespace SocialNetwork.Business.Services.Concrete
         private async Task<PostReactionDetail?> GetPostReactionByReaction(string requestUserId, Guid postId, int reactionId)
         {
             var reaction = await _unitOfWork.ReactionRepository.GetById(reactionId);
-            var postReactionCount = await _unitOfWork.PostReactionRepository.Count(x => x.PostId == postId && x.ReactionId == reactionId);
+            var postReactionCount = await _unitOfWork.PostReactionRepository.GetCount(x => x.PostId == postId && x.ReactionId == reactionId);
 
             if (postReactionCount == 0) return null;
 

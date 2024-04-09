@@ -70,7 +70,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(501, Messages.STWrong);
             }
 
-            return new SuccessResponse(Messages.DeletedSuccessfully, 204);
+            return new SuccessResponse(Messages.DeletedSuccessfully, 200);
         }
 
         public Task<IResponse> GetByGroup(string requestId, string? searchString, int pageSize, int pageNumber, Guid groupId)

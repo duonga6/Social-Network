@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using LinqKit;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Requests;
@@ -40,29 +41,36 @@ namespace SocialNetwork.Business.Services.Concrete
         #region Post
         public async Task<IResponse> GetAll(string requestUserId, string? searchString, int pageSize, int pageNumber)
         {
-            Expression<Func<Post, bool>> search = x => x.Content.Contains(searchString!) || (x.Author.FirstName + x.Author.LastName).Contains(searchString!);
-            Expression<Func<Post, bool>> isFriendOrOwner = x => x.AuthorId == requestUserId ||
-            (x.Author.Friendships1.Any(m => (m.RequestUserId == requestUserId || m.TargetUserId == requestUserId) && m.FriendshipTypeId == (int)FriendshipEnum.Accepted) || 
-            x.Author.Friendships2.Any(m => (m.RequestUserId == requestUserId || m.TargetUserId == requestUserId) && m.FriendshipTypeId == (int)FriendshipEnum.Accepted));
+            Expression<Func<Post, bool>> filter = x => x.Status == 1 &&
+                _unitOfWork.FriendshipRepository.GetQueryable().Any(f =>
+                    (f.RequestUserId == requestUserId && f.TargetUserId == x.AuthorId || f.TargetUserId == requestUserId && f.RequestUserId == x.AuthorId) && f.FriendshipTypeId == (int)FriendshipEnum.Accepted)
+            ;
 
-            Expression<Func<Post, bool>> filter = isFriendOrOwner.And(x => x.Status == 1);
-
-            if (searchString != null)
+            if (!string.IsNullOrEmpty(searchString))
             {
-                filter = isFriendOrOwner.And(search);
+                filter = filter.And(x =>
+                    x.Content.Contains(searchString)    
+                );
             }
 
-            int totalItems = await _unitOfWork.PostRepository.Count(filter);
+            int totalItems = await _unitOfWork.PostRepository.GetCount(filter);
             int pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
 
             if (pageNumber > pageCount && pageCount != 0)
             {
                 return new ErrorResponse(400, Messages.OutOfPage);
-            }    
+            }
 
-            var posts = await _unitOfWork.PostRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
+            var posts = await _unitOfWork.PostRepository.GetPaged(pageSize, pageNumber,
+                new Expression<Func<Post, object>>[] {
+                    x => x.Author,
+                    x => x.SharePost.PostMedias.Where(x => x.Status == 1),
+                    x => x.SharePost.Author,
+                    x => x.PostMedias.Where(x => x.Status == 1)
+                }
+                , filter, x => x.CreatedAt);
+
             var postsResponse = _mapper.Map<List<GetPostResponse>>(posts);
-
 
             return new PagedResponse<List<GetPostResponse>>(postsResponse, totalItems, 200);
         }
@@ -198,7 +206,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
             var updatedEntity = await _unitOfWork.PostRepository.GetById(id);
 
-            return new DataResponse<GetPostResponse>(_mapper.Map<GetPostResponse>(updatedEntity), 204, Messages.UpdatedSuccessfully);
+            return new DataResponse<GetPostResponse>(_mapper.Map<GetPostResponse>(updatedEntity), 200, Messages.UpdatedSuccessfully);
 
         }
      
@@ -223,7 +231,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.DeleteError);
             }
 
-            return new SuccessResponse(Messages.DeletedSuccessfully, 204);
+            return new SuccessResponse(Messages.DeletedSuccessfully, 200);
         }
      
         private async Task<bool> CheckPermission(string requestingUserId, string targetUserId)
@@ -335,13 +343,13 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.DeleteError);
             }
 
-            return new SuccessResponse(Messages.DeletedSuccessfully, 204);
+            return new SuccessResponse(Messages.DeletedSuccessfully, 200);
 
         }
         
         public async Task<IResponse> UpdateComment(string requestUserId, Guid postId, Guid commentId, UpdatePostCommentRequest request)
         {
-            var entity = await _unitOfWork.PostCommentRepository.GetById(commentId, false);
+            var entity = await _unitOfWork.PostCommentRepository.GetById(commentId);
             if (entity == null)
             {
                 return new ErrorResponse(404, Messages.NotFound());
@@ -362,7 +370,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.UpdateError);
             }
 
-            return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(entity), 204);
+            return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(entity), 200);
         }
 
         private async Task<bool> CheckPermissionWithFriendAccess(string requestingUserId, string targetUserId)
@@ -429,7 +437,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.NotFriend);
             }
 
-            int totalItems = await _unitOfWork.PostReactionRepository.Count(x => x.PostId == postId);
+            int totalItems = await _unitOfWork.PostReactionRepository.GetCount(x => x.PostId == postId);
             int pageCount = (int)Math.Ceiling((double) totalItems / pageSize);
 
             if (pageNumber > pageCount && pageCount != 0)
@@ -522,7 +530,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
             var entityAdded = await _unitOfWork.PostReactionRepository.GetById(postId, requestUserId);
 
-            return new DataResponse<GetPostReactionResponses>(_mapper.Map<GetPostReactionResponses>(entityAdded), 204, Messages.UpdatedSuccessfully);
+            return new DataResponse<GetPostReactionResponses>(_mapper.Map<GetPostReactionResponses>(entityAdded), 200, Messages.UpdatedSuccessfully);
         }
      
         public async Task<IResponse> DeleteReaction(string requestUserId, Guid postId,int reactionId)
@@ -541,7 +549,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.DeleteError);
             }
 
-            return new SuccessResponse(Messages.DeletedSuccessfully, 204);
+            return new SuccessResponse(Messages.DeletedSuccessfully, 200);
         }
         
         #endregion

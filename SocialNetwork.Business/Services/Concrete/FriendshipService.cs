@@ -101,7 +101,7 @@ namespace SocialNetwork.Business.Services.Concrete
                     break;
             }
 
-            int totalItems = await _unitOfWork.FriendshipRepository.Count(filter);
+            int totalItems = await _unitOfWork.FriendshipRepository.GetCount(filter);
             int pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
 
 
@@ -136,7 +136,7 @@ namespace SocialNetwork.Business.Services.Concrete
         {
 
             var entity = await _unitOfWork.FriendshipRepository
-                    .GetById(id, false);
+                    .GetById(id);
             
             if (entity == null)
             {
@@ -156,6 +156,7 @@ namespace SocialNetwork.Business.Services.Concrete
             entity.FriendshipTypeId = (int)FriendshipEnum.Accepted;
             entity.UpdatedAt = DateTime.UtcNow;
 
+            await _unitOfWork.FriendshipRepository.Update(entity);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -163,7 +164,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(501, Messages.STWrong);
             }
 
-            return new SuccessResponse(Messages.FriendshipAccepted, 204);
+            return new SuccessResponse(Messages.FriendshipAccepted, 200);
         }
 
         public async Task<IResponse> AddFriendRequest(string requestUserId, BaseFriendRequest request)
@@ -217,7 +218,7 @@ namespace SocialNetwork.Business.Services.Concrete
             }
 
             var entity = await _unitOfWork.FriendshipRepository
-                .FindOneBy(x => x.RequestUserId == requestUserId && x.TargetUserId == request.TargetUserId || x.RequestUserId == request.TargetUserId && x.TargetUserId == requestUserId, false);
+                .FindOneBy(x => x.RequestUserId == requestUserId && x.TargetUserId == request.TargetUserId || x.RequestUserId == request.TargetUserId && x.TargetUserId == requestUserId);
 
             if (entity == null)
             {
@@ -244,7 +245,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(501, Messages.STWrong);
             }
 
-            return new SuccessResponse(Messages.FriendshipBlocked, 204);
+            return new SuccessResponse(Messages.FriendshipBlocked, 200);
         }
 
         public async Task<IResponse> CancelRequest(string requestUserId, Guid id)
@@ -271,7 +272,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(501, Messages.STWrong);
             }
 
-            return new SuccessResponse(Messages.FriendshipCanceled, 204);
+            return new SuccessResponse(Messages.FriendshipCanceled, 200);
 
         }
 
@@ -293,7 +294,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(501, Messages.STWrong);
             }
 
-            return new SuccessResponse(Messages.FriendshipRefused, 204);
+            return new SuccessResponse(Messages.FriendshipRefused, 200);
         }
 
         public async Task<IResponse> UnBlockFriend(string requestUserId, Guid id)
@@ -320,7 +321,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(501, Messages.STWrong);
             }
 
-            return new SuccessResponse(Messages.FriendshipUnblocked, 204);
+            return new SuccessResponse(Messages.FriendshipUnblocked, 200);
         }
 
         public async Task<IResponse> UnFriendRequest(string requestUserId, Guid id)
@@ -347,7 +348,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(501, Messages.STWrong);
             }
 
-            return new SuccessResponse(Messages.FriendshipUnfriended, 204);
+            return new SuccessResponse(Messages.FriendshipUnfriended, 200);
         }
 
         public async Task<IResponse> GetInfo(string requestUserId, string targetUserId)

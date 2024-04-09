@@ -167,7 +167,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 filter = filter.And(x => x.Content.Contains(searchString));
             }   
 
-            int totalItems = await _unitOfWork.NotificationRepository.Count(filter);
+            int totalItems = await _unitOfWork.NotificationRepository.GetCount(filter);
             int pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
 
             if (pageCount < pageNumber && pageCount != 0)
@@ -188,7 +188,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
             //if (notification.Seen)
             //{
-            //    return new SuccessResponse(Messages.NotificationSeen, 204);
+            //    return new SuccessResponse(Messages.NotificationSeen, 200);
             //}    ??
 
             await _unitOfWork.NotificationRepository.Seen(id);
@@ -199,7 +199,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.STWrong);
             }
 
-            return new SuccessResponse(Messages.MessageSeen, 204);
+            return new SuccessResponse(Messages.MessageSeen, 200);
             
         }
 

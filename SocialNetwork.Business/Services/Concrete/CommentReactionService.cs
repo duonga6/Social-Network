@@ -88,7 +88,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(501, Messages.STWrong);
             }
 
-            return new SuccessResponse(Messages.DeletedSuccessfully, 204);
+            return new SuccessResponse(Messages.DeletedSuccessfully, 200);
         }
 
         public async Task<IResponse> GetById(string requestUserId, Guid id)
@@ -107,7 +107,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> Update(string requestUserId, Guid id, UpdateCommentReactionRequest request)
         {
-            var commentReaction = await _unitOfWork.CommentReactionRepository.GetById(id, false);
+            var commentReaction = await _unitOfWork.CommentReactionRepository.GetById(id);
             if (commentReaction == null)
             {
                 return new ErrorResponse(404, Messages.NotFound("Comment reaction"));
@@ -119,6 +119,7 @@ namespace SocialNetwork.Business.Services.Concrete
             }
 
             commentReaction.ReactionId = request.ReactionId;
+            await _unitOfWork.CommentReactionRepository.Update(commentReaction);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)

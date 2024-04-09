@@ -57,7 +57,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, result.GetErrors());
             }
 
-            return new SuccessResponse(Messages.DeletedSuccessfully, 204);
+            return new SuccessResponse(Messages.DeletedSuccessfully, 200);
         }
 
         public async Task<IResponse> GetAll()
@@ -95,7 +95,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, result.GetErrors());
             }
 
-            return new DataResponse<GetRoleResponse>(_mapper.Map<GetRoleResponse>(updateRole), 204, Messages.UpdatedSuccessfully);
+            return new DataResponse<GetRoleResponse>(_mapper.Map<GetRoleResponse>(updateRole), 200, Messages.UpdatedSuccessfully);
         }
     }
 }

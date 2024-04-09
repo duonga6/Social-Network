@@ -18,21 +18,13 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             await _dbSet.AddAsync(entity);
         }
 
-        public override async Task<CommentReaction> GetById(Guid id, bool asNoTracking = true)
+        public override async Task<CommentReaction> GetById(Guid id)
         {
-            if (asNoTracking)
-            {
                 return await _dbSet
                     .AsNoTracking()
                     .Include(x => x.Reaction)
                     .Include(x => x.User)
                     .FirstOrDefaultAsync(x => x.Id == id);
-            }
-
-            return await _dbSet
-                   .Include(x => x.Reaction)
-                   .Include(x => x.User)
-                   .FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<CommentReaction> GetById(Guid commentId, string userId, int reactionId)
@@ -89,20 +81,13 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 .ToListAsync();
         }
 
-        public override async Task<CommentReaction> FindOneBy(Expression<Func<CommentReaction, bool>> filter = null, bool asNoTracking = true)
+        public override async Task<CommentReaction> FindOneBy(Expression<Func<CommentReaction, bool>> filter = null)
         {
-            if (asNoTracking)
-            {
                 return await _dbSet
                     .AsNoTracking()
                     .Include(x => x.Reaction)
                     .Include(x => x.User)
                     .FirstOrDefaultAsync(filter);
-            }
-            return await _dbSet
-                .Include(x => x.User)
-                 .Include(x => x.Reaction)
-                .FirstOrDefaultAsync(filter);
         }
     }
 }

@@ -77,37 +77,22 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             _dbSet.Remove(entity);
         }
 
-        public override async Task<PostReaction> FindOneBy(Expression<Func<PostReaction, bool>> filter = null, bool asNoTracking = true)
+        public override async Task<PostReaction> FindOneBy(Expression<Func<PostReaction, bool>> filter = null)
         {
-            if (asNoTracking)
-            {
                 return await _dbSet
                     .AsNoTracking()
                     .Where(filter)
                     .Include(x => x.Reaction)
                     .FirstOrDefaultAsync();
-            }
-            return await _dbSet
-                .Where(filter)
-                .Include(x => x.Reaction)
-                .FirstOrDefaultAsync();
         }
 
-        public override async Task<ICollection<PostReaction>> FindBy(Expression<Func<PostReaction, bool>> filter = null, bool asNoTracking = true)
+        public override async Task<ICollection<PostReaction>> FindBy(Expression<Func<PostReaction, bool>> filter = null)
         {
-            if (asNoTracking)
-            {
                 return await _dbSet
                     .AsNoTracking()
                     .Where(filter)
                     .Include(x => x.Reaction)
                     .Include(x => x.User)
-                    .ToListAsync();
-            }
-            return await _dbSet
-                    .Include(x => x.Reaction)
-                    .Include(x => x.User)
-                    .Where(filter)
                     .ToListAsync();
         }
 
