@@ -26,5 +26,10 @@ namespace SocialNetwork.API.Controllers
         {
             return await _mailService.SendMailAsync(request);
         }
+
+        //public IActionResult Test()
+        //{
+        //    return StatusCode(IResponse.getStatusCode(), "ABC");
+        //}
     }
 }

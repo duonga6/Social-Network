@@ -11,12 +11,4 @@ public static class SignalRExtension
         services.AddSingleton<ConnectionManagementService>();
         services.AddScoped<IHubControl, HubControl>();
     }
-
-    public static void RegistrationHub(this IApplicationBuilder app)
-    {
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapHub<CenterHub>("/chathub");
-        });
-    }
 }

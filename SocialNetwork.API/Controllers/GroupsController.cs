@@ -4,6 +4,7 @@ using SocialNetwork.API.Controllers.Base;
 using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.Services.Interfaces;
+using SocialNetwork.Business.Utilities.Enum;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
 using System.ComponentModel.DataAnnotations;
@@ -26,12 +27,13 @@ namespace SocialNetwork.API.Controllers
         /// <param name="searchString"></param>
         /// <param name="pageSize"></param>
         /// <param name="pageNumber"></param>
+        /// <param name="type">Type group get 0: all group - 1: joined group - 2: group managed by me</param>
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResponse<List<GetGroupResponse>>), 200)]
-        public async Task<IResponse> Get([FromQuery]string? searchString,[FromQuery, Required, Range(0, int.MaxValue)] int pageSize,[FromQuery, Required, Range(0, int.MaxValue)] int pageNumber)
+        public async Task<IActionResult> Get([FromQuery]string? searchString,[FromQuery, Required, Range(0, int.MaxValue)] int pageSize,[FromQuery, Required, Range(0, int.MaxValue)] int pageNumber,[Required] GroupType type)
         {
-            return await _groupService.Get(UserId, searchString, pageSize, pageNumber);
+            return ResponseModel(await _groupService.Get(UserId, searchString, pageSize, pageNumber, type));
         }
 
         /// <summary>
@@ -41,9 +43,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(DataResponse<GetGroupResponse>), 200)]
-        public async Task<IResponse> Create([FromBody] CreateGroupRequest request)
+        public async Task<IActionResult> Create([FromBody] CreateGroupRequest request)
         {
-            return await _groupService.Create(UserId, request);
+            return ResponseModel(await _groupService.Create(UserId, request));
         }
 
         /// <summary>
@@ -53,9 +55,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("{Id}")]
         [ProducesResponseType(typeof(DataResponse<GetGroupResponse>), 200)]
-        public async Task<IResponse> GetById([FromRoute] Guid Id)
+        public async Task<IActionResult> GetById([FromRoute] Guid Id)
         {
-            return await _groupService.GetById(UserId, Id);
+            return ResponseModel(await _groupService.GetById(UserId, Id));
         }
 
         /// <summary>
@@ -66,9 +68,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPut("{Id}")]
         [ProducesResponseType(typeof(DataResponse<GetGroupResponse>), 200)]
-        public async Task<IResponse> Update([FromRoute] Guid Id, [FromBody] UpdateGroupRequest request)
+        public async Task<IActionResult> Update([FromRoute] Guid Id, [FromBody] UpdateGroupRequest request)
         {
-            return await _groupService.Update(UserId, Id, request);
+            return ResponseModel(await _groupService.Update(UserId, Id, request));
         }
 
         /// <summary>
@@ -78,9 +80,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpDelete("{Id}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> Delete([FromRoute] Guid Id)
+        public async Task<IActionResult> Delete([FromRoute] Guid Id)
         {
-            return await _groupService.Delete(UserId, Id);
+            return ResponseModel(await _groupService.Delete(UserId, Id));
         }
     }
 }

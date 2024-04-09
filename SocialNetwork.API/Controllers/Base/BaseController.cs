@@ -1,5 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using SocialNetwork.API.Utilities;
+using SocialNetwork.Business.Wrapper.Abstract;
 
 namespace SocialNetwork.API.Controllers.Base
 {
@@ -7,9 +11,19 @@ namespace SocialNetwork.API.Controllers.Base
     [ApiController]
     public class BaseController : ControllerBase
     {
+
         protected string UserId
         {
             get { return User.GetUserId(); }
+        }
+
+        protected ObjectResult ResponseModel(IResponse response)
+        {
+            var result = new ObjectResult(response);
+            result.StatusCode = response.Status;
+            result.ContentTypes.Add("application/json");
+
+            return result;
         }
     }
 }

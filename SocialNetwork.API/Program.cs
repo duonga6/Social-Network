@@ -1,10 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using SocialNetwork.API.Infrastructure.Extensions;
 using SocialNetwork.API.Infrastructure.SignalR;
 using SocialNetwork.Business;
+using SocialNetwork.Business.Wrapper;
 using SocialNetwork.DataAccess;
 using SocialNetwork.DataAccess.Context;
+using System.Net.Mime;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +26,8 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddCustomValidationResponse();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
