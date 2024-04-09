@@ -11,7 +11,8 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
     {
         protected readonly ILogger _logger;
         protected AppDbContext _context;
-        internal DbSet<TEntity> _dbSet;
+        protected DbSet<TEntity> _dbSet;
+
         public GenericRepository(ILogger logger, AppDbContext context)
         {
             _logger = logger;
@@ -25,6 +26,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             {
                 return await _dbSet.AsNoTracking().ToListAsync();
             }
+
             return await _dbSet.ToListAsync();
         }
 
@@ -34,6 +36,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             {
                 return await _dbSet.AsNoTracking().Where(filter).ToListAsync();
             }
+
             return await _dbSet.Where(filter).ToListAsync();
         }
 
@@ -43,6 +46,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             {
                 return await _dbSet.AsNoTracking().FirstOrDefaultAsync(filter);
             }
+
             return await _dbSet.FirstOrDefaultAsync(filter);
         }
 

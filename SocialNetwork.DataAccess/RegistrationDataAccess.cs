@@ -6,6 +6,8 @@ using SocialNetwork.DataAccess.Repositories.Concrete;
 using SocialNetwork.DataAccess.Repositories.Abstract;
 using SocialNetwork.DataAccess.Entities;
 using Microsoft.AspNetCore.Identity;
+using StackExchange.Redis;
+using SocialNetwork.DataAccess.Services;
 
 namespace SocialNetwork.DataAccess
 {
@@ -14,6 +16,7 @@ namespace SocialNetwork.DataAccess
         public static void AddServicesDAL(this IServiceCollection services, IConfiguration configuration)
         {
             var connectionString = configuration.GetConnectionString("Default");
+
             services.AddDbContext<AppDbContext>(opt =>
             {
                 opt.UseSqlServer(connectionString);
@@ -46,6 +49,12 @@ namespace SocialNetwork.DataAccess
             });
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            // Redis
+            var redisConnectionString = configuration.GetConnectionString("Redis");
+            services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisConnectionString));
+            services.AddStackExchangeRedisCache(option => option.Configuration = redisConnectionString);
+            services.AddSingleton<ICacheService, CacheService>();
         }
     }
 }

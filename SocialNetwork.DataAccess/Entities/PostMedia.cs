@@ -1,4 +1,5 @@
-﻿using SocialNetwork.DataAccess.Entities.Base;
+﻿using Newtonsoft.Json;
+using SocialNetwork.DataAccess.Entities.Base;
 
 namespace SocialNetwork.DataAccess.Entities
 {
@@ -10,8 +11,11 @@ namespace SocialNetwork.DataAccess.Entities
         public int MediaTypeId { set; get; }
         public string UserId { set; get; }
 
+        [JsonIgnore]
         public virtual User User { set; get; }
+        [JsonIgnore]
         public virtual MediaType MediaType { set; get; }
+        [JsonIgnore]
         public virtual Post Post { get; set; }
     }
 }

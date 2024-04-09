@@ -1,4 +1,5 @@
-﻿using SocialNetwork.DataAccess.Entities.Base;
+﻿using Newtonsoft.Json;
+using SocialNetwork.DataAccess.Entities.Base;
 
 namespace SocialNetwork.DataAccess.Entities
 {
@@ -13,6 +14,8 @@ namespace SocialNetwork.DataAccess.Entities
         public virtual User Author { get; set; }
         public virtual Group Group { set; get; }
         public virtual Post SharePost { set; get; }
+
+        [JsonIgnore]
         public virtual ICollection<PostReaction> Reactions { get; set; }
         public virtual ICollection<PostMedia> PostMedias { get; set; }
     }
