@@ -27,9 +27,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("GetCount")]
         [ProducesResponseType(typeof(DataResponse<int>), 200)]
-        public async Task<IResponse> GetCount([FromQuery, Required]Guid postId)
+        public async Task<IActionResult> GetCount([FromQuery, Required]Guid postId)
         {
-            return await _postReactionService.GetCount(UserId, postId);
+            return ResponseModel(await _postReactionService.GetCount(UserId, postId));
         }
         
         /// <summary>
@@ -39,9 +39,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(DataResponse<GetPostReactionResponse>), 200)]
-        public async Task<IResponse> Create(CreatePostReactionsRequest request)
+        public async Task<IActionResult> Create(CreatePostReactionsRequest request)
         {
-            return await _postReactionService.Create(UserId, request);
+            return ResponseModel(await _postReactionService.Create(UserId, request));
         }
 
         /// <summary>
@@ -52,9 +52,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPut("{Id}")]
         [ProducesResponseType(typeof(DataResponse<GetPostReactionResponse>), 200)]
-        public async Task<IResponse> Update(Guid Id, UpdatePostReactionRequest request)
+        public async Task<IActionResult> Update(Guid Id, UpdatePostReactionRequest request)
         {
-            return await _postReactionService.Update(UserId, Id, request);
+            return ResponseModel(await _postReactionService.Update(UserId, Id, request));
         }
 
         ///// <summary>
@@ -64,9 +64,9 @@ namespace SocialNetwork.API.Controllers
         ///// <returns></returns>
         //[HttpGet("GetByUser")]
         //[ProducesResponseType(typeof(DataResponse<GetPostReactionResponses>), 200)]
-        //public async Task<IResponse> GetByUser([FromQuery, Required]Guid postId)
+        //public async Task<IActionResult> GetByUser([FromQuery, Required]Guid postId)
         //{
-        //    return await _postReactionService.GetByUser(UserId, postId);
+        //    ResponseModel(return await _postReactionService.GetByUser(UserId, postId));
         //}
 
         ///// <summary>
@@ -76,9 +76,9 @@ namespace SocialNetwork.API.Controllers
         ///// <returns></returns>
         //[HttpGet("GetByPost/{postId}")]
         //[ProducesResponseType(typeof(DataResponse<GetPostReactionResponse>), 200)]
-        //public async Task<IResponse> GetByPost(Guid postId)
+        //public async Task<IActionResult> GetByPost(Guid postId)
         //{
-        //    return await _postReactionService.GetByPost(UserId, postId);
+        //    ResponseModel(return await _postReactionService.GetByPost(UserId, postId));
         //}
 
         /// <summary>
@@ -88,9 +88,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("GetOverview/{postId}")]
         [ProducesResponseType(typeof(DataResponse<GetOverviewReactionResponse>), 200)]
-        public async Task<IResponse> GetOverview(Guid postId)
+        public async Task<IActionResult> GetOverview(Guid postId)
         {
-            return await _postReactionService.GetOverview(UserId, postId);
+            return ResponseModel(await _postReactionService.GetOverview(UserId, postId));
         }
 
         /// <summary>
@@ -100,9 +100,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpDelete("{Id}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> Delete(Guid Id)
+        public async Task<IActionResult> Delete(Guid Id)
         {
-            return await _postReactionService.Delete(UserId, Id);
+            return ResponseModel(await _postReactionService.Delete(UserId, Id));
         }
     }
 }

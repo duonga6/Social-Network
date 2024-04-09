@@ -23,9 +23,9 @@ namespace SocialNetwork.API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IResponse> GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            return await _roleService.GetAll();
+            return ResponseModel(await _roleService.GetAll());
         }
 
         /// <summary>
@@ -34,9 +34,9 @@ namespace SocialNetwork.API.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IResponse> Create(CreateRoleRequest request)
+        public async Task<IActionResult> Create(CreateRoleRequest request)
         {
-            return await _roleService.Add(request);
+            return ResponseModel(await _roleService.Add(request));
         }
 
         /// <summary>
@@ -47,9 +47,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPut]
         [Route("{Id}")]
-        public async Task<IResponse> Update(string Id, UpdateRoleRequest request)
+        public async Task<IActionResult> Update(string Id, UpdateRoleRequest request)
         {
-            return await _roleService.Update(Id, request);
+            return ResponseModel(await _roleService.Update(Id, request));
         }
 
         /// <summary>
@@ -59,9 +59,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpDelete]
         [Route("{Id}")]
-        public async Task<IResponse> Delete(string Id)
+        public async Task<IActionResult> Delete(string Id)
         {
-            return await _roleService.Delete(Id);
+            return ResponseModel(await _roleService.Delete(Id));
         }
 
         /// <summary>
@@ -71,9 +71,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("{Id}")]
-        public async Task<IResponse> GetById(string Id)
+        public async Task<IActionResult> GetById(string Id)
         {
-            return await _roleService.GetById(Id);
+            return ResponseModel(await _roleService.GetById(Id));
         }
     }
 }

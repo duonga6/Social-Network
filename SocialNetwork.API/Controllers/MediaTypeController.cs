@@ -18,16 +18,16 @@ namespace SocialNetwork.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(DataResponse<List<GetMediaTypeResponse>>), 200)]
-        public async Task<IResponse> GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            return await _mediaTypeService.GetAll();
+            return ResponseModel(await _mediaTypeService.GetAll());
         }
 
         [HttpGet("{Id}")]
         [ProducesResponseType(typeof(DataResponse<GetMediaTypeResponse>), 200)]
-        public async Task<IResponse> GetById(int Id)
+        public async Task<IActionResult> GetById(int Id)
         {
-            return await _mediaTypeService.GetById(Id);
+            return ResponseModel(await _mediaTypeService.GetById(Id));
         }
     }
 }

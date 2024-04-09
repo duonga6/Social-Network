@@ -22,14 +22,9 @@ namespace SocialNetwork.API.Controllers
         [HttpPost("SendMail")]
         [Authorize(Roles = RoleName.Administrator)]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> SendMail([FromBody] SendMailRequest request)
+        public async Task<IActionResult> SendMail([FromBody] SendMailRequest request)
         {
-            return await _mailService.SendMailAsync(request);
+            return ResponseModel(await _mailService.SendMailAsync(request));
         }
-
-        //public IActionResult Test()
-        //{
-        //    return StatusCode(IResponse.getStatusCode(), "ABC");
-        //}
     }
 }

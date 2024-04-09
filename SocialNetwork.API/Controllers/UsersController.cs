@@ -28,9 +28,9 @@ namespace SocialNetwork.API.Controllers
         [HttpPost("Register")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(DataResponse<UserWithTokenResponse>), 200)]
-        public async Task<IResponse> Register([FromBody] RegistrationRequest request)
+        public async Task<IActionResult> Register([FromBody] RegistrationRequest request)
         {
-            return await _userService.Register(request);
+            return ResponseModel(await _userService.Register(request));
         }
 
         /// <summary>
@@ -41,9 +41,9 @@ namespace SocialNetwork.API.Controllers
         [HttpPost("Login")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(DataResponse<UserWithTokenResponse>), 200)]
-        public async Task<IResponse> Login([FromBody] LoginRequest request)
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            return await _userService.Login(request);
+            return ResponseModel(await _userService.Login(request));
         }
 
         /// <summary>
@@ -52,9 +52,9 @@ namespace SocialNetwork.API.Controllers
         [HttpPost("ForgotPassword")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(DataResponse<ForgotPasswordCodeResponse>), 200)]
-        public async Task<IResponse> ForgotPassword([FromBody] ForgotPasswordRequest request)
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
         {
-            return await _userService.ForgotPassword(request);
+            return ResponseModel(await _userService.ForgotPassword(request));
         }
 
         /// <summary>
@@ -65,9 +65,9 @@ namespace SocialNetwork.API.Controllers
         [HttpPost("ResetPassword")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(DataResponse<Token>), 200)]
-        public async Task<IResponse> ResetPassword([FromBody] ResetPasswordRequest request)
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
         {
-            return await _userService.ResetPassword(request);
+            return ResponseModel(await _userService.ResetPassword(request));
         }
 
         /// <summary>
@@ -78,9 +78,9 @@ namespace SocialNetwork.API.Controllers
         [HttpPost("CodeConfirmEmail")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(DataResponse<ResendConfirmEmailResponse>), 200)]
-        public async Task<IResponse> ResendConfirmEmail([FromBody] ResendConfirmEmailRequest request)
+        public async Task<IActionResult> ResendConfirmEmail([FromBody] ResendConfirmEmailRequest request)
         {
-            return await _userService.ResendConfirmEmail(request);
+            return ResponseModel(await _userService.ResendConfirmEmail(request));
         }
 
         /// <summary>
@@ -91,9 +91,9 @@ namespace SocialNetwork.API.Controllers
         [HttpPost("ConfirmEmail")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> ConfirmEmail([FromBody] ConfirmEmailRequest request)
+        public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest request)
         {
-            return await _userService.ConfirmEmail(request);
+            return ResponseModel(await _userService.ConfirmEmail(request));
         }
 
         /// <summary>
@@ -102,9 +102,9 @@ namespace SocialNetwork.API.Controllers
         [HttpPost("RenewToken")]
         [AllowAnonymous]
         [ProducesResponseType(typeof(DataResponse<Token>), 200)]
-        public async Task<IResponse> RenewToken([FromBody] RenewTokenRequest token)
+        public async Task<IActionResult> RenewToken([FromBody] RenewTokenRequest token)
         {
-            return await _userService.RenewToken(token);
+            return ResponseModel(await _userService.RenewToken(token));
         }
 
         /// <summary>
@@ -117,9 +117,9 @@ namespace SocialNetwork.API.Controllers
         [HttpGet]
         [Authorize(Roles = RoleName.Administrator)]
         [ProducesResponseType(typeof(PagedResponse<List<GetUserResponse>>), 200)]
-        public async Task<IResponse> GetAll(string? searchString,[FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
+        public async Task<IActionResult> GetAll(string? searchString,[FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
-            return await _userService.GetAll(searchString, pageSize, pageNumber);
+            return ResponseModel(await _userService.GetAll(searchString, pageSize, pageNumber));
         }
 
         /// <summary>
@@ -128,9 +128,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("Info")]
         [ProducesResponseType(typeof(DataResponse<GetUserResponse>), 200)]
-        public async Task<IResponse> GetInfo()
+        public async Task<IActionResult> GetInfo()
         {
-            return await _userService.GetById(UserId);
+            return ResponseModel(await _userService.GetById(UserId));
         }
 
         /// <summary>
@@ -138,9 +138,9 @@ namespace SocialNetwork.API.Controllers
         /// </summary>
         [HttpGet("{Id}")]
         [ProducesResponseType(typeof(DataResponse<GetUserResponse>), 200)]
-        public async Task<IResponse> GetById(string Id)
+        public async Task<IActionResult> GetById(string Id)
         {
-            return await _userService.GetById(Id);
+            return ResponseModel(await _userService.GetById(Id));
         }
 
         /// <summary>
@@ -152,9 +152,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("{Id}/GetPhotos")]
         [ProducesResponseType(typeof(PagedResponse<List<GetPostMediaResponse>>), 200)]
-        public async Task<IResponse> GetPhotos(string Id, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
+        public async Task<IActionResult> GetPhotos(string Id, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
-            return await _userService.GetPhoto(UserId, Id, pageSize, pageNumber);
+            return ResponseModel(await _userService.GetPhoto(UserId, Id, pageSize, pageNumber));
         }
 
         /// <summary>
@@ -165,9 +165,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPut("{Id}")]
         [ProducesResponseType(typeof(DataResponse<GetUserResponse>), 200)]
-        public async Task<IResponse> UpdateUser(string Id, [FromBody] UpdateUserInfoRequest request)
+        public async Task<IActionResult> UpdateUser(string Id, [FromBody] UpdateUserInfoRequest request)
         {
-            return await _userService.UpdateInfo(UserId, Id, request);
+            return ResponseModel(await _userService.UpdateInfo(UserId, Id, request));
         }
 
         /// <summary>
@@ -177,9 +177,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpDelete("{Id}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> DeleteUser(string Id)
+        public async Task<IActionResult> DeleteUser(string Id)
         {
-            return await _userService.DeleteUser(UserId, Id);
+            return ResponseModel(await _userService.DeleteUser(UserId, Id));
         }
 
         /// <summary>
@@ -189,9 +189,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPost("ChangePassword")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> ChangePassword([FromBody] ChangePasswordRequest request)
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
         {
-            return await _userService.ChangePassword(UserId, request);
+            return ResponseModel(await _userService.ChangePassword(UserId, request));
         }
 
         #endregion
@@ -206,9 +206,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPost("{Id}/Posts")]
         [ProducesResponseType(typeof(DataResponse<GetPostResponse>), 200)]
-        public async Task<IResponse> CreatePost(string Id, CreatePostRequest request)
+        public async Task<IActionResult> CreatePost(string Id, CreatePostRequest request)
         {
-            return await _userService.CreatePost(UserId, Id, request);
+            return ResponseModel(await _userService.CreatePost(UserId, Id, request));
         }
 
         /// <summary>
@@ -219,9 +219,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpDelete("{Id}/Posts/{postId:guid}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> DeletePost(string Id, Guid postId)
+        public async Task<IActionResult> DeletePost(string Id, Guid postId)
         {
-            return await _userService.DeletePost(UserId, Id, postId);
+            return ResponseModel(await _userService.DeletePost(UserId, Id, postId));
         }
 
         /// <summary>
@@ -232,9 +232,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("{Id}/Posts/{postId:guid}")]
         [ProducesResponseType(typeof(DataResponse<GetPostResponse>), 200)]
-        public async Task<IResponse> GetPostById(string Id, Guid postId)
+        public async Task<IActionResult> GetPostById(string Id, Guid postId)
         {
-            return await _userService.GetPostById(UserId, Id, postId);
+            return ResponseModel(await _userService.GetPostById(UserId, Id, postId));
         }
 
         /// <summary>
@@ -247,9 +247,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("{Id}/Posts")]
         [ProducesResponseType(typeof(PagedResponse<List<GetPostResponse>>), 200)]
-        public async Task<IResponse> GetPostByUser(string Id,[FromQuery] string? searchString,[FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
+        public async Task<IActionResult> GetPostByUser(string Id,[FromQuery] string? searchString,[FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
-            return await _userService.GetPostByUser(UserId, Id, searchString, pageSize, pageNumber);
+            return ResponseModel(await _userService.GetPostByUser(UserId, Id, searchString, pageSize, pageNumber));
         }
 
         /// <summary>
@@ -261,9 +261,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPut("{Id}/Posts/{postId:guid}")]
         [ProducesResponseType(typeof(DataResponse<GetPostResponse>), 200)]
-        public async Task<IResponse> UpdatePost(string Id, Guid postId, UpdatePostRequest request)
+        public async Task<IActionResult> UpdatePost(string Id, Guid postId, UpdatePostRequest request)
         {
-            return await _userService.UpdatePost(UserId, Id, postId, request);
+            return ResponseModel(await _userService.UpdatePost(UserId, Id, postId, request));
         }
 
         #endregion
@@ -281,9 +281,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("{Id}/Messages")]
         [ProducesResponseType(typeof(PagedResponse<List<GetMessageResponse>>), 200)]
-        public async Task<IResponse> GetConversation(string Id,[FromQuery, Required] string targetUserId, [FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
+        public async Task<IActionResult> GetConversation(string Id,[FromQuery, Required] string targetUserId, [FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
-            return await _userService.GetConversation(UserId, Id, targetUserId, searchString, pageSize, pageNumber);
+            return ResponseModel(await _userService.GetConversation(UserId, Id, targetUserId, searchString, pageSize, pageNumber));
         }
 
         /// <summary>
@@ -294,9 +294,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("{Id}/Messages/{messageId}")]
         [ProducesResponseType(typeof(DataResponse<GetMessageResponse>), 200)]
-        public async Task<IResponse> GetMessageById(string Id, Guid messageId)
+        public async Task<IActionResult> GetMessageById(string Id, Guid messageId)
         {
-            return await _userService.GetMessageById(UserId, Id, messageId);
+            return ResponseModel(await _userService.GetMessageById(UserId, Id, messageId));
         }
        
         /// <summary>
@@ -307,9 +307,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPost("{Id}/Messages")]
         [ProducesResponseType(typeof(DataResponse<GetMessageResponse>), 200)]
-        public async Task<IResponse> SendMessage(string Id, [FromBody] SendMessageRequest request)
+        public async Task<IActionResult> SendMessage(string Id, [FromBody] SendMessageRequest request)
         {
-            return await _userService.SendMessage(UserId, Id, request); 
+            return ResponseModel(await _userService.SendMessage(UserId, Id, request);) 
         }
 
         /// <summary>
@@ -320,9 +320,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpDelete("{Id}/Messages/{messageId}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> DeleteMessage(string Id, Guid messageId)
+        public async Task<IActionResult> DeleteMessage(string Id, Guid messageId)
         {
-            return await _userService.DeleteMessage(UserId, Id, messageId);
+            return ResponseModel(await _userService.DeleteMessage(UserId, Id, messageId));
         }
 
         #endregion
@@ -339,9 +339,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("{Id}/Notifications")]
         [ProducesResponseType(typeof(PagedResponse<List<GetNotificationResponse>>), 200)]
-        public async Task<IResponse> GetNotifications(string Id,[FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
+        public async Task<IActionResult> GetNotifications(string Id,[FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
-            return await _userService.GetNotifications(UserId, Id, searchString, pageSize, pageNumber);
+            return ResponseModel(await _userService.GetNotifications(UserId, Id, searchString, pageSize, pageNumber));
         }
 
         /// <summary>
@@ -352,9 +352,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("{Id}/Notifications/{notificationId}")]
         [ProducesResponseType(typeof(DataResponse<GetNotificationResponse>), 200)]
-        public async Task<IResponse> GetNotificationById(string Id, Guid notificationId)
+        public async Task<IActionResult> GetNotificationById(string Id, Guid notificationId)
         {
-            return await _userService.GetNotificationsById(UserId, Id, notificationId);
+            return ResponseModel(await _userService.GetNotificationsById(UserId, Id, notificationId));
         }
 
         /// <summary>
@@ -365,9 +365,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPut("{Id}/Notifications/{notificationId}")]
         [ProducesResponseType(typeof(DataResponse<GetNotificationResponse>), 200)]
-        public async Task<IResponse> SeenNotification(string Id, Guid notificationId)
+        public async Task<IActionResult> SeenNotification(string Id, Guid notificationId)
         {
-            return await _userService.SeenNotifications(UserId, Id, notificationId);
+            return ResponseModel(await _userService.SeenNotifications(UserId, Id, notificationId));
         }
 
         #endregion
@@ -384,9 +384,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("{Id}/Friendships")]
         [ProducesResponseType(typeof(PagedResponse<List<GetFriendshipResponse>>), 200)]
-        public async Task<IResponse> GetFriends(string Id, [FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
+        public async Task<IActionResult> GetFriends(string Id, [FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
-            return await _userService.GetFriends(UserId, Id, pageSize, pageNumber, searchString);
+            return ResponseModel(await _userService.GetFriends(UserId, Id, pageSize, pageNumber, searchString));
         }
 
         #endregion

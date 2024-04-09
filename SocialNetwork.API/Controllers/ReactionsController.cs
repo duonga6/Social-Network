@@ -23,9 +23,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IResponse> GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            return await _reactionService.GetAll();
+            return ResponseModel(await _reactionService.GetAll());
         }
 
         /// <summary>
@@ -35,9 +35,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("{Id:int}")]
-        public async Task<IResponse> GetById(int Id)
+        public async Task<IActionResult> GetById(int Id)
         {
-            return await _reactionService.GetById(Id);
+            return ResponseModel(await _reactionService.GetById(Id));
         }
 
         /// <summary>
@@ -47,9 +47,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPost]
         [Authorize(Roles = RoleName.Administrator)]
-        public async Task<IResponse> Create([FromBody] CreateReactionRequest model)
+        public async Task<IActionResult> Create([FromBody] CreateReactionRequest model)
         {
-            return await _reactionService.Add(model);
+            return ResponseModel(await _reactionService.Add(model));
         }
 
         /// <summary>
@@ -61,9 +61,9 @@ namespace SocialNetwork.API.Controllers
         [HttpPut]
         [Authorize(Roles = RoleName.Administrator)]
         [Route("{Id:int}")]
-        public async Task<IResponse> Update(int Id, [FromBody] UpdateReactionRequest model)
+        public async Task<IActionResult> Update(int Id, [FromBody] UpdateReactionRequest model)
         {
-            return await _reactionService.Update(Id, model);
+            return ResponseModel(await _reactionService.Update(Id, model));
         }
 
         /// <summary>
@@ -74,9 +74,9 @@ namespace SocialNetwork.API.Controllers
         [HttpDelete]
         [Authorize(Roles = RoleName.Administrator)]
         [Route("{Id:int}")]
-        public async Task<IResponse> Delete(int Id)
+        public async Task<IActionResult> Delete(int Id)
         {
-            return await _reactionService.Delete(Id);
+            return ResponseModel(await _reactionService.Delete(Id));
         }
 
     }

@@ -28,9 +28,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResponse<List<GetNotificationResponse>>), 200)]
-        public async Task<IResponse> GetAll([FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
+        public async Task<IActionResult> GetAll([FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
-            return await _notificationService.GetNotifications(UserId, searchString, pageSize, pageNumber);
+            return ResponseModel(await _notificationService.GetNotifications(UserId, searchString, pageSize, pageNumber));
         }
 
 
@@ -41,9 +41,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("{Id}")]
         [ProducesResponseType(typeof(DataResponse<GetNotificationResponse>), 200)]
-        public async Task<IResponse> GetById(Guid Id)
+        public async Task<IActionResult> GetById(Guid Id)
         {
-            return await _notificationService.GetById(UserId, Id);
+            return ResponseModel(await _notificationService.GetById(UserId, Id));
         }
 
         /// <summary>
@@ -53,9 +53,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPost("{Id}")]
         [ProducesResponseType(typeof(DataResponse<GetNotificationResponse>), 200)]
-        public async Task<IResponse> SeenNotification(Guid Id)
+        public async Task<IActionResult> SeenNotification(Guid Id)
         {
-            return await _notificationService.SeenNotification(UserId, Id);
+            return ResponseModel(await _notificationService.SeenNotification(UserId, Id));
         }
 
         /// <summary>
@@ -67,9 +67,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("GetCursor")]
         [ProducesResponseType(typeof(CursorResponse<List<GetNotificationResponse>>), 200)]
-        public async Task<IResponse> GetCursor([FromQuery, Required, Range(1, int.MaxValue)] int pageSize, DateTime? endCursor, bool getNext = true)
+        public async Task<IActionResult> GetCursor([FromQuery, Required, Range(1, int.MaxValue)] int pageSize, DateTime? endCursor, bool getNext = true)
         {
-            return await _notificationService.GetCursor(UserId, pageSize, endCursor, getNext);
+            return ResponseModel(await _notificationService.GetCursor(UserId, pageSize, endCursor, getNext));
         }
         
     }

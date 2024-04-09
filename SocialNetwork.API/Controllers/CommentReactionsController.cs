@@ -26,9 +26,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(DataResponse<GetCommentReactionResponse>), 200)]
-        public async Task<IResponse> Create([FromBody] CreateCommentReactionRequests request)
+        public async Task<IActionResult> Create([FromBody] CreateCommentReactionRequests request)
         {
-            return await _commentReactionService.Create(UserId, request);
+            return ResponseModel(await _commentReactionService.Create(UserId, request));
         }
 
         /// <summary>
@@ -38,9 +38,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpDelete("{Id}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> Delete(Guid Id)
+        public async Task<IActionResult> Delete(Guid Id)
         {
-            return await _commentReactionService.Delete(UserId, Id);
+            return ResponseModel(await _commentReactionService.Delete(UserId, Id));
         }
 
         /// <summary>
@@ -50,9 +50,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [ProducesResponseType(typeof(DataResponse<GetOverviewReactionResponse>), 200)]
         [HttpGet("{Id}/GetOverview")]        
-        public async Task<IResponse> GetOverview(Guid Id)
+        public async Task<IActionResult> GetOverview(Guid Id)
         {
-            return await _commentReactionService.GetOverview(UserId, Id);
+            return ResponseModel(await _commentReactionService.GetOverview(UserId, Id));
         }
 
         /// <summary>
@@ -63,9 +63,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPut("{Id}")]
         [ProducesResponseType(typeof(DataResponse<GetCommentReactionResponse>), 200)]
-        public async Task<IResponse> Update(Guid id, UpdateCommentReactionRequest request)
+        public async Task<IActionResult> Update(Guid id, UpdateCommentReactionRequest request)
         {
-            return await _commentReactionService.Update(UserId, id, request);
+            return ResponseModel(await _commentReactionService.Update(UserId, id, request));
         }
         
         /// <summary>
@@ -75,9 +75,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("{Id}")]
         [ProducesResponseType(typeof(DataResponse<GetCommentReactionResponse>), 200)]        
-        public async Task<IResponse> GetById(Guid Id)
+        public async Task<IActionResult> GetById(Guid Id)
         {
-            return await _commentReactionService.GetById(UserId, Id);
+            return ResponseModel(await _commentReactionService.GetById(UserId, Id));
         }
         
     }

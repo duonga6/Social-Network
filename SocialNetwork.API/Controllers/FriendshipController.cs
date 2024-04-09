@@ -31,9 +31,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResponse<List<GetFriendshipResponse>>), 200)]
-        public async Task<IResponse> Get([FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber,[FromQuery] string? searchString,[FromQuery, Required] FriendType type)
+        public async Task<IActionResult> Get([FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber,[FromQuery] string? searchString,[FromQuery, Required] FriendType type)
         {
-            return await _friendshipService.GetByUser(UserId, searchString, pageSize, pageNumber, type);
+            return ResponseModel(await _friendshipService.GetByUser(UserId, searchString, pageSize, pageNumber, type));
         }
 
         /// <summary>
@@ -43,9 +43,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("{Id}")]
         [ProducesResponseType(typeof(DataResponse<GetFriendshipResponse>), 200)]
-        public async Task<IResponse> GetById(Guid Id)
+        public async Task<IActionResult> GetById(Guid Id)
         {
-            return await _friendshipService.GetById(UserId, Id);
+            return ResponseModel(await _friendshipService.GetById(UserId, Id));
         }
 
         /// <summary>
@@ -55,9 +55,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPost("AddFriend")]
         [ProducesResponseType(typeof(DataResponse<GetFriendshipResponse>), 200)]
-        public async Task<IResponse> SendRequest([FromBody] BaseFriendRequest request)
+        public async Task<IActionResult> SendRequest([FromBody] BaseFriendRequest request)
         {
-            return await _friendshipService.AddFriendRequest(UserId, request);
+            return ResponseModel(await _friendshipService.AddFriendRequest(UserId, request));
         }
 
         /// <summary>
@@ -67,9 +67,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpDelete("UnFriend/{Id}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> UnFriend(Guid Id)
+        public async Task<IActionResult> UnFriend(Guid Id)
         {
-            return await _friendshipService.UnFriendRequest(UserId, Id);
+            return ResponseModel(await _friendshipService.UnFriendRequest(UserId, Id));
         }
 
         /// <summary>
@@ -79,9 +79,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpDelete("CancelAddFriendRequest/{Id}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> CancelRequest(Guid Id)
+        public async Task<IActionResult> CancelRequest(Guid Id)
         {
-            return await _friendshipService.CancelRequest(UserId, Id);
+            return ResponseModel(await _friendshipService.CancelRequest(UserId, Id));
         }
 
         /// <summary>
@@ -91,9 +91,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPut("AcceptFriend/{Id}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> AcceptFriend(Guid Id)
+        public async Task<IActionResult> AcceptFriend(Guid Id)
         {
-            return await _friendshipService.AcceptRequest(UserId, Id);
+            return ResponseModel(await _friendshipService.AcceptRequest(UserId, Id));
         }
 
         /// <summary>
@@ -103,9 +103,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpDelete("RefuseFriend/{Id}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> RefuseFriend(Guid Id)
+        public async Task<IActionResult> RefuseFriend(Guid Id)
         {
-            return await _friendshipService.RefuseRequest(UserId, Id);
+            return ResponseModel(await _friendshipService.RefuseRequest(UserId, Id));
         }
 
         /// <summary>
@@ -115,9 +115,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPost("BlockFriend")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> BlockFriend([FromBody] BaseFriendRequest request)
+        public async Task<IActionResult> BlockFriend([FromBody] BaseFriendRequest request)
         {
-            return await _friendshipService.BlockFriend(UserId, request);
+            return ResponseModel(await _friendshipService.BlockFriend(UserId, request));
         }
 
         /// <summary>
@@ -127,9 +127,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpDelete("UnblockFriend/{Id}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> UnblockFriend(Guid Id)
+        public async Task<IActionResult> UnblockFriend(Guid Id)
         {
-            return await _friendshipService.UnBlockFriend(UserId, Id);
+            return ResponseModel(await _friendshipService.UnBlockFriend(UserId, Id));
         }
 
         /// <summary>
@@ -139,9 +139,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("Info/{targetUserId}")]
         [ProducesResponseType(typeof(DataResponse<GetFriendshipResponse>), 200)]
-        public async Task<IResponse> GetInfo(string targetUserId)
+        public async Task<IActionResult> GetInfo(string targetUserId)
         {
-            return await _friendshipService.GetInfo(UserId, targetUserId);
+            return ResponseModel(await _friendshipService.GetInfo(UserId, targetUserId));
         }
 
         /// <summary>
@@ -152,9 +152,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("SuggestionFriend")]
         [ProducesResponseType(typeof(PagedResponse<List<GetUserResponse>>), 200)]
-        public async Task<IResponse> GetSuggestionFriend([FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
+        public async Task<IActionResult> GetSuggestionFriend([FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
-            return await _friendshipService.GetSuggestFriend(UserId, pageSize, pageNumber);
+            return ResponseModel(await _friendshipService.GetSuggestFriend(UserId, pageSize, pageNumber));
         }
     }
 }

@@ -33,9 +33,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResponse<List<GetPostResponse>>), 200)]
-        public async Task<IResponse> GetAll([FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
+        public async Task<IActionResult> GetAll([FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
-            return await _postService.GetAll(UserId, searchString, pageSize, pageNumber);
+            return ResponseModel(await _postService.GetAll(UserId, searchString, pageSize, pageNumber));
         }
 
         /// <summary>
@@ -45,9 +45,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("{Id}")]
         [ProducesResponseType(typeof(DataResponse<GetPostResponse>), 200)]
-        public async Task<IResponse> GetById(Guid Id)
+        public async Task<IActionResult> GetById(Guid Id)
         {
-            return await _postService.GetById(UserId, Id);
+            return ResponseModel(await _postService.GetById(UserId, Id));
         }
 
         /// <summary>
@@ -57,16 +57,16 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(DataResponse<GetPostResponse>), 200)]
-        public async Task<IResponse> Create([FromBody]CreatePostRequest request)
+        public async Task<IActionResult> Create([FromBody]CreatePostRequest request)
         {
-            return await _postService.Create(UserId, request);
+            return ResponseModel(await _postService.Create(UserId, request));
         }
 
         [HttpPost("Share")]
         [ProducesResponseType(typeof(DataResponse<GetPostResponse>), 200)]
-        public async Task<IResponse> Share([FromBody]CreateSharePostRequest request)
+        public async Task<IActionResult> Share([FromBody]CreateSharePostRequest request)
         {
-            return await _postService.CreateShare(UserId, request);
+            return ResponseModel(await _postService.CreateShare(UserId, request));
         }
 
         /// <summary>
@@ -77,9 +77,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPut("{Id}")]
         [ProducesResponseType(typeof(DataResponse<GetPostResponse>), 200)]
-        public async Task<IResponse> Update(Guid Id, [FromBody] UpdatePostRequest request)
+        public async Task<IActionResult> Update(Guid Id, [FromBody] UpdatePostRequest request)
         {
-            var userId = User.GetUserId();
+            var ResponseModel(userId = User.GetUserId());
             if (userId == null)
             {
                 return new ErrorResponse(401, Messages.UnAuthorized);
@@ -96,9 +96,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpDelete("{Id}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> Delete(Guid Id)
+        public async Task<IActionResult> Delete(Guid Id)
         {
-            var userId = User.GetUserId();
+            var ResponseModel(userId = User.GetUserId());
             if (userId == null)
             {
                 return new ErrorResponse(401, Messages.UnAuthorized);
@@ -120,9 +120,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("{Id}/Comments")]
         [ProducesResponseType(typeof(PagedResponse<List<GetPostCommentResponse>>), 200)]
-        public async Task<IResponse> GetComment(Guid Id,[FromQuery] string? searchString,[FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
+        public async Task<IActionResult> GetComment(Guid Id,[FromQuery] string? searchString,[FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
-            return await _postService.GetComments(UserId, Id, searchString, pageSize, pageNumber);
+            return ResponseModel(await _postService.GetComments(UserId, Id, searchString, pageSize, pageNumber));
         }
 
         /// <summary>
@@ -133,9 +133,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("{Id}/Comments/{commentId}")]
         [ProducesResponseType(typeof(DataResponse<GetPostCommentResponse>), 200)]
-        public async Task<IResponse> GetComment(Guid Id, Guid commentId) 
+        public async Task<IActionResult> GetComment(Guid Id, Guid commentId) 
         { 
-            return await _postService.GetCommentById(UserId, Id, commentId);
+            return ResponseModel(await _postService.GetCommentById(UserId, Id, commentId));
         }
 
         /// <summary>
@@ -146,9 +146,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPost("{Id}/Comments")]
         [ProducesResponseType(typeof(DataResponse<GetPostCommentResponse>), 200)]
-        public async Task<IResponse> CreateComment(Guid Id, [FromBody] CreatePostCommentRequest request)
+        public async Task<IActionResult> CreateComment(Guid Id, [FromBody] CreatePostCommentRequest request)
         {
-            var userId = User.GetUserId();
+            var ResponseModel(userId = User.GetUserId());
 
             return await _postService.CreateComment(UserId, Id, request);
         }
@@ -162,9 +162,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPut("{Id}/Comments/{commentId}")]
         [ProducesResponseType(typeof(DataResponse<GetPostCommentResponse>), 200)]
-        public async Task<IResponse> UpdateComment(Guid Id, Guid commentId, [FromBody] UpdatePostCommentRequest request)
+        public async Task<IActionResult> UpdateComment(Guid Id, Guid commentId, [FromBody] UpdatePostCommentRequest request)
         {
-            var userId = User.GetUserId();
+            var ResponseModel(userId = User.GetUserId());
 
             return await _postService.UpdateComment(UserId, Id, commentId, request);
         }
@@ -177,9 +177,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpDelete("{Id}/Comments/{commentId}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> DeleteComment(Guid Id, Guid commentId)
+        public async Task<IActionResult> DeleteComment(Guid Id, Guid commentId)
         {
-            var userId = User.GetUserId();
+            var ResponseModel(userId = User.GetUserId());
 
             return await _postService.DeleteComment(UserId, Id, commentId);
         }
@@ -196,9 +196,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("{Id}/Reactions")]
         [ProducesResponseType(typeof(PagedResponse<List<GetPostReactionResponses>>), 200)]
-        public async Task<IResponse> GetAllReactions(Guid Id,[FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
+        public async Task<IActionResult> GetAllReactions(Guid Id,[FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
-            return await _postService.GetAllReactions(UserId, Id, pageSize, pageNumber);
+            return ResponseModel(await _postService.GetAllReactions(UserId, Id, pageSize, pageNumber));
         }
 
         /// <summary>
@@ -209,9 +209,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPost("{Id}/Reactions")]
         [ProducesResponseType(typeof(DataResponse<GetPostReactionResponses>), 200)]
-        public async Task<IResponse> CreatePostReaction(Guid Id, [FromBody] CreatePostReactionRequest request)
+        public async Task<IActionResult> CreatePostReaction(Guid Id, [FromBody] CreatePostReactionRequest request)
         {
-            return await _postService.CreateReaction(UserId, Id, request);
+            return ResponseModel(await _postService.CreateReaction(UserId, Id, request));
         }
 
         /// <summary>
@@ -223,9 +223,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPut("{Id}/Reactions/{reactionId}")]
         [ProducesResponseType(typeof(DataResponse<GetPostReactionResponses>), 200)]
-        public async Task<IResponse> UpdatePostReaction(Guid Id, int reactionId, [FromBody] CreatePostReactionRequest request)
+        public async Task<IActionResult> UpdatePostReaction(Guid Id, int reactionId, [FromBody] CreatePostReactionRequest request)
         {
-            return await _postService.UpdateReaction(UserId, Id, reactionId, request);
+            return ResponseModel(await _postService.UpdateReaction(UserId, Id, reactionId, request));
         }
 
         /// <summary>
@@ -236,9 +236,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpDelete("{Id}/Reactions/{reactionId}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> DeletePostReaction(Guid Id, int reactionId)
+        public async Task<IActionResult> DeletePostReaction(Guid Id, int reactionId)
         {
-            return await _postService.DeleteReaction(UserId, Id, reactionId);
+            return ResponseModel(await _postService.DeleteReaction(UserId, Id, reactionId));
         }
         #endregion
     }

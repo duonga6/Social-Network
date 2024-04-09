@@ -30,9 +30,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResponse<List<GetMessageResponse>>), 200)]
-        public async Task<IResponse> GetConversation([FromQuery, Required]string Id, [FromQuery] string? searchString,[FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
+        public async Task<IActionResult> GetConversation([FromQuery, Required]string Id, [FromQuery] string? searchString,[FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
-            return await _messageService.GetByUser(UserId, Id, searchString, pageSize, pageNumber);
+            return ResponseModel(await _messageService.GetByUser(UserId, Id, searchString, pageSize, pageNumber));
         }
 
         /// <summary>
@@ -42,9 +42,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("{messageId}")]
         [ProducesResponseType(typeof(GetMessageResponse), 200)]
-        public async Task<IResponse> GetMessageById(Guid messageId)
+        public async Task<IActionResult> GetMessageById(Guid messageId)
         {
-            return await _messageService.GetById(UserId, messageId);
+            return ResponseModel(await _messageService.GetById(UserId, messageId));
         }
 
         /// <summary>
@@ -54,9 +54,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(GetMessageResponse), 200)]
-        public async Task<IResponse> SendMessage([FromBody] SendMessageRequest request)
+        public async Task<IActionResult> SendMessage([FromBody] SendMessageRequest request)
         {
-            return await _messageService.SendMessage(UserId, request);
+            return ResponseModel(await _messageService.SendMessage(UserId, request));
         }
 
         /// <summary>
@@ -66,9 +66,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpDelete("{Id:guid}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> DeleteMessage(Guid Id)
+        public async Task<IActionResult> DeleteMessage(Guid Id)
         {
-            return await _messageService.RevokeMessage(UserId, Id);
+            return ResponseModel(await _messageService.RevokeMessage(UserId, Id));
         }
 
     }
