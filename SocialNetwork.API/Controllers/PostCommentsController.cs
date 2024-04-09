@@ -198,8 +198,7 @@ namespace SocialNetwork.API.Controllers
         [ProducesResponseType(typeof(DataResponse<GetCommentReactionResponse>), 200)]
         public async Task<IActionResult> UpdateReaction(Guid Id, Guid commentReactionId, [FromBody] CreateCommentReactionRequest request)
         {
-            var ResponseModel(userId = User.GetUserId());
-            return await _postCommentService.UpdateReaction(userId, Id, commentReactionId, request);
+            return ResponseModel(await _postCommentService.UpdateReaction(UserId, Id, commentReactionId, request));
         }
 
         /// <summary>
@@ -212,8 +211,7 @@ namespace SocialNetwork.API.Controllers
         [ProducesResponseType(typeof(SuccessResponse), 200)]
         public async Task<IActionResult> DeleteReaction(Guid Id, Guid commentReactionId)
         {
-            var ResponseModel(userId = User.GetUserId());
-            return await _postCommentService.DeleteReaction(userId, Id, commentReactionId);
+            return ResponseModel(await _postCommentService.DeleteReaction(UserId, Id, commentReactionId));
         }
 
         #endregion

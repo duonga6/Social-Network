@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using SocialNetwork.Business.Wrapper;
 using System.Net;
@@ -53,13 +54,9 @@ namespace SocialNetwork.API.Infrastructure.Middleware
                 exceptions.Add(e.Message);
             }
 
-            var errorLogDetails = new
-            {
-                Errors = exceptions,
-            };
+            _logger.LogError(e.ToString());
 
-            _logger.LogError($"Unknown error occurred: {errorLogDetails}");
-            var error = JsonConvert.SerializeObject(new ErrorResponse(httpContext.Response.StatusCode, message), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+            var error = JsonConvert.SerializeObject(new ErrorResponse(httpContext.Response.StatusCode, exceptions), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
             return httpContext.Response.WriteAsync(error);
         }
     }

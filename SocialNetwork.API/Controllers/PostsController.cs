@@ -79,14 +79,7 @@ namespace SocialNetwork.API.Controllers
         [ProducesResponseType(typeof(DataResponse<GetPostResponse>), 200)]
         public async Task<IActionResult> Update(Guid Id, [FromBody] UpdatePostRequest request)
         {
-            var ResponseModel(userId = User.GetUserId());
-            if (userId == null)
-            {
-                return new ErrorResponse(401, Messages.UnAuthorized);
-            }
-
-            request.AuthorId = userId;
-            return await _postService.Update(UserId, Id, request);
+            return ResponseModel(await _postService.Update(UserId, Id, request));
         }
 
         /// <summary>
@@ -98,13 +91,7 @@ namespace SocialNetwork.API.Controllers
         [ProducesResponseType(typeof(SuccessResponse), 200)]
         public async Task<IActionResult> Delete(Guid Id)
         {
-            var ResponseModel(userId = User.GetUserId());
-            if (userId == null)
-            {
-                return new ErrorResponse(401, Messages.UnAuthorized);
-            }
-
-            return await _postService.Delete(UserId, Id);
+            return ResponseModel(await _postService.Delete(UserId, Id));
         }
         #endregion
         
@@ -148,9 +135,7 @@ namespace SocialNetwork.API.Controllers
         [ProducesResponseType(typeof(DataResponse<GetPostCommentResponse>), 200)]
         public async Task<IActionResult> CreateComment(Guid Id, [FromBody] CreatePostCommentRequest request)
         {
-            var ResponseModel(userId = User.GetUserId());
-
-            return await _postService.CreateComment(UserId, Id, request);
+            return ResponseModel(await _postService.CreateComment(UserId, Id, request));
         }
 
         /// <summary>
@@ -164,9 +149,7 @@ namespace SocialNetwork.API.Controllers
         [ProducesResponseType(typeof(DataResponse<GetPostCommentResponse>), 200)]
         public async Task<IActionResult> UpdateComment(Guid Id, Guid commentId, [FromBody] UpdatePostCommentRequest request)
         {
-            var ResponseModel(userId = User.GetUserId());
-
-            return await _postService.UpdateComment(UserId, Id, commentId, request);
+            return ResponseModel(await _postService.UpdateComment(UserId, Id, commentId, request));
         }
 
         /// <summary>
@@ -179,9 +162,7 @@ namespace SocialNetwork.API.Controllers
         [ProducesResponseType(typeof(SuccessResponse), 200)]
         public async Task<IActionResult> DeleteComment(Guid Id, Guid commentId)
         {
-            var ResponseModel(userId = User.GetUserId());
-
-            return await _postService.DeleteComment(UserId, Id, commentId);
+            return ResponseModel(await _postService.DeleteComment(UserId, Id, commentId));
         }
         #endregion
 

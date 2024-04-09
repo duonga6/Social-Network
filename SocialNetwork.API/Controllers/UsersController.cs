@@ -309,7 +309,7 @@ namespace SocialNetwork.API.Controllers
         [ProducesResponseType(typeof(DataResponse<GetMessageResponse>), 200)]
         public async Task<IActionResult> SendMessage(string Id, [FromBody] SendMessageRequest request)
         {
-            return ResponseModel(await _userService.SendMessage(UserId, Id, request);) 
+            return ResponseModel(await _userService.SendMessage(UserId, Id, request)); 
         }
 
         /// <summary>
