@@ -15,7 +15,6 @@
         IMediaTypeRepository MediaTypeRepository { get; }
         IPostMediaRepository PostMediaRepository { get; }
         IGroupRepository GroupRepository{ get; }
-        IGroupAdminRepository GroupAdminRepository { get; }
         IGroupMemberRepository GroupMemberRepository { get; }
         IGroupInviteRepository GroupInviteRepository { get; }
 

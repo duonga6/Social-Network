@@ -81,6 +81,7 @@
 
 
         // Group 
-        public static string GroupInvitedExisted => "User is already in this group";
+        public static string GroupInvitedExisted => "User is already invite in this group";
+        public static string AccessDeniedToGroup => "Access denied to group";
     }
 }

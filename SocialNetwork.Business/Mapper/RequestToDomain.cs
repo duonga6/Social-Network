@@ -20,7 +20,7 @@ namespace SocialNetwork.Business.Mapper
                 .ForMember(d => d.UserName, o => o.MapFrom(s => s.Email))
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(s => DateTime.UtcNow))
                 .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow))
-                .ForMember(d => d.AvatarUrl, o => o.MapFrom(s => AvatarUrl.Default));
+                .ForMember(d => d.AvatarUrl, o => o.MapFrom(s => DefaultImage.DefaultUserAvatar));
                 
 
             CreateMap<CreatePostRequest, Post>()

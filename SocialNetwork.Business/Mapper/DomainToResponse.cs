@@ -56,7 +56,14 @@ namespace SocialNetwork.Business.Mapper
             CreateMap<CommentReaction, UserReacted>();
 
             CreateMap<Group, GetGroupResponse>()
-                .ForMember(d => d.User, o => o.MapFrom(x => x.CreatedBy));
+                .ForMember(d => d.User, o => o.MapFrom(x => x.CreatedBy))
+                .ForMember(d => d.IsJoined, o => o.MapFrom(x => x.GroupMembers.Count > 0))
+                .ForMember(d => d.JoinedAt, o => o.MapFrom(x => x.GroupMembers.Count > 0 ? x.GroupMembers.First().CreatedAt : (DateTime?)null))
+                .ForMember(d => d.IsWaitingAccept, o => o.MapFrom(x => x.GroupInvites.Count > 0));
+
+            CreateMap<GroupMember, GetGroupMemberResponse>();
+
+            CreateMap<GroupInvite, GetGroupInviteResponse>();
 
         }
     }

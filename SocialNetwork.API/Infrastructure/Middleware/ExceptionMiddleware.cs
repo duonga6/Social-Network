@@ -33,8 +33,6 @@ namespace SocialNetwork.API.Infrastructure.Middleware
             httpContext.Response.ContentType = "application/json";
             httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-            string message = "Internal Server Error";
-
             List<string> exceptions = new();
 
             if (e.InnerException != null)

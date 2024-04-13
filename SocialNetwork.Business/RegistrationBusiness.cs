@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SocialNetwork.Business.Services.Abstract;
 using SocialNetwork.Business.Services.Concrete;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Settings;
@@ -29,6 +30,8 @@ namespace SocialNetwork.Business
             services.AddScoped<IPostReactionService, PostReactionService>();
             services.AddScoped<ICommentReactionService, CommentReactionService>();
             services.AddScoped<IGroupService, GroupService>();
+            services.AddScoped<IGroupInviteService, GroupInviteService>();
+            services.AddScoped<IGroupMemberService, GroupMemberService>();
         }
     }
 }

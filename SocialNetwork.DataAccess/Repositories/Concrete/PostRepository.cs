@@ -41,10 +41,11 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         
         public override async Task Update(Post post)
         {
-            var updatePost = await _dbSet.FirstOrDefaultAsync(x => x.Id == post.Id && x.AuthorId == post.AuthorId && x.Status == 1);
+            var updatePost = await _dbSet.FirstOrDefaultAsync(x => x.Id == post.Id && x.Status == 1);
             if (updatePost != null)
             {
                 updatePost.Content = post.Content;
+                updatePost.Access = post.Access;
                 updatePost.UpdatedAt = DateTime.UtcNow;
             }
         }

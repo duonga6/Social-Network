@@ -1,8 +1,15 @@
-﻿namespace SocialNetwork.Business.DTOs.Requests
+﻿using SocialNetwork.Business.Utilities.Enum;
+using SocialNetwork.DataAccess.Utilities.Enum;
+using System.ComponentModel.DataAnnotations;
+
+namespace SocialNetwork.Business.DTOs.Requests
 {
     public class CreatePostRequest
     {
-        public string Content { get; set; } = string.Empty;
-        public ICollection<CreatePostMediaRequest> PostMedias { get; set; } = new List<CreatePostMediaRequest>();
+        public string? Content { get; set; }
+        public ICollection<CreatePostMediaRequest>? PostMedias { get; set; } = new List<CreatePostMediaRequest>();
+        public Guid? GroupId { set; get; }
+        [Required]
+        public PostAccess Access { set; get; }
     }
 }

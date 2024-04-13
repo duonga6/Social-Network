@@ -1,6 +1,6 @@
-﻿using SocialNetwork.Business.Wrapper.Abstract;
-using SocialNetwork.Business.DTOs.Requests;
+﻿using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.Utilities.Enum;
+using SocialNetwork.Business.Wrapper.Abstract;
 
 namespace SocialNetwork.Business.Services.Interfaces
 {

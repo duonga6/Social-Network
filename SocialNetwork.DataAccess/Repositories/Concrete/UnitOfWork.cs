@@ -20,7 +20,6 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         public IMediaTypeRepository MediaTypeRepository { get; }
         public IPostMediaRepository PostMediaRepository { get; }
         public IGroupRepository GroupRepository { get; }
-        public IGroupAdminRepository GroupAdminRepository { get; }
         public IGroupMemberRepository GroupMemberRepository { get; }
         public IGroupInviteRepository GroupInviteRepository { get; }
 
@@ -44,7 +43,6 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             MediaTypeRepository = new MediaTypeRepository(logger, context);
             PostMediaRepository = new PostMediaRepository(logger, context);
             GroupRepository = new GroupRepository(logger, context);
-            GroupAdminRepository = new GroupAdminRepository(logger, context);
             GroupMemberRepository = new GroupMemberRepository(logger, context);
             GroupInviteRepository = new GroupInviteRepository(logger, context);
         }

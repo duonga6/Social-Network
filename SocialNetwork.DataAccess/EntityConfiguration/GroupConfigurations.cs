@@ -16,6 +16,9 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 .HasForeignKey(x => x.CreatedId)
                 .OnDelete(DeleteBehavior.NoAction)
                 .IsRequired();
+
+            builder.Property(x => x.PreCensored)
+                .IsRequired();
         }
     }
 }

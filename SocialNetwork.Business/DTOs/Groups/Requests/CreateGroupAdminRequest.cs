@@ -2,12 +2,11 @@
 
 namespace SocialNetwork.Business.DTOs.Requests
 {
-    public class CreateReactionRequest
+    public class CreateGroupAdminRequest
     {
         [Required]
-        public string Name { get; set; } = null!;
+        public string UserId { set; get; } = string.Empty;
         [Required]
-        public int Code { get; set; }
-        
+        public Guid GroupId { set; get; }
     }
 }

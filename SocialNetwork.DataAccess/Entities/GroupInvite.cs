@@ -6,9 +6,12 @@ namespace SocialNetwork.DataAccess.Entities
     {
         public Guid GroupId { set; get; }
         public string UserId { set; get; }
-        public bool Accepted { set; get; }
+        public bool AdminAccepted { set; get; }
+        public bool UserAccepted { set; get; }
+        public string CreatedId { set; get; }
 
-        public virtual Group Group { set; get; }
-        public virtual User User { get; set; }
+        public Group Group { set; get; }
+        public User User { get; set; }
+        public User CreatedBy { set; get; }
     }
 }

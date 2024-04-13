@@ -23,38 +23,37 @@ namespace SocialNetwork.DataAccess.Entities
         public string Password { set; get; }
 
         [JsonIgnore]
-        public virtual ICollection<Post> Posts { get; set; }
+        public ICollection<Post> Posts { get; set; }
         [JsonIgnore]
-        public virtual ICollection<PostComment> PostComments { get; set; }
+        public ICollection<PostComment> PostComments { get; set; }
         [JsonIgnore]
-        public virtual ICollection<PostReaction> PostReactions { get; set; }
+        public ICollection<PostReaction> PostReactions { get; set; }
         [JsonIgnore]
-        public virtual ICollection<CommentReaction> CommentReactions { get; set; }
+        public ICollection<CommentReaction> CommentReactions { get; set; }
         [JsonIgnore]
-        public virtual ICollection<RefreshToken> RefreshTokens { get; set; }
+        public ICollection<RefreshToken> RefreshTokens { get; set; }
         [JsonIgnore]
-        public virtual ICollection<Friendship> Friendships1 { get; set; }
+        public ICollection<Friendship> Friendships1 { get; set; }
         [JsonIgnore]
-        public virtual ICollection<Friendship> Friendships2 { get; set; }
+        public ICollection<Friendship> Friendships2 { get; set; }
         [JsonIgnore]
-        public virtual ICollection<Message> MessagesSent { set; get; }
+        public ICollection<Message> MessagesSent { set; get; }
         [JsonIgnore]
-        public virtual ICollection<Message> MessageReceived { set; get; }
+        public ICollection<Message> MessageReceived { set; get; }
         [JsonIgnore]
-        public virtual ICollection<Notification> NotificationsReceive { set; get; }
+        public ICollection<Notification> NotificationsReceive { set; get; }
         [JsonIgnore]
-        public virtual ICollection<Notification> NotificationSend { set; get; }
+        public ICollection<Notification> NotificationSend { set; get; }
         [JsonIgnore]
-        public virtual Gender Gender_FK { set; get; }
+        public Gender Gender_FK { set; get; }
         [JsonIgnore]
-        public virtual ICollection<GroupMember> GroupMembers{ set; get; }
+        public ICollection<GroupMember> GroupMembers{ set; get; }
         [JsonIgnore]
-        public virtual ICollection<PostMedia> PostMedias { set; get; }
+        public ICollection<PostMedia> PostMedias { set; get; }
         [JsonIgnore]
-        public virtual ICollection<Group> GroupOwner { set; get; }
+        public ICollection<Group> GroupOwner { set; get; }
         [JsonIgnore]
-        public virtual ICollection<GroupAdministrator> GroupAdministrators { set; get; }
-        [JsonIgnore]
-        public virtual ICollection<GroupInvite> GroupInvites { set; get; }
+        public ICollection<GroupInvite> GroupInvites { set; get; }
+        public ICollection<GroupInvite> GroupInvitesCreate { set; get; }
     }
 }

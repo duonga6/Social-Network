@@ -23,43 +23,32 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> Create(string requestId, CreateGroupRequest request)
         {
-            try
+            var newGroup = _mapper.Map<Group>(request);
+            newGroup.CreatedId = requestId;
+
+            await _unitOfWork.GroupRepository.Add(newGroup);
+
+            var newGroupMember = new GroupMember()
             {
-                await _unitOfWork.BeginTransaction();
+                UserId = requestId,
+                GroupId = newGroup.Id,
+                IsAdmin = true,
+                IsSuperAdmin = true,
+            };
 
-                var newGroup = _mapper.Map<Group>(request);
-                newGroup.CreatedId = requestId;
+            await _unitOfWork.GroupMemberRepository.Add(newGroupMember);
+            newGroup.TotalMember = 1;
+            newGroup.CoverImage ??= DefaultImage.DefaultGroupImage;
+            await _unitOfWork.CompleteAsync();
 
-                await _unitOfWork.GroupRepository.Add(newGroup);
-                await _unitOfWork.CompleteAsync();
-
-                var superGroupAdmin = new GroupAdministrator()
+            var response = _mapper.Map<GetGroupResponse>(await _unitOfWork.GroupRepository.GetById(newGroup.Id, 
+                new Expression<Func<Group, object>>[]
                 {
-                    GroupId = newGroup.Id,
-                    IsSuperAdmin = true,
-                    UserId = requestId,
-                };
+                    x => x.CreatedBy,
+                }
+                ));
 
-                var newGroupMember = new GroupMember()
-                {
-                    UserId = requestId,
-                    GroupId = newGroup.Id,
-                };
-
-                await _unitOfWork.GroupAdminRepository.Add(superGroupAdmin);
-                await _unitOfWork.GroupMemberRepository.Add(newGroupMember);
-                newGroup.TotalMember = 1;
-                await _unitOfWork.Commit();
-
-                var response = _mapper.Map<GetGroupResponse>(newGroup);
-
-                return new DataResponse<GetGroupResponse>(response, 201, Messages.CreatedSuccessfully);
-            } catch (Exception ex)
-            {
-                await _unitOfWork.Rollback();
-                _logger.LogError("{Group service.Create error: }" + ex.Message);
-                return new ErrorResponse(501, Messages.STWrong);
-            }
+            return new DataResponse<GetGroupResponse>(response, 201, Messages.CreatedSuccessfully);
             
         }
 
@@ -96,7 +85,7 @@ namespace SocialNetwork.Business.Services.Concrete
             {
                 case GroupType.ALL:
                     Expression<Func<Group, bool>> filter = x => x.Status == 1;
-                    if (searchString != null)
+                    if (!string.IsNullOrEmpty(searchString))
                     {
                         filter = filter.And(x => x.Name.Contains(searchString.Trim()) || x.Description.Contains(searchString.Trim()));
                     }
@@ -109,26 +98,25 @@ namespace SocialNetwork.Business.Services.Concrete
                         return new ErrorResponse(400, Messages.OutOfPage);
                     }
 
-                    data = (await _unitOfWork.GroupRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt)).ToList();
+                    data = (await _unitOfWork.GroupRepository.GetPaged(pageSize, pageNumber,
+                        new Expression<Func<Group, object>>[] {
+                            x => x.CreatedBy,
+                            x => x.GroupMembers.Where(gm => gm.UserId == requestId),
+                            x => x.GroupInvites.Where(gi => gi.UserId == requestId && !gi.AdminAccepted)
+                        },
+                        filter,
+                        x => x.CreatedAt)
+                        ).ToList();
 
                     break;
 
                 case GroupType.JOINED_GROUP:
                     {
-
-                        var groupQueryable = _unitOfWork.GroupRepository.GetQueryable();
-                        var memberQueryable = _unitOfWork.GroupMemberRepository.GetQueryable();
-                        var userQueryable = _unitOfWork.UserRepository.GetQueryable();
-                        var groupAdminQueryable = _unitOfWork.GroupAdminRepository.GetQueryable();
-
-
-                        var query = from gr in groupQueryable
-                                    join user in userQueryable on gr.CreatedId equals user.Id
-                                    join member in memberQueryable on gr.Id equals member.GroupId
-                                    join admin in groupAdminQueryable on gr.Id equals admin.GroupId
-                                    where gr.Status == 1 && member.UserId == requestId && admin.UserId != requestId
-                                    orderby gr.CreatedAt descending
-                                    select gr;
+                        var query = _unitOfWork.GroupRepository.GetQueryable()
+                            .Where(
+                                g => g.Status == 1 && 
+                                g.GroupMembers.Any(gm => gm.UserId == requestId && !gm.IsAdmin)
+                            );
 
                         totalItems = await query.CountAsync();
                         pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
@@ -138,22 +126,14 @@ namespace SocialNetwork.Business.Services.Concrete
                             return new ErrorResponse(400, Messages.OutOfPage);
                         }
 
-                        data = await query.Skip(pageNumber - 1).Take(pageSize).ToListAsync();
+                        data = await query.Include(x => x.CreatedBy).Skip(pageNumber - 1).Take(pageSize).ToListAsync();
 
                         break;
                     }
                 case GroupType.MANAGED_BY_ME:
                     {
-                        var groupQueryable = _unitOfWork.GroupRepository.GetQueryable();
-                        var groupAdminQueryable = _unitOfWork.GroupAdminRepository.GetQueryable();
-                        var userQueryable = _unitOfWork.UserRepository.GetQueryable();
-
-                        var query = from gr in groupQueryable
-                                    join user in userQueryable on gr.CreatedId equals user.Id
-                                    join admin in groupAdminQueryable on gr.Id equals admin.GroupId
-                                    where gr.Status == 1 && admin.UserId == requestId
-                                    orderby gr.CreatedAt descending
-                                    select gr;
+                        var query = _unitOfWork.GroupRepository.GetQueryable()
+                            .Where(x => x.Status == 1 && x.GroupMembers.Any(ga => ga.UserId == requestId && ga.IsAdmin));
 
                         totalItems = await query.CountAsync();
                         pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
@@ -163,7 +143,29 @@ namespace SocialNetwork.Business.Services.Concrete
                             return new ErrorResponse(400, Messages.OutOfPage);
                         }
 
-                        data = await query.Skip(pageNumber - 1).Take(pageSize).ToListAsync();
+                        data = await query
+                            .Include(x => x.CreatedBy)
+                            .Include(x => x.GroupMembers.Where(gm => gm.UserId == requestId))
+                            .Skip(pageNumber - 1)
+                            .Take(pageSize)
+                            .ToListAsync();
+
+                        break;
+                    }
+                case GroupType.BOTH_JOINED_MANAGED:
+                    {
+                        var query = _unitOfWork.GroupRepository.GetQueryable()
+                            .Where(x => x.Status == 1 && x.GroupMembers.Any(gm => gm.UserId == requestId));
+
+                        totalItems = await query.CountAsync();
+                        pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
+
+                        if (pageNumber > pageCount && pageCount != 0)
+                        {
+                            return new ErrorResponse(400, Messages.OutOfPage);
+                        }
+
+                        data = await query.Include(x => x.CreatedBy).Skip(pageNumber - 1).Take(pageSize).ToListAsync();
                         break;
                     }
                 default:
@@ -218,5 +220,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
             return new DataResponse<GetGroupResponse>(response, 200, Messages.UpdatedSuccessfully);
         }
+    
+        
     }
 }

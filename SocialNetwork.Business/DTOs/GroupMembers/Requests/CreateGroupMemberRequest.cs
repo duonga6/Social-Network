@@ -6,5 +6,7 @@ namespace SocialNetwork.Business.DTOs.Requests
     {
         [Required]
         public Guid GroupId { set; get; }
+        [Required]
+        public string UserId { set; get; } = string.Empty;
     }
 }

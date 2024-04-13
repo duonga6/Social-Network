@@ -6,7 +6,8 @@ namespace SocialNetwork.Business.DTOs.Requests
     {
         [Required]
         public string Name { set; get; } = string.Empty;
-        public string Description { set; get; } = string.Empty;
+        public string? Description { set; get; }
+        public string? CoverImage { set; get; }
         [Required]
         public bool IsPrivate { get; set; }
     }

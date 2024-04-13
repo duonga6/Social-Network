@@ -6,6 +6,7 @@ using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.Services.Interfaces;
+using SocialNetwork.Business.Utilities.Enum;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
 using System.ComponentModel.DataAnnotations;
@@ -30,12 +31,13 @@ namespace SocialNetwork.API.Controllers
         /// <param name="searchString">Key word search</param>
         /// <param name="pageSize">Item count per page</param>
         /// <param name="pageNumber">Current page</param>
+        /// <param name="groupId">Id of group</param>
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResponse<List<GetPostResponse>>), 200)]
-        public async Task<IActionResult> GetAll([FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
+        public async Task<IActionResult> GetAll([FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber, [FromQuery] Guid? groupId)
         {
-            return ResponseModel(await _postService.GetAll(UserId, searchString, pageSize, pageNumber));
+            return ResponseModel(await _postService.GetAll(UserId, searchString, pageSize, pageNumber, groupId));
         }
 
         /// <summary>

@@ -27,11 +27,11 @@ namespace SocialNetwork.API.Controllers
         /// <param name="searchString"></param>
         /// <param name="pageSize"></param>
         /// <param name="pageNumber"></param>
-        /// <param name="type">Type group get 0: all group - 1: joined group - 2: group managed by me</param>
+        /// <param name="type">Type group get 0: all group - 1: joined group - 2: group managed by me - 3: Both joined and managed</param>
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResponse<List<GetGroupResponse>>), 200)]
-        public async Task<IActionResult> Get([FromQuery]string? searchString,[FromQuery, Required, Range(0, int.MaxValue)] int pageSize,[FromQuery, Required, Range(0, int.MaxValue)] int pageNumber,[Required] GroupType type)
+        public async Task<IActionResult> Get([FromQuery]string? searchString,[FromQuery, Required, Range(1, int.MaxValue)] int pageSize,[FromQuery, Required, Range(1, int.MaxValue)] int pageNumber,[Required] GroupType type)
         {
             return ResponseModel(await _groupService.Get(UserId, searchString, pageSize, pageNumber, type));
         }

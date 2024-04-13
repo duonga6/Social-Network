@@ -7,6 +7,7 @@ using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.Services.Interfaces;
+using SocialNetwork.Business.Utilities.Enum;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
 using SocialNetwork.DataAccess.Entities;
@@ -39,12 +40,41 @@ namespace SocialNetwork.Business.Services.Concrete
         }
 
         #region Post
-        public async Task<IResponse> GetAll(string requestUserId, string? searchString, int pageSize, int pageNumber)
+        public async Task<IResponse> GetAll(string requestUserId, string? searchString, int pageSize, int pageNumber, Guid? groupId)
         {
-            Expression<Func<Post, bool>> filter = x => x.Status == 1 &&
-                _unitOfWork.FriendshipRepository.GetQueryable().Any(f =>
-                    (f.RequestUserId == requestUserId && f.TargetUserId == x.AuthorId || f.TargetUserId == requestUserId && f.RequestUserId == x.AuthorId) && f.FriendshipTypeId == (int)FriendshipEnum.Accepted)
-            ;
+            Expression<Func<Post, bool>> filter = x => x.Status == 1;
+
+            // User post:
+            if (groupId.HasValue)
+            {
+                var group = await _unitOfWork.GroupRepository.GetById(groupId.Value);
+
+                if (group == null)
+                {
+                    return new ErrorResponse(404, Messages.NotFound("Group"));
+                } 
+                else
+                {
+                    if (!group.IsPublic)
+                    {
+                        var checkMember = await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.UserId == requestUserId);
+                        if (checkMember == null)
+                        {
+                            return new ErrorResponse(400, Messages.AccessDeniedToGroup);
+                        }
+                    }
+                }
+
+                filter = filter.And(x => x.GroupId == groupId);
+            } 
+            else
+            {
+                filter = filter.And(x => 
+                   x.Access == PostAccess.ONLY_FRIEND && _unitOfWork.FriendshipRepository.GetQueryable().Any(f => (f.RequestUserId == requestUserId && f.TargetUserId == x.AuthorId || f.TargetUserId == requestUserId && f.RequestUserId == x.AuthorId) && f.FriendshipTypeId == (int)FriendshipEnum.Accepted)
+                || x.Access == PostAccess.PUBLIC
+                || x.AuthorId == requestUserId
+                );
+            }
 
             if (!string.IsNullOrEmpty(searchString))
             {
@@ -106,7 +136,7 @@ namespace SocialNetwork.Business.Services.Concrete
      
         public async Task<IResponse> Create(string requestUserId, CreatePostRequest request)
         {
-            if (string.IsNullOrEmpty(request.Content) && request.PostMedias.Count == 0)
+            if (string.IsNullOrEmpty(request.Content) && request.PostMedias?.Count == 0)
             {
                 return new ErrorResponse(404, Messages.PostEmpty);
             }
@@ -175,29 +205,30 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(403, Messages.Forbidden);
             }
 
-            var postUpdate = _mapper.Map<Post>(request);
-            postUpdate.Id = id;
+            _mapper.Map(request, post);
 
-            await _unitOfWork.PostRepository.Update(postUpdate);
-
+            if (request.MediasDelete != null)
             foreach (var item in request.MediasDelete)
             {
                 await _unitOfWork.PostMediaRepository.Delete(item);
             }
 
-            foreach (var item in request.MediasUpdate)
+            if (request.MediasUpdate!= null)
+                foreach (var item in request.MediasUpdate)
             {
                 var updateImage = _mapper.Map<PostMedia>(item);
                 await _unitOfWork.PostMediaRepository.Update(updateImage);
             }
 
-            foreach (var item in request.MediasAdd)
+            if (request.MediasAdd != null)
+                foreach (var item in request.MediasAdd)
             {
                 var addImage = _mapper.Map<PostMedia>(item);
-                addImage.PostId = postUpdate.Id;
+                addImage.PostId = post.Id;
                 await _unitOfWork.PostMediaRepository.Add(addImage);
             }
 
+            await _unitOfWork.PostRepository.Update(post);
             var result = await _unitOfWork.CompleteAsync();
             if (!result)
             {

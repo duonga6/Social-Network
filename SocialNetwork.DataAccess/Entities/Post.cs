@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using SocialNetwork.DataAccess.Entities.Base;
+using SocialNetwork.DataAccess.Utilities.Enum;
 
 namespace SocialNetwork.DataAccess.Entities
 {
@@ -8,7 +9,7 @@ namespace SocialNetwork.DataAccess.Entities
         public string Content { get; set; }
         public string AuthorId { get; set; }
         public Guid? GroupId { set; get; }
-        public string Privacy { set; get; }
+        public PostAccess Access { set; get; }
         public Guid? SharePostId { set; get; }
         
         public virtual User Author { get; set; }
