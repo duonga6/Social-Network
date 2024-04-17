@@ -11,5 +11,7 @@ namespace SocialNetwork.Business.Services.Interfaces
         Task<IResponse> Create(string requestId, CreateGroupRequest request);
         Task<IResponse> Update(string requestId, Guid Id, UpdateGroupRequest request);
         Task<IResponse> Delete(string requestId, Guid Id);
+
+        Task<IResponse> GetMedia(string requestId, Guid groupId, int pageSize, int pageNumber);
     }
 }

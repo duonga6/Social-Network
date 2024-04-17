@@ -29,6 +29,6 @@
         /// <summary>
         /// When user request invite group
         /// </summary>
-        GROUP_INVITE_REQUEST,
+        HAVE_REQUEST_JOIN_GROUP,
     }
 }

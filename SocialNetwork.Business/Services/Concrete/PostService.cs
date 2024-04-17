@@ -60,7 +60,7 @@ namespace SocialNetwork.Business.Services.Concrete
                         var checkMember = await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.UserId == requestUserId);
                         if (checkMember == null)
                         {
-                            return new ErrorResponse(400, Messages.AccessDeniedToGroup);
+                            return new ErrorResponse(400, Messages.GroupAccessDenied);
                         }
                     }
                 }
@@ -70,9 +70,10 @@ namespace SocialNetwork.Business.Services.Concrete
             else
             {
                 filter = filter.And(x => 
-                   x.Access == PostAccess.ONLY_FRIEND && _unitOfWork.FriendshipRepository.GetQueryable().Any(f => (f.RequestUserId == requestUserId && f.TargetUserId == x.AuthorId || f.TargetUserId == requestUserId && f.RequestUserId == x.AuthorId) && f.FriendshipTypeId == (int)FriendshipEnum.Accepted)
+                   x.GroupId == null
+                && x.Access == PostAccess.ONLY_FRIEND && _unitOfWork.FriendshipRepository.GetQueryable().Any(f => (f.RequestUserId == requestUserId && f.TargetUserId == x.AuthorId || f.TargetUserId == requestUserId && f.RequestUserId == x.AuthorId) && f.FriendshipTypeId == (int)FriendshipEnum.Accepted)
                 || x.Access == PostAccess.PUBLIC
-                || x.AuthorId == requestUserId
+                || x.AuthorId == requestUserId && x.GroupId == null
                 );
             }
 

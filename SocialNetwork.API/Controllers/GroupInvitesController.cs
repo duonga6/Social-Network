@@ -60,6 +60,18 @@ namespace SocialNetwork.API.Controllers
         }
 
         /// <summary>
+        /// Delete request join by groupId
+        /// </summary>
+        /// <param name="groupId"></param>
+        /// <returns></returns>
+        [HttpDelete]
+        [ProducesResponseType(typeof(SuccessResponse), 200)]
+        public async Task<IResponse> DeleteByGroup([FromQuery, Required] Guid groupId)
+        {
+            return await _groupInviteService.DeleteByGroup(UserId, groupId);
+        }
+
+        /// <summary>
         /// Accept user invite group
         /// </summary>
         /// <param name="Id"></param>

@@ -144,6 +144,11 @@ namespace SocialNetwork.Business.Services.Concrete
                         });
                         break;
                     }
+                case NotificationEnum.HAVE_REQUEST_JOIN_GROUP:
+                    {
+
+                        break;
+                    }
 
             }
             await _unitOfWork.NotificationRepository.AddRange(notifications);
@@ -186,11 +191,6 @@ namespace SocialNetwork.Business.Services.Concrete
             var notification = await _unitOfWork.NotificationRepository.GetById(id);
             if (notification.ToId != userId) return new ErrorResponse(404, Messages.NotFound());
 
-            //if (notification.Seen)
-            //{
-            //    return new SuccessResponse(Messages.NotificationSeen, 200);
-            //}    ??
-
             await _unitOfWork.NotificationRepository.Seen(id);
             var result = await _unitOfWork.CompleteAsync();
 
@@ -199,7 +199,9 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.STWrong);
             }
 
-            return new SuccessResponse(Messages.MessageSeen, 200);
+            var response = await _unitOfWork.NotificationRepository.GetById(id);
+
+            return new DataResponse<GetNotificationResponse>(_mapper.Map<GetNotificationResponse>(response), 200);
             
         }
 
@@ -227,37 +229,22 @@ namespace SocialNetwork.Business.Services.Concrete
                 filter = filter.And(x => x.CreatedAt < cursor);
             }
 
-            var notifications = await _unitOfWork
+            var notifications = (await _unitOfWork
                 .NotificationRepository
-                .GetCursorPaged(pageSize, filter, getNext);
+                .GetCursorPaged(pageSize + 1, filter, getNext)).ToList();
 
             bool hasNext = true;
 
-            // Check has next
-            var query = _unitOfWork.NotificationRepository.GetQueryable().AsNoTracking().Where(filter);
-
-            if (getNext)
-            {
-                query = query.OrderByDescending(x => x.CreatedAt);
-            }
-            else
-            {
-                query = query.OrderBy(x => x.CreatedAt);
-            }
-
-            var checkCount = await query.Take(pageSize + 1).CountAsync();
-
-            if (checkCount <= notifications.Count)
+            if (notifications.Count <= pageSize)
             {
                 hasNext = false;
-            }
-
-            var endCursor = notifications.LastOrDefault()?.CreatedAt;
-
-            if (endCursor != null)
+            } 
+            else
             {
-                endCursor = DateTime.SpecifyKind(endCursor.Value, DateTimeKind.Utc);
+                notifications.RemoveAt(notifications.Count - 1);
             }
+
+            DateTime? endCursor = notifications.LastOrDefault()?.CreatedAt;
 
             var response = _mapper.Map<List<GetNotificationResponse>>(notifications);
 

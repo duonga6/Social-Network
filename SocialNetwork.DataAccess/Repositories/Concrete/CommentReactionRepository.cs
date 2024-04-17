@@ -37,7 +37,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
     
         public override async Task Update(CommentReaction entity)
         {
-            var entityUpdate = await _dbSet.FirstOrDefaultAsync(x => x.CommentId == entity.CommentId && x.UserId == entity.UserId && x.ReactionId == entity.ReactionId);
+            var entityUpdate = await _dbSet.FirstOrDefaultAsync(x => x.Id == entity.Id);
             
             if (entityUpdate != null) 
             { 

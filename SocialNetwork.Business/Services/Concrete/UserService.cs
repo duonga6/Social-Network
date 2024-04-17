@@ -432,20 +432,11 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetPostByUser(string loggedUserId, string requestUserId, string? searchString, int pageSize, int pageNumber)
         {
-            //if (!await CheckAccessPost(loggedUserId, requestUserId))
-            //{
-            //    return new ErrorResponse(403, Messages.Forbidden);
-            //}
-
-            Expression<Func<Post, bool>> filter;
+            Expression<Func<Post, bool>> filter = x => x.Status == 1 && x.AuthorId == requestUserId && x.GroupId == null;
 
             if (searchString != null)
             {
-                filter = x => x.Content.Contains(searchString) && x.AuthorId == requestUserId && x.Status == 1;
-            }   
-            else
-            {
-                filter = x => x.AuthorId == requestUserId && x.Status == 1;
+                filter = filter.And(x => x.Content.Contains(searchString));
             }
 
             int totalItems = await _unitOfWork.PostRepository.GetCount(filter);

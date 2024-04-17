@@ -84,5 +84,14 @@ namespace SocialNetwork.API.Controllers
         {
             return ResponseModel(await _groupService.Delete(UserId, Id));
         }
+
+
+        [HttpGet("{Id}/Medias")]
+        public async Task<IResponse> GetMedia([FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber, Guid Id)
+        {
+            return await _groupService.GetMedia(UserId, Id, pageSize, pageNumber);
+        }
+        
+        
     }
 }

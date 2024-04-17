@@ -181,7 +181,11 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetById(string requestId, Guid Id)
         {
-            var group = await _unitOfWork.GroupRepository.GetById(Id);
+            var group = await _unitOfWork.GroupRepository.GetById(Id, new Expression<Func<Group, object>>[] {
+                x => x.CreatedBy, 
+                x => x.GroupMembers.Where(gm => gm.UserId == requestId),
+                x => x.GroupInvites.Where(gi => gi.UserId == requestId)
+            });
             if (group == null)
             {
                 return new ErrorResponse(404, Messages.NotFound("Group id " + Id.ToString()));
@@ -220,7 +224,32 @@ namespace SocialNetwork.Business.Services.Concrete
 
             return new DataResponse<GetGroupResponse>(response, 200, Messages.UpdatedSuccessfully);
         }
-    
-        
+
+        public async Task<IResponse> GetMedia(string requestId, Guid groupId, int pageSize, int pageNumber)
+        {
+            var group = await _unitOfWork.GroupRepository.GetById(groupId);
+            if (group == null) return new ErrorResponse(404, Messages.NotFound("Group"));
+
+            if (!group.IsPublic)
+            {
+                var checkMember = await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.GroupId == groupId && x.UserId == requestId);
+                if (checkMember == null) return new ErrorResponse(400, Messages.GroupAccessDenied);
+            }
+
+            Expression<Func<PostMedia, bool>> filter = x => x.Status == 1 && x.Post.Status == 1 && x.Post.GroupId == groupId;
+
+            int totalItems = await _unitOfWork.PostMediaRepository.GetCount(filter);
+            int totalPage = (int)Math.Ceiling((double)totalItems / pageSize);
+            if (pageNumber > totalPage && totalPage != 0)
+            {
+                return new ErrorResponse(400, Messages.OutOfPage);
+            }
+
+            var postImages = await _unitOfWork.PostMediaRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
+
+            var response = _mapper.Map<List<GetPostMediaResponse>>(postImages);
+
+            return new PagedResponse<List<GetPostMediaResponse>>(response, totalItems, 200);
+        }
     }
 }

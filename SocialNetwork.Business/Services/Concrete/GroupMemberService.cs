@@ -31,12 +31,12 @@ namespace SocialNetwork.Business.Services.Concrete
 
             if (memberDelete.UserId != requestId && checkAdmin == null)
             {
-                return new ErrorResponse(400, Messages.AccessDeniedToGroup);
+                return new ErrorResponse(400, Messages.GroupAccessDenied);
             }
 
             if (memberDelete.IsAdmin && !checkAdmin.IsSuperAdmin)
             {
-                return new ErrorResponse(400, Messages.AccessDeniedToGroup);
+                return new ErrorResponse(400, Messages.GroupAccessDenied);
             }
 
             await _unitOfWork.GroupMemberRepository.Delete(id);
@@ -62,12 +62,12 @@ namespace SocialNetwork.Business.Services.Concrete
 
             if (memberDelete.UserId != requestId && checkAdmin == null)
             {
-                return new ErrorResponse(400, Messages.AccessDeniedToGroup);
+                return new ErrorResponse(400, Messages.GroupAccessDenied);
             }
 
             if (memberDelete.IsAdmin && !checkAdmin.IsSuperAdmin)
             {
-                return new ErrorResponse(400, Messages.AccessDeniedToGroup);
+                return new ErrorResponse(400, Messages.GroupAccessDenied);
             }
 
             await _unitOfWork.GroupMemberRepository.Delete(memberDelete.Id);
@@ -88,7 +88,7 @@ namespace SocialNetwork.Business.Services.Concrete
             if (group == null) return new ErrorResponse(404, Messages.NotFound("Group"));
 
             if (!group.IsPublic && (await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.UserId == requestId && x.GroupId == groupId) == null)) {
-                return new ErrorResponse(400, Messages.AccessDeniedToGroup);
+                return new ErrorResponse(400, Messages.GroupAccessDenied);
             }
 
             Expression<Func<GroupMember, bool>> filter = x => x.GroupId == groupId;
@@ -124,13 +124,13 @@ namespace SocialNetwork.Business.Services.Concrete
             if (group == null) return new ErrorResponse(404, Messages.NotFound("Group"));
 
             var checkUserRequest = await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.GroupId == request.GroupId && x.UserId == requestId);
-            if (checkUserRequest == null) return new ErrorResponse(400, Messages.AccessDeniedToGroup);
+            if (checkUserRequest == null) return new ErrorResponse(400, Messages.GroupAccessDenied);
 
             var checkUserInvite = await _unitOfWork.GroupInviteRepository.FindOneBy(x => x.GroupId == request.GroupId && x.UserId == request.UserId && x.CreatedId == requestId);
-            if (checkUserInvite != null) return new ErrorResponse(400, Messages.GroupInvitedExisted);
+            if (checkUserInvite != null) return new ErrorResponse(400, Messages.GroupJoinRequestExist);
 
             var checkUserJoined = await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.GroupId == request.GroupId && x.UserId == request.UserId);
-            if (checkUserJoined != null) return new ErrorResponse(400, Messages.GroupInvitedExisted);
+            if (checkUserJoined != null) return new ErrorResponse(400, Messages.GroupJoinRequestExist);
 
             var newInvite = new GroupInvite
             {

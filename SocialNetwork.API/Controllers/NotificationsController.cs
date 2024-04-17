@@ -51,7 +51,7 @@ namespace SocialNetwork.API.Controllers
         /// </summary>
         /// <param name="Id"></param>
         /// <returns></returns>
-        [HttpPost("{Id}")]
+        [HttpPut("{Id}")]
         [ProducesResponseType(typeof(DataResponse<GetNotificationResponse>), 200)]
         public async Task<IActionResult> SeenNotification(Guid Id)
         {

@@ -7,6 +7,7 @@ namespace SocialNetwork.Business.Services.Abstract
     {
         Task<IResponse> GetByGroup(string requestId, string? searchString, int pageSize, int pageNumber, Guid groupId);
         Task<IResponse> Create(string requestId, CreateGroupInviteRequest request);
+        Task<IResponse> DeleteByGroup(string requestId, Guid groupId);
         Task<IResponse> Delete(string requestId, Guid id);
         Task<IResponse> AcceptRequest(string requestId, Guid id);
     }

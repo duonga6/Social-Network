@@ -80,8 +80,12 @@
         public static string NotificationSeen => "Notification has been seen";
 
 
-        // Group 
-        public static string GroupInvitedExisted => "User is already invite in this group";
-        public static string AccessDeniedToGroup => "Access denied to group";
+        // Group
+        public static string CreatedRequestJoinGroup => "GA01 Created join group request";
+        public static string GroupMemberJoined => "GA02 Joined group";
+        public static string GroupAcceptedInviteFromOther => "GA03 Accepted invite request from other user";
+        public static string GroupJoinRequestExist => "GF01 User already send request join group";
+        public static string GroupAccessDenied => "GF02 Access denied to group";
+        public static string GroupMemberExist => "GF03 User is already joined group";
     }
 }
