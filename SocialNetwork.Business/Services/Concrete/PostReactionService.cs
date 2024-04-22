@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.DTOs.Responses;
+using SocialNetwork.Business.Exceptions;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
@@ -102,17 +103,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetOverview(string requestUserId, Guid postId)
         {
-            var post = await _unitOfWork.PostRepository.GetById(postId);
-
-            if (post == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound("Post"));
-            }
-
-            if (!await CheckAccessPost(requestUserId, post.AuthorId))
-            {
-                return new ErrorResponse(400, Messages.NotFriend);
-            }
+            var post = await _unitOfWork.PostRepository.GetById(postId) ?? throw new NotFoundException("Post id: " + postId.ToString());
 
             var listReactionWithCount = new List<ReactionWithCount>();
 

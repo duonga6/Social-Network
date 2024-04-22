@@ -91,7 +91,48 @@ namespace SocialNetwork.API.Controllers
         {
             return await _groupService.GetMedia(UserId, Id, pageSize, pageNumber);
         }
-        
-        
+
+        /// <summary>
+        /// Get group post feed
+        /// </summary>
+        /// <param name="pageSize"></param>
+        /// <param name="cursor"></param>
+        /// <returns></returns>
+        [HttpGet("Feed")]
+        [ProducesResponseType(typeof(CursorResponse<List<GetPostResponse>>), 200)]
+        public async Task<IActionResult> GetPostFeed([FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery] DateTime? cursor)
+        {
+            return ResponseModel(await _groupService.GetFeed(UserId, pageSize, cursor));
+        }
+
+        /// <summary>
+        /// Get group's post
+        /// </summary>
+        /// <param name="searchString"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="pageNumber"></param>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        [HttpGet("{Id}/Posts")]
+        [ProducesResponseType(typeof(PagedResponse<List<GetPostResponse>>), 200)]
+        public async Task<IActionResult> GetGroupPost([FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber, Guid Id)
+        {
+            return ResponseModel(await _groupService.GetPost(UserId, Id, pageSize, pageNumber, searchString));
+        }
+
+        /// <summary>
+        /// Get group's post by cursor
+        /// </summary>
+        /// <param name="searchString"></param>
+        /// <param name="cursor"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        [HttpGet("{Id}/Posts/Cursor")]
+        [ProducesResponseType(typeof(CursorResponse<List<GetPostResponse>>), 200)]
+        public async Task<IActionResult> GetGroupPost([FromQuery] string? searchString, [FromQuery] DateTime? cursor, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, Guid Id)
+        {
+            return ResponseModel(await _groupService.GetPost(UserId, Id, pageSize, cursor, searchString));
+        }
     }
 }

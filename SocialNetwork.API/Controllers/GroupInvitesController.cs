@@ -30,9 +30,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResponse<List<GetGroupInviteResponse>>), 200)]
-        public async Task<IResponse> Get([FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber, [FromQuery, Required] Guid groupId)
+        public async Task<IActionResult> Get([FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber, [FromQuery, Required] Guid groupId)
         {
-            return await _groupInviteService.GetByGroup(UserId, searchString, pageSize, pageNumber, groupId);
+            return ResponseModel(await _groupInviteService.GetByGroup(UserId, searchString, pageSize, pageNumber, groupId));
         }
 
         /// <summary>
@@ -42,9 +42,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(DataResponse<GetGroupInviteResponse>), 201)]
-        public async Task<IResponse> Create([FromBody] CreateGroupInviteRequest request)
+        public async Task<IActionResult> Create([FromBody] CreateGroupInviteRequest request)
         {
-            return await _groupInviteService.Create(UserId, request);
+            return ResponseModel(await _groupInviteService.Create(UserId, request));
         }
 
         /// <summary>
@@ -54,9 +54,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpDelete("{Id}")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> Delete(Guid Id)
+        public async Task<IActionResult> Delete(Guid Id)
         {
-            return await _groupInviteService.Delete(UserId, Id);
+            return ResponseModel(await _groupInviteService.Delete(UserId, Id));
         }
 
         /// <summary>
@@ -66,9 +66,9 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpDelete]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IResponse> DeleteByGroup([FromQuery, Required] Guid groupId)
+        public async Task<IActionResult> DeleteByGroup([FromQuery, Required] Guid groupId)
         {
-            return await _groupInviteService.DeleteByGroup(UserId, groupId);
+            return ResponseModel(await _groupInviteService.DeleteByGroup(UserId, groupId));
         }
 
         /// <summary>
@@ -78,9 +78,48 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPut("{Id}")]
         [ProducesResponseType(typeof(DataResponse<GetGroupMemberResponse>), 200)]
-        public async Task<IResponse> AcceptInvite(Guid Id)
+        public async Task<IActionResult> AcceptInvite(Guid Id)
         {
-            return await _groupInviteService.AcceptRequest(UserId, Id);
+            return ResponseModel(await _groupInviteService.AcceptRequest(UserId, Id));
+        }
+    
+        /// <summary>
+        /// Get user invite by Id
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        [HttpGet("{Id}")]
+        [ProducesResponseType(typeof(DataResponse<GetGroupMemberResponse>), 200)]
+        public async Task<IActionResult> GetById(Guid Id)
+        {
+            return ResponseModel(await _groupInviteService.GetById(UserId, Id));
+        }
+
+        /// <summary>
+        /// Get user invite by userId and groupId
+        /// </summary>
+        /// <param name="groupId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        [HttpGet("{groupId}/{userId}")]
+        public async Task<IActionResult> GetByUserIdAndGrId(Guid groupId, string userId)
+        {
+            return ResponseModel(await _groupInviteService.GetById(UserId, userId, groupId));
+        }
+        
+        /// <summary>
+        /// Get group invite by cursor
+        /// </summary>
+        /// <param name="groupId"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="cursor"></param>
+        /// <param name="searchString"></param>
+        /// <returns></returns>
+        [HttpGet("Cursor")]
+        [ProducesResponseType(typeof(CursorResponse<List<GetGroupInviteResponse>>), 200)]
+        public async Task<IActionResult> GetCursor([FromQuery, Required] Guid groupId, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, DateTime? cursor, string? searchString)
+        {
+            return ResponseModel(await _groupInviteService.GetCursor(UserId, groupId, pageSize, cursor, searchString));
         }
     }
 }

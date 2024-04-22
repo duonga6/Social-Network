@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.DTOs.Responses;
+using SocialNetwork.Business.Exceptions;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
@@ -113,12 +114,7 @@ namespace SocialNetwork.Business.Services.Concrete
             if (post == null)
             {
                 return new ErrorResponse(404, Messages.NotFound("Post"));
-            }    
-
-            if (!await CheckAccessPost(requestUserId, post.AuthorId))
-            {
-                return new ErrorResponse(400, Messages.NotFriend);
-            }    
+            }
 
             Expression<Func<PostComment, bool>> filter = x => x.Status == 1 && x.PostId == postId && x.ParentCommentId == null;
             
@@ -143,17 +139,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetCursor(string requestUserId, int pageSize, DateTime? cursor, bool getNext, Guid postId, Guid? parentId)
         {
-            var post = await _unitOfWork.PostRepository.GetById(postId);
-
-            if (post == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound("Post"));
-            }
-
-            if (!await CheckAccessPost(requestUserId, post.AuthorId))
-            {
-                return new ErrorResponse(400, Messages.NotFriend);
-            }
+            var post = await _unitOfWork.PostRepository.GetById(postId) ?? throw new NotFoundException("Post id: " + postId.ToString());
 
             Expression<Func<PostComment, bool>> filter = x => x.PostId == postId && x.ParentCommentId == parentId && x.Status == 1;
 
@@ -220,16 +206,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetCount(string requestUserId, Guid Id)
         {
-            var post = await _unitOfWork.PostRepository.GetById(Id);
-            if (post == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound("Post"));
-            }
-
-            if (!await CheckAccessPost(requestUserId, post.AuthorId))
-            {
-                return new ErrorResponse(400, Messages.NotFriend);
-            }
+            var post = await _unitOfWork.PostRepository.GetById(Id) ?? throw new NotFoundException("Post id: " + Id.ToString());
 
             int count = await _unitOfWork.PostCommentRepository.GetCount(x => x.PostId == Id && x.Status == 1);
 
@@ -238,22 +215,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetCountChild(string requestUserId, Guid commentId)
         {
-            var comment = await _unitOfWork.PostCommentRepository.GetById(commentId);
-            if (comment == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound($"Comment {commentId}"));
-            }
-
-            var post = await _unitOfWork.PostRepository.GetById(comment.PostId);
-            if (post == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound($"Post of comment ${commentId}"));
-            }
-
-            if (!await CheckAccessPost(requestUserId, post.AuthorId))
-            {
-                return new ErrorResponse(400, Messages.NotFriend);
-            }
+            var comment = await _unitOfWork.PostCommentRepository.FindOneBy(x => x.Id == commentId && x.Post.Status == 1) ?? throw new NotFoundException("Comment id: " + commentId.ToString());
 
             int childCount = await _unitOfWork.PostCommentRepository.GetCount(x => x.ParentCommentId == commentId && x.Status == 1);
 

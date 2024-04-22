@@ -25,14 +25,17 @@ namespace SocialNetwork.Business.Mapper
             CreateMap<Post, GetPostResponse>()
                 .ForMember(d => d.PostMedias, o => o.MapFrom(s => s.PostMedias))
                 .ForMember(d => d.User, o => o.MapFrom(s => s.Author))
-                .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)));
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)))
+                .ForMember(d => d.Group, o => o.MapFrom(x => x.Group))
+                .ForPath(d => d.Group.Id, o => o.MapFrom(s => s.GroupId));
 
             CreateMap<PostComment, GetPostCommentResponse>()
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)))
                 .ForMember(d => d.User, o => o.MapFrom(x => x.User))
                 .ForMember(d => d.Path, o => o.MapFrom(x => x.Path.Split(new char[]  { ';' }).Select(x => x.ToLower()).ToArray()));
 
-            CreateMap<CommentReaction, GetCommentReactionResponse>();
+            CreateMap<CommentReaction, GetCommentReactionResponse>()
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)));
 
             CreateMap<Friendship, GetFriendshipResponse>()
                 .ForMember(d => d.FriendStatus, o => o.MapFrom(x => x.FriendshipTypeId))
@@ -42,7 +45,8 @@ namespace SocialNetwork.Business.Mapper
                 .ForPath(x => x.Sender.Id, o => o.MapFrom(s => s.Sender.Id))
                 .ForPath(x => x.Sender.AvatarUrl, o => o.MapFrom(s => s.Sender.AvatarUrl))
                 .ForPath(x => x.Receiver.Id, o => o.MapFrom(s => s.Receiver.Id))
-                .ForPath(x => x.Receiver.AvatarUrl, o => o.MapFrom(s => s.Receiver.AvatarUrl));
+                .ForPath(x => x.Receiver.AvatarUrl, o => o.MapFrom(s => s.Receiver.AvatarUrl))
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)));
 
             CreateMap<Notification, GetNotificationResponse>()
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)));
@@ -57,13 +61,15 @@ namespace SocialNetwork.Business.Mapper
 
             CreateMap<Group, GetGroupResponse>()
                 .ForMember(d => d.User, o => o.MapFrom(x => x.CreatedBy))
-                .ForMember(d => d.IsJoined, o => o.MapFrom(x => x.GroupMembers.Count > 0))
-                .ForMember(d => d.JoinedAt, o => o.MapFrom(x => x.GroupMembers.Count > 0 ? x.GroupMembers.First().CreatedAt : (DateTime?)null))
-                .ForMember(d => d.IsWaitingAccept, o => o.MapFrom(x => x.GroupInvites.Count > 0));
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)));
 
-            CreateMap<GroupMember, GetGroupMemberResponse>();
+            CreateMap<Group, GetGroupBasicResponse>();
 
-            CreateMap<GroupInvite, GetGroupInviteResponse>();
+            CreateMap<GroupMember, GetGroupMemberResponse>()
+                .ForMember(d => d.JoinedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)));
+
+            CreateMap<GroupInvite, GetGroupInviteResponse>()
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)));
 
         }
     }

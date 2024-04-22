@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.DTOs.Responses;
+using SocialNetwork.Business.Exceptions;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
@@ -132,22 +133,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetOverview(string requestUserId, Guid id)
         {
-            var comment = await _unitOfWork.PostCommentRepository.GetById(id);
-            if (comment == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound($"Comment {id}"));
-            }
-
-            var post = await _unitOfWork.PostRepository.GetById(comment.PostId);
-            if (post == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound($"Post of this comment"));
-            }
-
-            if (!(await CheckAccess(requestUserId, post.AuthorId)))
-            {
-                return new ErrorResponse(400, Messages.NotFriend);
-            }
+            var comment = await _unitOfWork.PostCommentRepository.FindOneBy(x => x.Id == id && x.Post.Status == 1) ?? throw new NotFoundException("Comment id: " + id.ToString());
 
             var userReacted = await _unitOfWork.CommentReactionRepository.FindOneBy(x => x.CommentId == id && x.UserId == requestUserId);
 

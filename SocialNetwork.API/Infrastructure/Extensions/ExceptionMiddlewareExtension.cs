@@ -7,6 +7,8 @@ namespace SocialNetwork.API.Infrastructure.Extensions
         public static void UseCustomExceptionMiddleware(this IApplicationBuilder app)
         {
             app.UseMiddleware<ExceptionMiddleware>();
+            app.UseMiddleware<NotFoundExceptionMiddleware>();
+            app.UseMiddleware<NoDataChangeExceptionMiddleware>();
         }
     }
 }

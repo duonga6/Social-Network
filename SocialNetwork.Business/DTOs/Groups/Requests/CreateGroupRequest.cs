@@ -10,6 +10,8 @@ namespace SocialNetwork.Business.DTOs.Requests
         public string? CoverImage { set; get; }
         [Required]
         public bool IsPublic { set; get; }
+        [Required]
+        public bool PreCensored { set; get; }
         
     }
 }

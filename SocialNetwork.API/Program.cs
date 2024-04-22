@@ -96,7 +96,7 @@ app.UseCors("Cors");
 
 app.UseStaticFiles();
 
-//app.UseCustomExceptionMiddleware();
+app.UseCustomExceptionMiddleware();
 
 app.UseAuthentication();
 app.UseAuthorization();

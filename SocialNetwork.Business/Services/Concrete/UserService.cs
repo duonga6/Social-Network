@@ -353,7 +353,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(404, Messages.NotFound("User"));
             }
 
-            Expression<Func<PostMedia, bool>> filter = x => x.MediaTypeId == (int)MediaTypeEnum.Image && x.UserId == targetUserId;
+            Expression<Func<PostMedia, bool>> filter = x => x.MediaTypeId == (int)MediaTypeEnum.Image && x.UserId == targetUserId && x.Post.GroupId == null;
 
             int totalItems = await _unitOfWork.PostMediaRepository.GetCount(filter);
 

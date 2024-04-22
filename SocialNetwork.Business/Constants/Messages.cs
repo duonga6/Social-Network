@@ -87,5 +87,6 @@
         public static string GroupJoinRequestExist => "GF01 User already send request join group";
         public static string GroupAccessDenied => "GF02 Access denied to group";
         public static string GroupMemberExist => "GF03 User is already joined group";
+        public static string AcceptedInvite(string who) => $"GA04{who} accepted invite";
     }
 }

@@ -9,8 +9,7 @@
         public BasicUserResponse User { set; get; } = null!;
         public bool IsPublic { set; get; }
         public int TotalMember { set; get; }
-        public bool IsJoined { set; get; }
-        public bool IsWaitingAccept { set; get; }
-        public DateTime? JoinedAt { set; get; }
+        public bool PreCensored { set; get; }
+        public DateTime CreatedAt { set; get; }
     }
 }
