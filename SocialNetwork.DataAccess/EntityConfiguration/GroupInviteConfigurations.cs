@@ -10,6 +10,12 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
         {
             builder.Property(x => x.AdminAccepted).IsRequired();
 
+            builder.HasIndex(x => new
+            {
+                x.UserId,
+                x.GroupId,
+            }).IsUnique();
+
             builder.HasOne(x => x.User)
                 .WithMany(x => x.GroupInvites)
                 .HasForeignKey(x => x.UserId)
