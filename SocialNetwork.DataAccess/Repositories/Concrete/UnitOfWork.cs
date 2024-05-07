@@ -22,7 +22,9 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         public IGroupRepository GroupRepository { get; }
         public IGroupMemberRepository GroupMemberRepository { get; }
         public IGroupInviteRepository GroupInviteRepository { get; }
-
+        public IConversationRepository ConversationRepository { get; }
+        public IConversationParticipantRepository ConversationParticipantRepository { get; }
+        public IMessageMemberReadRepository MessageMemberReadRepository { get; }
 
         private readonly AppDbContext _context;
         private IDbContextTransaction _transaction;
@@ -45,6 +47,9 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             GroupRepository = new GroupRepository(logger, context);
             GroupMemberRepository = new GroupMemberRepository(logger, context);
             GroupInviteRepository = new GroupInviteRepository(logger, context);
+            ConversationRepository = new ConversationRepository(logger, context);
+            ConversationParticipantRepository = new ConversationParticipantRepository(logger, context);
+            MessageMemberReadRepository = new MessageMemberReadRepository(logger, context);
         }
 
         public async Task<bool> CompleteAsync()
@@ -53,18 +58,19 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         }
 
 
-        public async Task BeginTransaction()
+        public async Task BeginTransactionAsync()
         {
             _transaction = await _context.Database.BeginTransactionAsync();
         }
 
-        public async Task Commit()
+        public async Task<bool> CommitAsync()
         {
-            await _context.SaveChangesAsync();
+            var result =  await _context.SaveChangesAsync();
             await _transaction.CommitAsync();
+            return result > 0;
         }
 
-        public async Task Rollback()
+        public async Task RollbackAsync()
         {
             if (_transaction != null)
             {

@@ -13,44 +13,23 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         {
         }
 
-        public override async Task<Message> GetById(Guid id)
+        public async Task RevokeMessage(Guid messageId)
         {
-                return await _dbSet.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+            var message = await _dbSet.FirstOrDefaultAsync(x => x.Id == messageId);
+            if (message != null)
+            {
+                message.Content = "";
+                message.RevokedAt = DateTime.UtcNow;
+            }
         }
 
-        public async Task<ICollection<Message>> GetConversation(string senderId, string receiverId)
+        public async Task SeenMessage(Guid messageId)
         {
-            var messages = await _dbSet
-                .Where(x => (x.SenderId == senderId && x.ReceiverId == receiverId || x.SenderId == receiverId && x.ReceiverId == senderId) && x.Status == 1)
-                .OrderByDescending(x => x.CreatedAt)
-                .AsNoTracking()
-                .ToListAsync();
-            return messages;
-        }
-
-        public override async Task<ICollection<Message>> GetPaged(int pageSize, int pageNumber, Expression<Func<Message, bool>> filter = null, Expression<Func<Message, object>> orderBy = null, bool isDesc = true)
-        {
-            var query = _dbSet
-                .AsNoTracking()
-                .Where(filter)
-                .Include(x => x.Sender)
-                .Include(x => x.Receiver)
-                .AsSplitQuery();
-
-            if (isDesc)
+            var message = await _dbSet.FirstOrDefaultAsync(x => x.Id == messageId);
+            if (message != null)
             {
-                query = query.OrderByDescending(orderBy);
+                message.ReadedAt = DateTime.UtcNow;
             }
-            else
-            {
-                query = query.OrderBy(orderBy);
-
-            }
-
-            return await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
         }
     }
 }

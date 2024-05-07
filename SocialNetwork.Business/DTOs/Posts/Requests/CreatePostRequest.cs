@@ -1,5 +1,4 @@
-﻿using SocialNetwork.Business.Utilities.Enum;
-using SocialNetwork.DataAccess.Utilities.Enum;
+﻿using SocialNetwork.DataAccess.Utilities.Enum;
 using System.ComponentModel.DataAnnotations;
 
 namespace SocialNetwork.Business.DTOs.Requests
@@ -11,5 +10,6 @@ namespace SocialNetwork.Business.DTOs.Requests
         public Guid? GroupId { set; get; }
         [Required]
         public PostAccess Access { set; get; }
+        public Guid? SharePostId { set; get; }
     }
 }

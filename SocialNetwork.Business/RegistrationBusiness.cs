@@ -32,6 +32,7 @@ namespace SocialNetwork.Business
             services.AddScoped<IGroupService, GroupService>();
             services.AddScoped<IGroupInviteService, GroupInviteService>();
             services.AddScoped<IGroupMemberService, GroupMemberService>();
+            services.AddScoped<IConversationService, ConversationService>();
         }
     }
 }

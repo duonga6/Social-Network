@@ -1,15 +1,18 @@
 ﻿using AutoMapper;
+using LinqKit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
+using SocialNetwork.Business.DTOs.Requests;
+using SocialNetwork.Business.DTOs.Responses;
+using SocialNetwork.Business.Exceptions;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Abstract;
-using SocialNetwork.Business.DTOs.Requests;
+using SocialNetwork.DataAccess.Utilities.Enum;
 using System.Linq.Expressions;
-using SocialNetwork.Business.DTOs.Responses;
 
 namespace SocialNetwork.Business.Services.Concrete
 {
@@ -21,115 +24,225 @@ namespace SocialNetwork.Business.Services.Concrete
             _userManager = userManager;
         }
 
-        public async Task<IResponse> RevokeMessage(string requestUserId, Guid id)
+        public async Task<IResponse> Create(string requestId, CreateMessageRequest request)
         {
-            var message = await _unitOfWork.MessageRepository.GetById(id);
+            var checkUserSend = await _unitOfWork.UserRepository.GetById(requestId) ?? throw new NotFoundException("User + id: " + requestId);
+            var checkUserRecive = await _unitOfWork.UserRepository.GetById(request.UserId) ?? throw new NotFoundException("User + id: " + request.UserId);
+            bool compareId = checkUserSend.Id.CompareTo(checkUserRecive.Id) <= 0;
 
-            if (message == null)
+            var conversation = await _unitOfWork.ConversationRepository.FindOneBy(
+                x => x.Type == ConversationType.PRIVATE && 
+                x.ConversationParticipants.Any(x => x.UserId == requestId) &&
+                x.ConversationParticipants.Any(x => x.UserId == request.UserId)
+                );
+
+            var newMessage = new Message
             {
-                return new ErrorResponse(404, Messages.NotFound());
-            }    
+                Content = request.Content,
+                MessageType = MessageType.NORMAL,
+                UserId = requestId,
+            };
 
-            if (message.SenderId != requestUserId)
+            try
             {
-                return new ErrorResponse(400, Messages.BadRequest);
-            }
+                await _unitOfWork.BeginTransactionAsync();
 
-            await _unitOfWork.MessageRepository.Delete(id);
-            var result = await _unitOfWork.CompleteAsync();
+                if (conversation == null)
+                {
 
-            if (!result)
+                    var newConversation = new Conversation
+                    {
+                        Type = ConversationType.PRIVATE,
+                        CreatedId = requestId,
+                        ConversationParticipants = new List<ConversationParticipant>
+                    {
+                        new ConversationParticipant
+                        {
+                            UserId = checkUserSend.Id,
+                            UserContactName = checkUserSend.GetFullName(),
+                        },
+                         new ConversationParticipant
+                        {
+                            UserId = checkUserRecive.Id,
+                            UserContactName = checkUserRecive.GetFullName(),
+                        }
+                    },
+                        Messages = new List<Message>
+                    {
+                        newMessage
+                    }
+                    };
+
+                    await _unitOfWork.ConversationRepository.Add(newConversation);
+
+                }
+                else
+                {
+                    newMessage.ConversationId = conversation.Id;
+                    await _unitOfWork.MessageRepository.Add(newMessage);
+                    await _unitOfWork.ConversationRepository.UpdateNewestMessage(conversation.Id);
+                }
+
+                if (!await _unitOfWork.CommitAsync()) throw new NoDataChangeException();
+            } 
+            catch (Exception ex)
             {
-                return new ErrorResponse(500, Messages.STWrong);
-            }
-
-            return new SuccessResponse(Messages.MessageRevoked, 200);
-
-        }
-
-        public async Task<IResponse> GetByUser(string requestUserId, string targetUserId, string? searchString, int pageSize, int pageNumber)
-        {
-            if (requestUserId == targetUserId)
-            {
-                return new ErrorResponse(400, Messages.BadRequest);
-            }    
-
-            if (!await CheckFriend(requestUserId, targetUserId))
-            {
-                return new ErrorResponse(400, Messages.NotFriend);
-            }
-
-            Expression<Func<Message, bool>>? filter;
-
-            if (searchString == null)
-            {
-                filter = x => (x.SenderId == requestUserId && x.ReceiverId == targetUserId || x.SenderId == targetUserId && x.ReceiverId == requestUserId) && x.Status == 1;
-            }   
-            else
-            {
-                filter = x => ((x.SenderId == requestUserId && x.ReceiverId == targetUserId || x.SenderId == targetUserId && x.ReceiverId == requestUserId) && x.Status == 1) &&
-                x.Content.Contains(searchString);
-            }
-
-            int totalItems = await _unitOfWork.MessageRepository.GetCount(filter);
-            int pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
-
-            if (pageCount < pageNumber && pageCount != 0)
-            {
-                return new ErrorResponse(400, Messages.OutOfPage);
-            }    
-
-            var messages = await _unitOfWork.MessageRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
-            var messagesResponse = _mapper.Map<List<GetMessageResponse>>(messages);
-
-            return new PagedResponse<List<GetMessageResponse>>(messagesResponse, totalItems, 200);
-        }
-
-        public async Task<IResponse> SendMessage(string requestUserId, SendMessageRequest request)
-        {
-            if (!await CheckFriend(requestUserId, request.ReceiverId))
-            {
-                return new ErrorResponse(400, Messages.NotFriend);
-            }
-
-            var addEntity = _mapper.Map<DataAccess.Entities.Message>(request);
-            addEntity.SenderId = requestUserId;
-
-            await _unitOfWork.MessageRepository.Add(addEntity);
-            var result = await _unitOfWork.CompleteAsync();
-
-            if (!result)
-            {
+                await _unitOfWork.RollbackAsync();
+                _logger.LogError("Error Message Service / Create " + ex);
                 return new ErrorResponse(501, Messages.STWrong);
             }
 
-            return new DataResponse<GetMessageResponse>(_mapper.Map<GetMessageResponse>(addEntity), 200, Messages.MessageSent);
+            var messagedAdded = await _unitOfWork.MessageRepository.GetById(newMessage.Id, new Expression<Func<Message, object>>[]
+            {
+                    x => x.User
+            });
 
+            var response = _mapper.Map<GetMessageResponse>(messagedAdded);
+
+            return new DataResponse<GetMessageResponse>(response, 201);
         }
 
-        public async Task<IResponse> GetById(string requestUserId, Guid id)
+        public async Task<IResponse> Create(string requestId, CreateMessageWithConversationRequest request)
         {
-            var message = await _unitOfWork.MessageRepository.GetById(id);
-            if (message == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound());
-            }    
+            var conversation = await _unitOfWork.ConversationRepository
+                .FindOneBy(x =>
+                x.Id == request.ConversationId &&
+                x.ConversationParticipants.Any(cp => cp.UserId == requestId)) ?? throw new NotFoundException("Conversation id: " + request.ConversationId.ToString());
 
-            if (!await CheckFriend(requestUserId, message.SenderId) && !await CheckFriend(requestUserId, message.ReceiverId))
+            if (request.ReplyId != null)
             {
-                return new ErrorResponse(400, Messages.NotFriend);
+                var replyMessage = await _unitOfWork.MessageRepository.
+                    FindOneBy(x => x.Id == request.ReplyId && x.ConversationId == request.ConversationId) ?? throw new NotFoundException("Reply message id: " + request.ReplyId.ToString());
             }
 
-            return new DataResponse<GetMessageResponse>(_mapper.Map<GetMessageResponse>(message), 200);
-            
+            var newMessage = new Message
+            {
+                Content = request.Content,
+                MessageType = MessageType.NORMAL,
+                ReplyId = request.ReplyId,
+                UserId = requestId,
+                ConversationId = conversation.Id,
+            };
+
+            await _unitOfWork.MessageRepository.Add(newMessage);
+            if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
+
+            var messagedAdded = await _unitOfWork.MessageRepository.GetById(newMessage.Id, new Expression<Func<Message, object>>[]
+            {
+                    x => x.User
+            });
+
+            var response = _mapper.Map<GetMessageResponse>(messagedAdded);
+
+            return new DataResponse<GetMessageResponse>(response, 201);
         }
 
-        private async Task<bool> CheckFriend(string requestUserId, string targetUserId)
+        public async Task<IResponse> Get(string requestId, Guid conversationId, int pageSize, string? searchString, DateTime? cursor)
         {
-            var result = await _unitOfWork.FriendshipRepository
-                .FindOneBy(x => x.RequestUserId == requestUserId && x.TargetUserId == targetUserId || x.RequestUserId == targetUserId && x.TargetUserId == requestUserId);
+            var conversation = await _unitOfWork.ConversationRepository.GetById(conversationId) ?? throw new NotFoundException("Conversation id: " + conversationId.ToString());
 
-            return result != null;
+            var checkParicipant = await _unitOfWork.ConversationParticipantRepository.FindOneBy(x => x.ConversationId == conversation.Id &&
+                x.UserId == requestId);
+
+            if (checkParicipant == null) return new ErrorResponse(400, Messages.BadRequest);
+
+            Expression<Func<Message, bool>> filter = x => x.Status == 1;
+
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                searchString = searchString.Trim();
+                filter = filter.And(x => x.Content.Contains(searchString));
+            }
+
+            if (cursor != null)
+            {
+                filter = filter.And(x => x.CreatedAt < cursor);
+            }
+
+            var data = (await _unitOfWork.MessageRepository.GetCursorPaged(pageSize + 1, filter, x => x.CreatedAt, new Expression<Func<Message, object>>[]
+            {
+                x => x.User
+            })).ToList();
+
+            bool hasNext = false;
+            if (data.Count > pageSize)
+            {
+                hasNext = true;
+                data.RemoveAt(data.Count - 1);
+            }
+
+            DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedAt : null;
+
+            var response = _mapper.Map<List<GetMessageResponse>>(data);
+
+            return new CursorResponse<List<GetMessageResponse>>(response, cursor, hasNext, 0);
+        }
+
+        public async Task<IResponse> GetById(string requestId, Guid messagesId)
+        {
+            var message = await _unitOfWork.MessageRepository.GetById(messagesId, new Expression<Func<Message, object>>[]
+            {
+                x => x.User
+            }) ?? throw new NotFoundException("Message id: " + messagesId.ToString());
+
+            if (requestId != message.UserId)
+            {
+                var checkAccess = await _unitOfWork.ConversationRepository
+                    .FindOneBy(x => 
+                    x.Id == message.ConversationId && 
+                    x.ConversationParticipants.Any(x => x.UserId == requestId)) ?? throw new NotFoundException("Conversation of message id: " + messagesId.ToString());
+            }
+
+            var response = _mapper.Map<GetMessageResponse>(message);
+
+            return new DataResponse<GetMessageResponse>(response, 200);
+        }
+
+        public async Task<IResponse> RevokeMessage(string requestId, Guid messageId)
+        {
+            var message = await _unitOfWork.MessageRepository.GetById(messageId) ?? throw new NotFoundException("Message id: " + messageId.ToString());
+
+            if (message.UserId != requestId) return new ErrorResponse(400, Messages.BadRequest);
+
+            await _unitOfWork.MessageRepository.RevokeMessage(message.Id);
+            if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
+
+            return new SuccessResponse(Messages.MessageRevoked, 200);
+        }
+
+        public async Task<IResponse> SeenMessage(string requestId, Guid messageId)
+        {
+            var message = await _unitOfWork.MessageRepository.GetById(messageId) ?? throw new NotFoundException("Message id: " + messageId.ToString());
+
+            if (message.UserId == requestId) return new ErrorResponse(400, Messages.BadRequest);
+
+            bool compareId = requestId.CompareTo(message.UserId) <= 0;
+
+            var conversation = await _unitOfWork.ConversationRepository.FindOneBy(x =>
+                x.Id == message.ConversationId &&
+                x.ConversationParticipants.Any(cp => cp.UserId == requestId)
+            );
+
+            if (conversation == null) return new ErrorResponse(400, Messages.BadRequest);
+
+            if (conversation.Type == ConversationType.GROUP)
+            {
+                var messageReaded = new MessageMemberReaded
+                {
+                    ConversationId = conversation.Id,
+                    MessageId = message.Id,
+                    UserId = requestId,
+                };
+
+                await _unitOfWork.MessageMemberReadRepository.Add(messageReaded);
+            } else
+            {
+                await _unitOfWork.MessageRepository.SeenMessage(message.Id);
+            }
+            
+            if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
+
+            return new SuccessResponse(Messages.MessageSeen, 200);
         }
     }
 }

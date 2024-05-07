@@ -37,9 +37,7 @@ namespace SocialNetwork.DataAccess.Entities
         [JsonIgnore]
         public ICollection<Friendship> Friendships2 { get; set; }
         [JsonIgnore]
-        public ICollection<Message> MessagesSent { set; get; }
-        [JsonIgnore]
-        public ICollection<Message> MessageReceived { set; get; }
+        public ICollection<Message> Messages { set; get; }
         [JsonIgnore]
         public ICollection<Notification> NotificationsReceive { set; get; }
         [JsonIgnore]
@@ -54,6 +52,18 @@ namespace SocialNetwork.DataAccess.Entities
         public ICollection<Group> GroupOwner { set; get; }
         [JsonIgnore]
         public ICollection<GroupInvite> GroupInvites { set; get; }
+        [JsonIgnore]
         public ICollection<GroupInvite> GroupInvitesCreate { set; get; }
+        [JsonIgnore]
+        public ICollection<Conversation> ConversationCreated { set; get; }
+        [JsonIgnore]
+        public ICollection<ConversationParticipant> ConversationParticipants { set; get; }
+        [JsonIgnore]
+        public ICollection<MessageMemberReaded> MessageReadeds { set; get; }
+        [JsonIgnore]
+        public ICollection<StrangeMessageBlock> StrangeMessageBlocked { set; get; }
+        [JsonIgnore]
+        public ICollection<StrangeMessageBlock> StrangeMessageIsBlocked { set; get; }
+
     }
-}
+}   

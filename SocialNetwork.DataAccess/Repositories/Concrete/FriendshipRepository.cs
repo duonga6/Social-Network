@@ -34,17 +34,6 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             return friends;
         }
 
-        public override async Task<ICollection<Friendship>> FindBy(Expression<Func<Friendship, bool>> filter = null)
-        {
-            var query = _dbSet
-                .Where(filter)
-                .Include(x => x.RequestUser)
-                .Include(x => x.TargetUser)
-                .OrderByDescending(x => x.CreatedAt);
-            
-                return await query.AsNoTracking().ToListAsync();
-        }
-
         public override async Task<Friendship> GetById(Guid id)
         {
                 return await _dbSet.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);

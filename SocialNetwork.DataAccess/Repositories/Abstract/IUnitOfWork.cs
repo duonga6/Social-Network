@@ -17,13 +17,17 @@
         IGroupRepository GroupRepository{ get; }
         IGroupMemberRepository GroupMemberRepository { get; }
         IGroupInviteRepository GroupInviteRepository { get; }
+        IConversationRepository ConversationRepository { get; }
+        IConversationParticipantRepository ConversationParticipantRepository { get; }
+        IMessageMemberReadRepository MessageMemberReadRepository { get; }
+
 
         Task<bool> CompleteAsync();
 
-        Task BeginTransaction();
+        Task BeginTransactionAsync();
 
-        Task Commit();
+        Task<bool> CommitAsync();
 
-        Task Rollback();
+        Task RollbackAsync();
     }
 }

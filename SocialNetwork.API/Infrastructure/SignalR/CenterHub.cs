@@ -38,7 +38,7 @@ namespace SocialNetwork.API.Infrastructure.SignalR
             if (UserId != null)
             {
                 _connectionManagement.RemoveConnection(UserId, Context.ConnectionId);
-                var listConnected = string.Join("\n\n\n", _connectionManagement.GetConnectionId(UserId));
+                var listConnected = string.Join("\n\n\n", _connectionManagement.GetConnectionId(UserId)?.ToArray<string?>() ?? new string[] {});
                 _logger.LogInformation($"User: {UserId} disconnected with connection id: {Context.ConnectionId}\n\nList connection id of user:\n{listConnected}");
             }
 

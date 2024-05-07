@@ -26,18 +26,31 @@ namespace SocialNetwork.API.Controllers
         #region Post
 
         /// <summary>
-        /// Get all post (owner, friend's). Admin get all user's post
+        /// Get all post (owner, friend's, group joined)
         /// </summary>
         /// <param name="searchString">Key word search</param>
         /// <param name="pageSize">Item count per page</param>
         /// <param name="pageNumber">Current page</param>
-        /// <param name="groupId">Id of group</param>
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(PagedResponse<List<GetPostResponse>>), 200)]
-        public async Task<IActionResult> GetAll([FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber, [FromQuery] Guid? groupId)
+        public async Task<IActionResult> GetAll([FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
-            return ResponseModel(await _postService.GetAll(UserId, searchString, pageSize, pageNumber, groupId));
+            return ResponseModel(await _postService.GetAll(UserId, searchString, pageSize, pageNumber));
+        }
+
+        /// <summary>
+        /// Get all post (owner, friend's, group joined) by cursor
+        /// </summary>
+        /// <param name="searchString"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="cursor"></param>
+        /// <returns></returns>
+        [HttpGet("Cursor")]
+        [ProducesResponseType(typeof(CursorResponse<List<GetPostResponse>>), 200)]
+        public async Task<IActionResult> GetAll([FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, DateTime? cursor)
+        {
+            return ResponseModel(await _postService.GetCursor(UserId, pageSize, cursor, searchString));
         }
 
         /// <summary>

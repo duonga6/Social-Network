@@ -1,6 +1,4 @@
-﻿using SocialNetwork.DataAccess.Entities.Base;
-
-namespace SocialNetwork.DataAccess.Entities
+﻿namespace SocialNetwork.DataAccess.Entities
 {
     public class PostReaction : BaseEntity<Guid>
     {

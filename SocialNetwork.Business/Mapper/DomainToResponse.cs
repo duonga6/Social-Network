@@ -25,9 +25,7 @@ namespace SocialNetwork.Business.Mapper
             CreateMap<Post, GetPostResponse>()
                 .ForMember(d => d.PostMedias, o => o.MapFrom(s => s.PostMedias))
                 .ForMember(d => d.User, o => o.MapFrom(s => s.Author))
-                .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)))
-                .ForMember(d => d.Group, o => o.MapFrom(x => x.Group))
-                .ForPath(d => d.Group.Id, o => o.MapFrom(s => s.GroupId));
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)));
 
             CreateMap<PostComment, GetPostCommentResponse>()
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)))
@@ -42,10 +40,6 @@ namespace SocialNetwork.Business.Mapper
                 .ForMember(d => d.UpdatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.UpdatedAt, DateTimeKind.Utc)));
 
             CreateMap<Message, GetMessageResponse>()
-                .ForPath(x => x.Sender.Id, o => o.MapFrom(s => s.Sender.Id))
-                .ForPath(x => x.Sender.AvatarUrl, o => o.MapFrom(s => s.Sender.AvatarUrl))
-                .ForPath(x => x.Receiver.Id, o => o.MapFrom(s => s.Receiver.Id))
-                .ForPath(x => x.Receiver.AvatarUrl, o => o.MapFrom(s => s.Receiver.AvatarUrl))
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)));
 
             CreateMap<Notification, GetNotificationResponse>()
@@ -70,6 +64,12 @@ namespace SocialNetwork.Business.Mapper
 
             CreateMap<GroupInvite, GetGroupInviteResponse>()
                 .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)));
+
+            CreateMap<Conversation, GetConversationResponse>()
+                .ForMember(d => d.LastMessage, o => o.MapFrom(x => x.Messages.FirstOrDefault()))
+                .ForMember(d => d.UpdatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.UpdatedAt, DateTimeKind.Utc)));
+
+            CreateMap<ConversationParticipant, GetConversationParticipantResponse>();
 
         }
     }

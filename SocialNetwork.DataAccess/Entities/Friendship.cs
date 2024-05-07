@@ -1,7 +1,4 @@
-﻿using SocialNetwork.DataAccess.Entities.Base;
-using SocialNetwork.DataAccess.Utilities.Enum;
-
-namespace SocialNetwork.DataAccess.Entities
+﻿namespace SocialNetwork.DataAccess.Entities
 {
     public class Friendship : BaseEntity<Guid>
     {

@@ -1,4 +1,4 @@
-﻿namespace SocialNetwork.DataAccess.Entities.Base
+﻿namespace SocialNetwork.DataAccess.Entities
 {
     public class BaseEntity<TKey>
     {

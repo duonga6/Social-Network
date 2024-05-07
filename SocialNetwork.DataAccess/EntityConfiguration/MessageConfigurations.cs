@@ -8,27 +8,24 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
     {
         public void Configure(EntityTypeBuilder<Message> builder)
         {
-            builder.HasOne(m => m.Sender)
-                .WithMany(u => u.MessagesSent)
-                .HasForeignKey(u => u.SenderId)
-                .IsRequired()
+            builder.Property(x => x.MessageType).HasColumnType("int");
+
+            builder.HasIndex(x => x.CreatedAt).IsUnique(false);
+
+            builder.HasOne(x => x.User)
+                .WithMany(u => u.Messages)
+                .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            builder.HasOne(m => m.Receiver)
-                .WithMany(u => u.MessageReceived)
-                .HasForeignKey(m => m.ReceiverId)
-                .IsRequired()
-                .OnDelete(DeleteBehavior.NoAction);
-
-            builder.HasOne(x => x.MediaType)
+            builder.HasOne(x => x.Conversation)
                 .WithMany(x => x.Messages)
-                .HasForeignKey(x => x.MediaTypeId)
-                .IsRequired()
+                .HasForeignKey(x => x.ConversationId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            builder.Property(x => x.Content).IsRequired();
-
-            builder.Property(x => x.IsRevoked).IsRequired();
+            builder.HasOne(x => x.ReplyMessage)
+                .WithOne()
+                .HasForeignKey<Message>(x => x.ReplyId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

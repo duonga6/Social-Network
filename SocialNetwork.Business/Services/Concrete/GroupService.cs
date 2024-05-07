@@ -56,21 +56,16 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> Delete(string requestId, Guid Id)
         {
-            var group = await _unitOfWork.GroupRepository.GetById(Id);
-            if (group == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound("Group id " + Id.ToString()));
-            }
+            var group = await _unitOfWork.GroupRepository.GetById(Id) ?? throw new NotFoundException("Group id " + Id.ToString());
 
             if (requestId != group.CreatedId)
             {
-                return new ErrorResponse(400, Messages.BadRequest);
+                return new ErrorResponse(400, Messages.GroupAccessDenied);
             }
 
             await _unitOfWork.GroupRepository.Delete(Id);
-            var result = await _unitOfWork.CompleteAsync();
 
-            if (!result)
+            if (!await _unitOfWork.CompleteAsync())
             {
                 return new ErrorResponse(501, Messages.DeleteError);
             }
@@ -273,8 +268,11 @@ namespace SocialNetwork.Business.Services.Concrete
             var data = (await _unitOfWork.PostRepository.GetCursorPaged(pageSize + 1, filter, x => x.CreatedAt, new Expression<Func<Post, object>>[]
             {
                 x => x.Author,
-                x => x.Group,
-                x => x.PostMedias.Where(pm => pm.Status == 1)
+                    x => x.PostMedias,
+                    x => x.Group,
+                    x => x.SharePost.Author,
+                    x => x.SharePost.PostMedias,
+                    x => x.SharePost.Group,
             }, true)).ToList();
 
             bool hasNext = false;
@@ -315,7 +313,11 @@ namespace SocialNetwork.Business.Services.Concrete
             var data = await _unitOfWork.PostRepository.GetPaged(pageSize, pageNumber, new Expression<Func<Post, object>>[]
             {
                 x => x.Author,
-                x => x.PostMedias.Where(x => x.Status == 1)
+                x => x.PostMedias.Where(x => x.Status == 1),
+                x => x.Group,
+                x => x.SharePost.Author,
+                x => x.SharePost.Group,
+                x => x.SharePost.PostMedias.Where(x => x.Status == 1)
             }, filter, x => x.CreatedAt);
 
             var response = _mapper.Map<List<GetPostResponse>>(data);
@@ -348,7 +350,11 @@ namespace SocialNetwork.Business.Services.Concrete
             var data = (await _unitOfWork.PostRepository.GetCursorPaged(pageSize + 1, filter, x => x.CreatedAt, new Expression<Func<Post, object>>[]
             {
                 x => x.Author,
-                x => x.PostMedias.Where(x => x.Status == 1)
+                x => x.PostMedias,
+                x => x.Group,
+                x => x.SharePost.Author,
+                x => x.SharePost.Group,
+                x => x.SharePost.PostMedias
             })).ToList();
 
             bool hasNext = false;
@@ -356,7 +362,7 @@ namespace SocialNetwork.Business.Services.Concrete
             if (data.Count > pageSize)
             {
                 hasNext = true;
-                data.RemoveAt(data.Count);
+                data.RemoveAt(data.Count - 1);
             }
 
             DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedAt : null;

@@ -21,6 +21,8 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 .HasForeignKey(n => n.FromId)
                 .OnDelete(DeleteBehavior.NoAction)
                 .IsRequired();
+
+            builder.HasIndex(x => x.CreatedAt);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using SocialNetwork.DataAccess.Entities.Base;
+﻿using SocialNetwork.DataAccess.Entities;
 using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Abstract
@@ -11,7 +11,7 @@ namespace SocialNetwork.DataAccess.Repositories.Abstract
         Task<int> GetCount(Expression<Func<TEntity, bool>> filter = null);
 
 
-        Task<ICollection<TEntity>> FindBy(Expression<Func<TEntity, bool>> filter = null);
+        Task<ICollection<TEntity>> FindBy(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>>[] includes = null);
         Task<TEntity> FindOneBy(Expression<Func<TEntity, bool>> filter = null);
         Task<TEntity> FindOneBy(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>>[] includes);
 
@@ -21,7 +21,7 @@ namespace SocialNetwork.DataAccess.Repositories.Abstract
 
         Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, bool>> filter, bool getNext = true);
         Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>>[] includes, bool getNext = true);
-        Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>> orderBy, bool getNext);
+        Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>> orderBy, bool getNext = true);
         Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>> orderBy, Expression<Func<TEntity, object>>[] includes, bool getNext = true);
 
         Task Add(TEntity entity);

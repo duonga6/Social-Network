@@ -15,6 +15,7 @@ using SocialNetwork.DataAccess.Utilities.Roles;
 using System.Linq.Expressions;
 using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.DTOs.Responses;
+using SocialNetwork.Business.Exceptions;
 
 namespace SocialNetwork.Business.Services.Concrete
 {
@@ -430,6 +431,60 @@ namespace SocialNetwork.Business.Services.Concrete
             return new DataResponse<GetPostResponse>(_mapper.Map<GetPostResponse>(post), 200);
         }
 
+        public async Task<IResponse> GetPostCursor(string loggedUserId, string requestUserId, string? searchString, int pageSize, DateTime? cursor)
+        {
+            var checkUser = await _unitOfWork.UserRepository.GetById(requestUserId) ?? throw new NotFoundException("User id: " + requestUserId);
+
+            Expression<Func<Post, bool>> filter = x => x.Status == 1 && x.AuthorId == requestUserId && x.GroupId == null;
+
+            if (loggedUserId != requestUserId)
+            {
+                if (await _unitOfWork.FriendshipRepository.FindOneBy(x => (x.RequestUserId == loggedUserId && x.TargetUserId == requestUserId || x.TargetUserId == loggedUserId && x.RequestUserId == requestUserId) && x.Status == 1) == null)
+                {
+                    filter = filter.And(x => x.Access == PostAccess.PUBLIC);
+                } 
+                else
+                {
+                    filter = filter.And(x => x.Access != PostAccess.ONLY_ME);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                filter = filter.And(x => x.Content.Contains(searchString));
+            }
+
+            if (cursor != null)
+            {
+                filter = filter.And(x => x.CreatedAt < cursor);
+            }
+
+            var data = (await _unitOfWork.PostRepository.GetCursorPaged(pageSize + 1, filter, x => x.CreatedAt, new Expression<Func<Post, object>>[]
+            {
+                x => x.Author,
+                x => x.PostMedias,
+                x => x.SharePost.PostMedias,
+                x => x.SharePost.Author,
+                x => x.SharePost.Group,
+            })).ToList();
+
+
+            bool hasNext = false;
+
+            if (data.Count > pageSize)
+            {
+                hasNext = true;
+                data.RemoveAt(data.Count - 1);
+            }
+
+            DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedAt : null;
+
+            var response = _mapper.Map<List<GetPostResponse>>(data);
+
+            return new CursorResponse<List<GetPostResponse>>(response, endCursor, hasNext, 0);
+        }
+
+
         public async Task<IResponse> GetPostByUser(string loggedUserId, string requestUserId, string? searchString, int pageSize, int pageNumber)
         {
             Expression<Func<Post, bool>> filter = x => x.Status == 1 && x.AuthorId == requestUserId && x.GroupId == null;
@@ -509,68 +564,6 @@ namespace SocialNetwork.Business.Services.Concrete
 
         private bool CheckCompareId(string loggedUserId, string requestUserId) => loggedUserId == requestUserId;
 
-        #region Message
-
-        public async Task<IResponse> SendMessage(string loggedUserId, string requestUserId, SendMessageRequest request)
-        {
-            if (!CheckCompareId(loggedUserId, requestUserId))
-            {
-                return new ErrorResponse(400, Messages.BadRequest);
-            }
-
-            return await _messageService.SendMessage(requestUserId, request);
-
-        }
-        public async Task<IResponse> GetConversation(string loggedUserId, string requestUserId, string targetUserId, string? searchString, int pageSize, int pageNumber)
-        {
-            if (!CheckCompareId(loggedUserId, requestUserId))
-            {
-                return new ErrorResponse(400, Messages.BadRequest);
-            }
-
-            return await _messageService.GetByUser(requestUserId, targetUserId, searchString, pageSize, pageNumber);
-        }
-        public async Task<IResponse> GetMessageById(string loggedUserId, string requestUserId, Guid id)
-        {
-            if (!await CheckOwnerOrAdminAsync(loggedUserId, requestUserId))
-            {
-                return new ErrorResponse(400, Messages.BadRequest);
-            }    
-
-            return await _messageService.GetById(requestUserId, id);
-        }
-        public async Task<IResponse> DeleteMessage(string loggedUserId, string requestUserId, Guid id)
-        {
-            if (CheckCompareId(loggedUserId, requestUserId))
-            {
-                return new ErrorResponse(400, Messages.BadRequest);
-            }
-
-            return await _messageService.RevokeMessage(requestUserId, id);
-        }
-
-        private async Task<bool> CheckOwnerOrAdminAsync(string loggedUserId, string requestUserId)
-        {
-            var requestUser = await _userManager.FindByIdAsync(loggedUserId);
-            var targetUser = await _userManager.FindByIdAsync(requestUserId);
-
-            if (requestUser == null || targetUser == null)
-            {
-                return false;
-            }
-
-            // Is owner
-            if (loggedUserId == requestUserId)
-            {
-                return true;
-            }
-
-            // Is admin
-            return await _userManager.IsInRoleAsync(requestUser, RoleName.Administrator);
-        }
-
-        #endregion
-
         #region Notification
 
         public async Task<IResponse> GetNotifications(string loggedUserId, string requestUserId, string? searchString, int pageSize, int pageNumber)
@@ -643,6 +636,16 @@ namespace SocialNetwork.Business.Services.Concrete
         {
             var result = await _unitOfWork.FriendshipRepository.FindOneBy(x => x.RequestUserId == userId1 && x.TargetUserId == userId2 || x.RequestUserId == userId1 && x.TargetUserId == userId2);
             return result != null;
+        }
+        
+        private async Task<bool> CheckOwnerOrAdminAsync(string loggedId, string requestId)
+        {
+            if (loggedId == requestId) return true;
+
+            var user = await _userManager.FindByIdAsync(loggedId);
+            if (user == null) return false;
+
+            return await _userManager.IsInRoleAsync(user, RoleName.Administrator);
         }
     }
 }

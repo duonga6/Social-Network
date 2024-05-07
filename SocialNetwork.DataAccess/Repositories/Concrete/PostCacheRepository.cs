@@ -45,5 +45,10 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 return post;
             }
         }
+
+        public Task<bool> IsOwnerPost(string userId, Guid postId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

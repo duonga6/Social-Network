@@ -29,16 +29,6 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                     .FirstOrDefaultAsync();
         }
 
-        public override async Task<ICollection<Post>> FindBy(Expression<Func<Post, bool>> filter = null)
-        {
-            var query = _dbSet.Where(filter)
-                .Include(x => x.PostMedias.Where(i => i.Status == 1))
-                .OrderByDescending(x => x.CreatedAt)
-                .AsSplitQuery();
-
-            return await query.ToListAsync();
-        }
-        
         public override async Task Update(Post post)
         {
             var updatePost = await _dbSet.FirstOrDefaultAsync(x => x.Id == post.Id && x.Status == 1);
@@ -86,6 +76,11 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 post.Status = 0;
             }
 
+        }
+
+        public async Task<bool> IsOwnerPost(string userId, Guid postId)
+        {
+            return await _dbSet.AsNoTracking().AnyAsync(x => x.AuthorId == userId && x.Id == postId);
         }
     }
 }

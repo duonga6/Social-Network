@@ -33,6 +33,8 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
             builder.HasIndex(x => x.SharePostId)
                 .IsUnique(false);
 
+            builder.HasIndex(x => x.CreatedAt);
+
             builder.Property(x => x.Access).HasColumnType("int").HasDefaultValue(PostAccess.PUBLIC);
 
         }

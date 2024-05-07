@@ -27,13 +27,10 @@ namespace SocialNetwork.Business.Services.Interfaces
 
         Task<IResponse> GetPostById(string loggedUserId ,string requestUserId, Guid postId);
         Task<IResponse> GetPostByUser(string loggedUserId, string requestUserId, string? searchString, int pageSize, int pageNumber);
+        Task<IResponse> GetPostCursor(string loggedUserId, string requestUserId, string? searchString, int pageSize, DateTime? cursor);
         Task<IResponse> CreatePost(string loggedUserId, string requestUserId, CreatePostRequest request);
         Task<IResponse> DeletePost(string loggedUserId, string requestUserId, Guid postId);
         Task<IResponse> UpdatePost(string loggedUserId, string requestUserId, Guid postId, UpdatePostRequest request);
-        Task<IResponse> SendMessage(string loggedUserId, string requestUserId, SendMessageRequest request);
-        Task<IResponse> GetConversation(string loggedUserId, string requestUserId, string targetUserId, string? searchString, int pageSize, int pageNumber);
-        Task<IResponse> GetMessageById(string loggedUserId, string requestUserId, Guid id);
-        Task<IResponse> DeleteMessage(string loggedUserId, string requestUserId, Guid id);
 
         Task<IResponse> GetNotifications(string loggedUserId, string requestUserId, string? searchString, int pageSize, int pageNumber);
         Task<IResponse> GetNotificationsById(string loggedUserId, string requestUserId, Guid id);

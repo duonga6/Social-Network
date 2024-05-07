@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.DTOs.Responses;
+using SocialNetwork.Business.Exceptions;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Utilities.Enum;
 using SocialNetwork.Business.Wrapper;
@@ -40,42 +41,16 @@ namespace SocialNetwork.Business.Services.Concrete
         }
 
         #region Post
-        public async Task<IResponse> GetAll(string requestUserId, string? searchString, int pageSize, int pageNumber, Guid? groupId)
+        public async Task<IResponse> GetAll(string requestUserId, string? searchString, int pageSize, int pageNumber)
         {
             Expression<Func<Post, bool>> filter = x => x.Status == 1;
 
-            // User post:
-            if (groupId.HasValue)
-            {
-                var group = await _unitOfWork.GroupRepository.GetById(groupId.Value);
-
-                if (group == null)
-                {
-                    return new ErrorResponse(404, Messages.NotFound("Group"));
-                } 
-                else
-                {
-                    if (!group.IsPublic)
-                    {
-                        var checkMember = await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.UserId == requestUserId);
-                        if (checkMember == null)
-                        {
-                            return new ErrorResponse(400, Messages.GroupAccessDenied);
-                        }
-                    }
-                }
-
-                filter = filter.And(x => x.GroupId == groupId);
-            } 
-            else
-            {
-                filter = filter.And(x => 
-                   x.GroupId == null
-                && x.Access == PostAccess.ONLY_FRIEND && _unitOfWork.FriendshipRepository.GetQueryable().Any(f => (f.RequestUserId == requestUserId && f.TargetUserId == x.AuthorId || f.TargetUserId == requestUserId && f.RequestUserId == x.AuthorId) && f.FriendshipTypeId == (int)FriendshipEnum.Accepted)
-                || x.Access == PostAccess.PUBLIC
-                || x.AuthorId == requestUserId && x.GroupId == null
-                );
-            }
+            filter = filter.And(x => 
+                x.Access == PostAccess.ONLY_FRIEND && _unitOfWork.FriendshipRepository.GetQueryable().Any(f => (f.RequestUserId == requestUserId && f.TargetUserId == x.AuthorId || f.TargetUserId == requestUserId && f.RequestUserId == x.AuthorId) && f.FriendshipTypeId == (int)FriendshipEnum.Accepted)
+            || x.Access == PostAccess.PUBLIC
+            || x.AuthorId == requestUserId && x.GroupId == null
+            || x.Group.GroupMembers.Any(gm => gm.UserId == requestUserId)
+            );
 
             if (!string.IsNullOrEmpty(searchString))
             {
@@ -95,9 +70,11 @@ namespace SocialNetwork.Business.Services.Concrete
             var posts = await _unitOfWork.PostRepository.GetPaged(pageSize, pageNumber,
                 new Expression<Func<Post, object>>[] {
                     x => x.Author,
-                    x => x.SharePost.PostMedias.Where(x => x.Status == 1),
+                    x => x.PostMedias,
+                    x => x.Group,
                     x => x.SharePost.Author,
-                    x => x.PostMedias.Where(x => x.Status == 1)
+                    x => x.SharePost.PostMedias,
+                    x => x.SharePost.Group,
                 }
                 , filter, x => x.CreatedAt);
 
@@ -106,17 +83,54 @@ namespace SocialNetwork.Business.Services.Concrete
             return new PagedResponse<List<GetPostResponse>>(postsResponse, totalItems, 200);
         }
 
-        public async Task<IResponse> GetCursor(string requestUserId, int pageSize, DateTime? cursor, bool desc, string? searchString)
+        public async Task<IResponse> GetCursor(string requestUserId, int pageSize, DateTime? cursor, string? searchString)
         {
             Expression<Func<Post, bool>> filter = x => x.Status == 1;
-            int totalItem = await _unitOfWork.PostRepository.GetCount(filter);
+
+            filter = filter.And(x =>
+                x.Access == PostAccess.ONLY_FRIEND && _unitOfWork.FriendshipRepository.GetQueryable().Any(f => (f.RequestUserId == requestUserId && f.TargetUserId == x.AuthorId || f.TargetUserId == requestUserId && f.RequestUserId == x.AuthorId) && f.FriendshipTypeId == (int)FriendshipEnum.Accepted)
+            || x.Access == PostAccess.PUBLIC
+            || x.AuthorId == requestUserId && x.GroupId == null
+            || x.Group.GroupMembers.Any(gm => gm.UserId == requestUserId)
+            );
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                filter = filter.And(x =>
+                    x.Content.Contains(searchString)
+                );
+            }
+
+            int totalItems = await _unitOfWork.PostRepository.GetCount(filter);
 
             if (cursor != null)
             {
                 filter = filter.And(x => x.CreatedAt < cursor);
             }
 
-            return new SuccessResponse("OK", 200);
+            var data = (await _unitOfWork.PostRepository.GetCursorPaged(pageSize + 1, filter, x => x.CreatedAt, new Expression<Func<Post, object>>[]
+            {
+                x => x.Author,
+                x => x.PostMedias,
+                x => x.Group,
+                x => x.SharePost.Author,
+                x => x.SharePost.PostMedias,
+                x => x.SharePost.Group,
+            })).ToList();
+
+            bool hasNext = false;
+
+            if (data.Count > pageSize)
+            {
+                hasNext = true;
+                data.RemoveAt(data.Count - 1);
+            }
+
+            DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedAt : null;
+
+            var response = _mapper.Map<List<GetPostResponse>>(data);
+
+            return new CursorResponse<List<GetPostResponse>>(response, endCursor, hasNext, totalItems);
         }
 
         public async Task<IResponse> GetById(string requestingUserId, Guid id)
@@ -137,33 +151,80 @@ namespace SocialNetwork.Business.Services.Concrete
      
         public async Task<IResponse> Create(string requestUserId, CreatePostRequest request)
         {
-            if (string.IsNullOrEmpty(request.Content) && request.PostMedias?.Count == 0)
+            if (string.IsNullOrEmpty(request.Content) && request.PostMedias?.Count == 0 && request.SharePostId == null)
             {
-                return new ErrorResponse(404, Messages.PostEmpty);
+                return new ErrorResponse(400, Messages.PostEmpty);
+            }
+
+            if (request.SharePostId != null)
+            {
+                var sharePost = await _unitOfWork.PostRepository.GetById(request.SharePostId.Value, new Expression<Func<Post, object>>[] {x => x.Group, x => x.Author}) ?? throw new NotFoundException("Post to share id: " + request.SharePostId.ToString());
+                // Check group
+                if (sharePost.GroupId != null && !sharePost.Group.IsPublic)
+                {
+                    var checkMember = await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.UserId == requestUserId && x.GroupId == sharePost.GroupId);
+                    if (checkMember == null) return new ErrorResponse(400, Messages.GroupAccessDenied);
+                }
+
+                // Check access post
+                if (sharePost.Access == PostAccess.ONLY_ME)
+                {
+                    return new ErrorResponse(400, Messages.PostAccessDenied(sharePost.Id.ToString()));
+                } 
+                else if (sharePost.Access == PostAccess.ONLY_FRIEND)
+                {
+                    var checkFriend = await _unitOfWork.FriendshipRepository.FindOneBy(x => (x.RequestUserId == requestUserId && x.TargetUserId == sharePost.AuthorId || x.RequestUserId == sharePost.AuthorId && x.TargetUserId == requestUserId) && x.Status == 1);
+                    if (checkFriend == null) return new ErrorResponse(400, Messages.NotFriend);
+                }
+                
+                // Check media: post must not contain media
+                if (request.PostMedias?.Count > 0)
+                {
+                    return new ErrorResponse(400, Messages.SharePostMustNotHaveMedia);
+                }
+            }
+
+            // Check group
+            if (request.GroupId != null)
+            {
+                var group = await _unitOfWork.GroupRepository.GetById(request.GroupId.Value, new Expression<Func<Group, object>>[] 
+                { 
+                    x => x.GroupMembers.Where(x => x.UserId == requestUserId),
+                }) ?? throw new NotFoundException("Group id: " + request.GroupId.ToString());
+
+                if (group.GroupMembers.Count == 0)
+                {
+                    return new ErrorResponse(400, Messages.GroupAccessDenied);
+                }
             }
 
             var addEntity = _mapper.Map<Post>(request);
-            foreach (var media in addEntity.PostMedias)
-            {
-                media.UserId = requestUserId;
-            }
+            //foreach (var media in addEntity.PostMedias)
+            //{
+            //    media.UserId = requestUserId;
+            //}
             addEntity.AuthorId = requestUserId;
 
             await _unitOfWork.PostRepository.Add(addEntity);
-            var result = await _unitOfWork.CompleteAsync();
 
-            if (!result)
+            if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
+
+            var response = _mapper.Map<GetPostResponse>(await _unitOfWork.PostRepository.GetById(addEntity.Id, new Expression<Func<Post, object>>[] 
             {
-                return new ErrorResponse(400, Messages.AddError);
+                x => x.Author,
+                x => x.PostMedias,
+                x => x.Group,
+                x => x.SharePost.Author,
+                x => x.SharePost.PostMedias,
+                x => x.SharePost.Group,
+            }));
+
+            if (request.GroupId == null)
+            {
+                await _notificationService.CreateNotification(addEntity.AuthorId, "", NotificationEnum.CREATE_POST, response);
             }
 
-            var entityAdded = await _unitOfWork.PostRepository.GetById(addEntity.Id);
-
-            var response = _mapper.Map<GetPostResponse>(entityAdded);
-
-            await _notificationService.CreateNotification(addEntity.AuthorId, "", NotificationEnum.CREATE_POST, response);
-
-            return new DataResponse<GetPostResponse>(response, 200, Messages.CreatedSuccessfully);
+            return new DataResponse<GetPostResponse>(response, 201, Messages.CreatedSuccessfully);
         }
 
         public async Task<IResponse> CreateShare(string requestUserId, CreateSharePostRequest request)
@@ -195,11 +256,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> Update(string requestingUserId, Guid id, UpdatePostRequest request)
         {
-            var post = await _unitOfWork.PostRepository.GetById(id);
-            if (post == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound("Post"));
-            }
+            var post = await _unitOfWork.PostRepository.GetById(id) ?? throw new NotFoundException("Post id: " + id.ToString());
 
             if (!await CheckPermission(requestingUserId, post.AuthorId))
             {
@@ -208,37 +265,47 @@ namespace SocialNetwork.Business.Services.Concrete
 
             _mapper.Map(request, post);
 
-            if (request.MediasDelete != null)
-            foreach (var item in request.MediasDelete)
+            await _unitOfWork.BeginTransactionAsync();
+
+            try
             {
-                await _unitOfWork.PostMediaRepository.Delete(item);
+                if (request.MediasDelete != null)
+                    foreach (var item in request.MediasDelete)
+                    {
+                        await _unitOfWork.PostMediaRepository.Delete(item);
+                    }
+
+                if (request.MediasUpdate != null)
+                    foreach (var item in request.MediasUpdate)
+                    {
+                        var updateImage = _mapper.Map<PostMedia>(item);
+                        await _unitOfWork.PostMediaRepository.Update(updateImage);
+                    }
+
+                if (request.MediasAdd != null)
+                    foreach (var item in request.MediasAdd)
+                    {
+                        var addImage = _mapper.Map<PostMedia>(item);
+                        addImage.PostId = post.Id;
+                        addImage.UserId = requestingUserId;
+                        await _unitOfWork.PostMediaRepository.Add(addImage);
+                    }
+
+                await _unitOfWork.PostRepository.Update(post);
+
+                if (!await _unitOfWork.CommitAsync()) throw new NoDataChangeException();
+
+                var updatedEntity = await _unitOfWork.PostRepository.GetById(id);
+
+                return new DataResponse<GetPostResponse>(_mapper.Map<GetPostResponse>(updatedEntity), 200, Messages.UpdatedSuccessfully);
+            } catch (Exception ex)
+            {
+                _logger.LogError("Error PostService_Create: " + ex);
+                await _unitOfWork.RollbackAsync();
+                throw new NoDataChangeException();
             }
 
-            if (request.MediasUpdate!= null)
-                foreach (var item in request.MediasUpdate)
-            {
-                var updateImage = _mapper.Map<PostMedia>(item);
-                await _unitOfWork.PostMediaRepository.Update(updateImage);
-            }
-
-            if (request.MediasAdd != null)
-                foreach (var item in request.MediasAdd)
-            {
-                var addImage = _mapper.Map<PostMedia>(item);
-                addImage.PostId = post.Id;
-                await _unitOfWork.PostMediaRepository.Add(addImage);
-            }
-
-            await _unitOfWork.PostRepository.Update(post);
-            var result = await _unitOfWork.CompleteAsync();
-            if (!result)
-            {
-                return new ErrorResponse(400, Messages.UpdateError);
-            }
-
-            var updatedEntity = await _unitOfWork.PostRepository.GetById(id);
-
-            return new DataResponse<GetPostResponse>(_mapper.Map<GetPostResponse>(updatedEntity), 200, Messages.UpdatedSuccessfully);
+            
 
         }
      

@@ -49,6 +49,8 @@
         // Post
         public static string PostNotOwner => "Is not the owner";
         public static string PostEmpty => "Content or media must not empty";
+        public static string PostAccessDenied(string? id = null) => $"Post {(id == null ? "" : "id: " + id + " ")}access denied";
+        public static string SharePostMustNotHaveMedia => "Post share mustn't have media";
 
         // Post reaction
         public static string NotOwnerPostReaction => "You are not the owner post's reaction";
@@ -75,6 +77,7 @@
         public static string MessageSent => "Send message successfully";
         public static string MessageRevoked => "Revoked message successfully";
         public static string MessageSeen => "Seen message";
+        public static string SeenMessageExist => "You areadly seen this message";
 
         // Notification
         public static string NotificationSeen => "Notification has been seen";
@@ -88,5 +91,11 @@
         public static string GroupAccessDenied => "GF02 Access denied to group";
         public static string GroupMemberExist => "GF03 User is already joined group";
         public static string AcceptedInvite(string who) => $"GA04{who} accepted invite";
+
+        // Participant
+        public static string ParticipantExisted => "Participant exist in this conversation";
+        public static string ParticipantAdminExisted => "Participant admin exist in this conversation";
+        public static string ParticipantAdminNotExisted => "Participant admin exist in this conversation";
+    
     }
 }

@@ -19,6 +19,8 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
 
             builder.Property(x => x.PreCensored)
                 .IsRequired();
+
+            builder.HasIndex(x => x.CreatedAt);
         }
     }
 }

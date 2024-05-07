@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using SocialNetwork.DataAccess.Entities.Base;
 
 namespace SocialNetwork.DataAccess.Entities
 {

@@ -85,27 +85,31 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> Delete(string requestUserId, Guid id)
         {
-            var comment = await _unitOfWork.PostCommentRepository.GetById(id);
+            var comment = await _unitOfWork.PostCommentRepository.GetById(id) ?? throw new NotFoundException("Comment id: " + id.ToString());
 
-            if (comment == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound());
-            }    
-
-            if (!await CheckOwnerComment(requestUserId, comment.UserId))
+            if (!await CheckOwnerComment(requestUserId, comment.UserId) && !await _unitOfWork.PostRepository.IsOwnerPost(requestUserId, comment.PostId))
             {
                 return new ErrorResponse(400, Messages.CommentNotOwner);
             }
 
-            await _unitOfWork.PostCommentRepository.Delete(id);
-            var result = await _unitOfWork.CompleteAsync();
-
-            if (!result)
+            await _unitOfWork.BeginTransactionAsync();
+            try
             {
-                return new ErrorResponse(400, Messages.DeleteError);
-            }
+                await _unitOfWork.PostCommentRepository.Delete(id);
 
-            return new SuccessResponse(Messages.DeletedSuccessfully, 200);
+                if (!await _unitOfWork.CommitAsync())
+                {
+                    return new ErrorResponse(400, Messages.DeleteError);
+                }
+
+                return new SuccessResponse(Messages.DeletedSuccessfully, 200);
+            } catch (Exception err)
+            {
+                _logger.LogError("Error PostCommentService/Delete" + err);
+                await _unitOfWork.RollbackAsync();
+
+                throw new NoDataChangeException();
+            }
         }
 
         public async Task<IResponse> GetAll(string requestUserId, string? searchString, int pageSize, int pageNumber, Guid postId)
@@ -271,14 +275,18 @@ namespace SocialNetwork.Business.Services.Concrete
 
             _mapper.Map(request, comment);
             await _unitOfWork.PostCommentRepository.Update(comment);
-            var result = await _unitOfWork.CompleteAsync();
             
-            if (!result)
+            if (!await _unitOfWork.CompleteAsync())
             {
                 return new ErrorResponse(400, Messages.UpdateError);
             }
 
-            return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(comment), 200, Messages.UpdatedSuccessfully);
+            var commentUpdated = await _unitOfWork.PostCommentRepository.GetById(id, new Expression<Func<PostComment, object>>[]
+            {
+                x => x.User,
+            });
+
+            return new DataResponse<GetPostCommentResponse>(_mapper.Map<GetPostCommentResponse>(commentUpdated), 200, Messages.UpdatedSuccessfully);
 
         }
         
@@ -311,13 +319,13 @@ namespace SocialNetwork.Business.Services.Concrete
             return await _userManager.IsInRoleAsync(targetUser, RoleName.Administrator);
         }
         
-        private async Task<bool> CheckOwnerComment(string requestUserId, string authorCommentId)
+        private async Task<bool> CheckOwnerComment(string requestUserId, string authorId)
         {
             var requestUser = await _userManager.FindByIdAsync(requestUserId);
             if (requestUser == null) return false;
 
             // Is owner comment
-            if (requestUserId == authorCommentId)
+            if (requestUserId == authorId)
             {
                 return true;
             }

@@ -247,9 +247,24 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpGet("{Id}/Posts")]
         [ProducesResponseType(typeof(PagedResponse<List<GetPostResponse>>), 200)]
-        public async Task<IActionResult> GetPostByUser(string Id,[FromQuery] string? searchString,[FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
+        public async Task<IActionResult> GetPost(string Id,[FromQuery] string? searchString,[FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
             return ResponseModel(await _userService.GetPostByUser(UserId, Id, searchString, pageSize, pageNumber));
+        }
+
+        /// <summary>
+        /// Get all post by user id by cursor
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="searchString"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="cursor"></param>
+        /// <returns></returns>
+        [HttpGet("{Id}/Posts/Cursor")]
+        [ProducesResponseType(typeof(CursorResponse<List<GetPostResponse>>), 200)]
+        public async Task<IActionResult> GetPostCursor(string Id, [FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, DateTime? cursor)
+        {
+            return ResponseModel(await _userService.GetPostCursor(UserId, Id, searchString, pageSize, cursor));
         }
 
         /// <summary>
@@ -264,65 +279,6 @@ namespace SocialNetwork.API.Controllers
         public async Task<IActionResult> UpdatePost(string Id, Guid postId, UpdatePostRequest request)
         {
             return ResponseModel(await _userService.UpdatePost(UserId, Id, postId, request));
-        }
-
-        #endregion
-
-        #region Messages
-
-        /// <summary>
-        /// Get message conversation with target user
-        /// </summary>
-        /// <param name="Id"></param>
-        /// <param name="targetUserId"></param>
-        /// <param name="searchString">Key word search message</param>
-        /// <param name="pageSize">Item per page</param>
-        /// <param name="pageNumber">Current page</param>
-        /// <returns></returns>
-        [HttpGet("{Id}/Messages")]
-        [ProducesResponseType(typeof(PagedResponse<List<GetMessageResponse>>), 200)]
-        public async Task<IActionResult> GetConversation(string Id,[FromQuery, Required] string targetUserId, [FromQuery] string? searchString, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
-        {
-            return ResponseModel(await _userService.GetConversation(UserId, Id, targetUserId, searchString, pageSize, pageNumber));
-        }
-
-        /// <summary>
-        /// Get message by Id
-        /// </summary>
-        /// <param name="Id"></param>
-        /// <param name="messageId"></param>
-        /// <returns></returns>
-        [HttpGet("{Id}/Messages/{messageId}")]
-        [ProducesResponseType(typeof(DataResponse<GetMessageResponse>), 200)]
-        public async Task<IActionResult> GetMessageById(string Id, Guid messageId)
-        {
-            return ResponseModel(await _userService.GetMessageById(UserId, Id, messageId));
-        }
-       
-        /// <summary>
-        /// Send message to user
-        /// </summary>
-        /// <param name="Id"></param>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        [HttpPost("{Id}/Messages")]
-        [ProducesResponseType(typeof(DataResponse<GetMessageResponse>), 200)]
-        public async Task<IActionResult> SendMessage(string Id, [FromBody] SendMessageRequest request)
-        {
-            return ResponseModel(await _userService.SendMessage(UserId, Id, request)); 
-        }
-
-        /// <summary>
-        /// Delete message
-        /// </summary>
-        /// <param name="Id"></param>
-        /// <param name="messageId"></param>
-        /// <returns></returns>
-        [HttpDelete("{Id}/Messages/{messageId}")]
-        [ProducesResponseType(typeof(SuccessResponse), 200)]
-        public async Task<IActionResult> DeleteMessage(string Id, Guid messageId)
-        {
-            return ResponseModel(await _userService.DeleteMessage(UserId, Id, messageId));
         }
 
         #endregion

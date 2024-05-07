@@ -50,9 +50,9 @@
             }
         }
 
-        public HashSet<string> GetConnectionId(string userId)
+        public HashSet<string>? GetConnectionId(string userId)
         {
-            return connections.ContainsKey(userId) ? connections[userId] : new();
+            return connections.ContainsKey(userId) ? connections[userId] : null;
         }
     }
 }

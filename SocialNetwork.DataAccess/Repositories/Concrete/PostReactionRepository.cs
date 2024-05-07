@@ -86,16 +86,6 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                     .FirstOrDefaultAsync();
         }
 
-        public override async Task<ICollection<PostReaction>> FindBy(Expression<Func<PostReaction, bool>> filter = null)
-        {
-                return await _dbSet
-                    .AsNoTracking()
-                    .Where(filter)
-                    .Include(x => x.Reaction)
-                    .Include(x => x.User)
-                    .ToListAsync();
-        }
-
         public override async Task<ICollection<PostReaction>> GetPaged(int pageSize, int pageNumber, Expression<Func<PostReaction, bool>> filter = null, Expression<Func<PostReaction, object>> orderBy = null, bool isDesc = true)
         {
             var query = _dbSet
