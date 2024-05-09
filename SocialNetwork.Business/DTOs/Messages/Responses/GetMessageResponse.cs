@@ -11,6 +11,7 @@ namespace SocialNetwork.Business.DTOs.Responses
         public DateTime CreatedAt { get; set; }
         public DateTime? ReadedAt { set; get; }
         public Guid ConversationId { set; get; }
+        public GetConversationParticipantResponse Participant { set; get; } = null!;
         public GetMessageResponse? ReplyMessage { set; get; } = null!;
     }
 }

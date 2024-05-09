@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
+using SocialNetwork.Business.DTOs.Requests;
+using SocialNetwork.Business.DTOs.Responses;
+using SocialNetwork.Business.Exceptions;
 using SocialNetwork.Business.Helper;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
@@ -13,9 +16,6 @@ using SocialNetwork.DataAccess.Repositories.Abstract;
 using SocialNetwork.DataAccess.Utilities.Enum;
 using SocialNetwork.DataAccess.Utilities.Roles;
 using System.Linq.Expressions;
-using SocialNetwork.Business.DTOs.Requests;
-using SocialNetwork.Business.DTOs.Responses;
-using SocialNetwork.Business.Exceptions;
 
 namespace SocialNetwork.Business.Services.Concrete
 {

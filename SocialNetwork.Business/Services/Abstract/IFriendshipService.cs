@@ -18,5 +18,7 @@ namespace SocialNetwork.Business.Services.Interfaces
         Task<IResponse> GetInfo(string requestUserId, string targetUserId);
         Task<IResponse> GetSuggestFriend(string requestUserId, int pageSize, int pageNumber);
         Task<bool> IsFriend(string userId1, string userId2);
+
+        Task<IResponse> GetFriendActive(string requestId);
     }
 }

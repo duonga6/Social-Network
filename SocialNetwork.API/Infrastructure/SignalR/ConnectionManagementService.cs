@@ -3,11 +3,13 @@
     public class ConnectionManagementService
     {
         private readonly Dictionary<string, HashSet<string>> connections;
+        private readonly Dictionary<string, HashSet<string>> friendActives;
         private readonly ILogger _logger;
 
         public ConnectionManagementService(ILogger<ConnectionManagementService> logger)
         {
             connections = new();
+            friendActives = new();
             _logger = logger;
         }
 
@@ -50,9 +52,57 @@
             }
         }
 
+        public HashSet<string> GetUserIdConnected()
+        {
+            return connections.Keys.ToHashSet();
+        }
+
         public HashSet<string>? GetConnectionId(string userId)
         {
             return connections.ContainsKey(userId) ? connections[userId] : null;
+        }
+    
+        public void AddFriendActive(string userId, HashSet<string> friendList)
+        {
+            foreach (var friendId in friendList)
+            {
+                if (!friendActives.ContainsKey(friendId))
+                {
+                    friendActives[friendId] = new() { userId };
+                } else
+                {
+                    friendActives[friendId].Add(userId);
+                }
+            }
+        }
+
+        public void RemoveFriendActive(string userId, HashSet<string> friendList)
+        {
+            foreach (var friendId in friendList)
+            {
+                if (friendActives.ContainsKey(friendId))
+                {
+                    friendActives[friendId].Remove(userId);
+                }
+            }
+        }
+
+        public void RemoveFriendActive(string userId, string friendId)
+        {
+            if (friendActives.ContainsKey(friendId))
+            {
+                friendActives[friendId].Remove(userId);
+            }
+        }
+
+        public List<string>? GetFriendActive(string userId)
+        {
+            if (friendActives.ContainsKey(userId))
+            {
+                return friendActives[userId].ToList();
+            }
+
+            return null;
         }
     }
 }

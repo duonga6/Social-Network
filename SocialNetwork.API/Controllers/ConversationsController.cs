@@ -129,6 +129,19 @@ namespace SocialNetwork.API.Controllers
         }
 
         /// <summary>
+        /// Get conversation participant by userId
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        [HttpGet("{Id}/Participants/UID")]
+        [ProducesResponseType(typeof(DataResponse<GetConversationParticipantResponse>), 200)]
+        public async Task<IActionResult> GetParticipantByUID(Guid Id,[FromQuery, Required] string userId)
+        {
+            return ResponseModel(await _conversationService.GetParticipantByUserId(UserId, Id, userId));
+        }
+
+        /// <summary>
         /// Add participant for conversation
         /// </summary>
         /// <param name="Id"></param>

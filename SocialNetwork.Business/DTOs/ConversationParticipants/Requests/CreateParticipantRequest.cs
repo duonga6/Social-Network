@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace SocialNetwork.Business.DTOs.Requests
+﻿namespace SocialNetwork.Business.DTOs.Requests
 {
     public class CreateParticipantRequest
     {

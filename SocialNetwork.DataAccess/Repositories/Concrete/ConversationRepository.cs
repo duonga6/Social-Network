@@ -30,5 +30,14 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 conversation.UpdatedAt = DateTime.UtcNow;
             }
         }
+
+        public override async Task Delete(Guid id)
+        {
+            var conversation = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
+            if (conversation != null)
+            {
+                conversation.Status = 0;
+            }
+        }
     }
 }

@@ -19,6 +19,8 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             {
                 participant.UserContactName = entity.UserContactName;
                 participant.IsAdmin = entity.IsAdmin;
+                participant.IsSuperAdmin = entity.IsSuperAdmin;
+                participant.UpdatedAt = entity.UpdatedAt;
             }
         }
 
@@ -29,6 +31,30 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 .Include(x => x.User)
                 .Select(x => x.User.Id)
                 .ToListAsync();
+        }
+
+        public override async Task Delete(Guid id)
+        {
+            var participant = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
+            if (participant != null)
+            {
+                participant.Status = 0;
+                participant.IsAdmin = false;
+                participant.IsSuperAdmin = false;
+            }
+        }
+
+        public async Task AddParticipantExisted(Guid id)
+        {
+            var pariticipant = await _dbSet.Where(x => x.Id == id).Include(x => x.User).FirstOrDefaultAsync();
+            if (pariticipant != null)
+            {
+                pariticipant.Status = 1;
+                pariticipant.IsAdmin = false;
+                pariticipant.IsSuperAdmin = false;
+                pariticipant.UserContactName = pariticipant.User.GetFullName();
+                pariticipant.CreatedAt = DateTime.UtcNow;
+            }
         }
     }
 }

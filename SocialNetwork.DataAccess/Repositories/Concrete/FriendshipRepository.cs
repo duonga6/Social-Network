@@ -66,5 +66,14 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 .Take(pageSize)
                 .ToListAsync();
         }
+
+        public async Task<ICollection<string>> GetFriendIds(string userId)
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Where(x => (x.RequestUserId == userId || x.TargetUserId == userId) && x.Status == 1 && x.FriendshipTypeId == (int)FriendshipEnum.Accepted)
+                .Select(x => x.RequestUserId == userId ? x.TargetUserId : x.RequestUserId)
+                .ToListAsync();
+        }
     }
 }

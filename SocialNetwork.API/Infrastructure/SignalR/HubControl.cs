@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.VisualBasic;
 using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.DataAccess.Entities;
@@ -18,7 +19,28 @@ namespace SocialNetwork.API.Infrastructure.SignalR
             _logger = logger;
         }
 
-        public async Task ChangeConversationName(List<string> userIds, GetConversationResponse conversation)
+        private async Task EventSend(ICollection<string> userIds, object data, string eventName)
+        {
+            foreach (var id in userIds)
+            {
+                var connectionIds = _connectionManagement.GetConnectionId(id);
+                if (connectionIds != null)
+                {
+                    foreach (var connectionId in connectionIds)
+                    {
+                        var clientProxy = _hubContext.Clients.Clients(connectionId);
+
+                        if (clientProxy != null)
+                        {
+                            _logger.LogInformation(eventName + data);
+                            await clientProxy.SendAsync(eventName, data);
+                        }
+                    }
+                }
+            }
+        }
+
+        public async Task ChangeConversationName(ICollection<string> userIds, GetConversationResponse conversation)
         {
             foreach (var id in userIds)
             {
@@ -38,7 +60,32 @@ namespace SocialNetwork.API.Infrastructure.SignalR
             }
         }
 
-        public async Task NewMessage(List<string> userIds, GetMessageResponse message)
+        public async Task DeleteConversation(ICollection<string> userIds, Guid conversationId)
+        {
+            await EventSend(userIds, conversationId, "DeleteConversation");
+        }
+
+        public async Task NewGroupConversation(ICollection<string> userIds, GetConversationResponse conversation)
+        {
+            foreach (var id in userIds)
+            {
+                var connectionIds = _connectionManagement.GetConnectionId(id);
+                if (connectionIds != null)
+                {
+                    foreach (var connectionId in connectionIds)
+                    {
+                        var clientProxy = _hubContext.Clients.Clients(connectionId);
+
+                        if (clientProxy != null)
+                        {
+                            await clientProxy.SendAsync("NewGroupConversation", conversation);
+                        }
+                    }
+                }
+            }
+        }
+
+        public async Task NewMessage(ICollection<string> userIds, GetMessageResponse message)
         {
             foreach (var id in userIds)
             {
@@ -74,6 +121,21 @@ namespace SocialNetwork.API.Infrastructure.SignalR
                     }
                 }
             }
+        }
+
+        public async Task FriendIsActive(ICollection<string> userIds, string userId)
+        {
+            await EventSend(userIds, userId, "FriendIsActive");
+        }
+
+        public async Task FriendIsInActive(ICollection<string> userIds, string userId)
+        {
+            await EventSend(userIds, userId, "FriendInActive");
+        }
+
+        public List<string>? GetFriendActive(string userId)
+        {
+            return _connectionManagement.GetFriendActive(userId);
         }
     }
 

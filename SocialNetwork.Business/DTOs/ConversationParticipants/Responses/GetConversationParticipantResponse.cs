@@ -6,5 +6,7 @@
         public Guid ConversationId { set; get; }
         public string UserContactName { set; get; } = string.Empty;
         public BasicUserResponse User { set; get; } = null!;
+        public bool IsAdmin { set; get; }
+        public bool IsSuperAdmin { set; get; }
     }
 }

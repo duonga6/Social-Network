@@ -13,6 +13,7 @@ namespace SocialNetwork.Business.Services.Abstract
         Task<IResponse> Update(string requestId, Guid conversationId, UpdateConversationRequest request);
 
         Task<IResponse> GetParticipant(string requestId, Guid id, int pageSize, int pageNumber, string? searchString);
+        Task<IResponse> GetParticipantByUserId(string requestId, Guid id, string userId);
         Task<IResponse> GetParticipantById(string requestId, Guid id, Guid participantId);
         Task<IResponse> AddParticipant(string requestId, Guid id, CreateParticipantRequest request);
         Task<IResponse> RemoveParticipant(string requestId, Guid id, Guid participantId);

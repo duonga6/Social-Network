@@ -157,7 +157,10 @@ namespace SocialNetwork.Business.Services.Concrete
             var notificationMapped = _mapper.Map<List<GetNotificationResponse>>(notifications);
             foreach(var notification in notificationMapped)
             {
-                await _centerHub.NewNotification(notification.ToId, notification);
+                Task sendNotificaiton = Task.Run(async () =>
+                {
+                    await _centerHub.NewNotification(notification.ToId, notification);
+                });
             }
 
             return true;

@@ -11,6 +11,7 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
             builder.Property(x => x.MessageType).HasColumnType("int");
 
             builder.HasIndex(x => x.CreatedAt).IsUnique(false);
+            builder.HasIndex(x => x.ParticipantId).IsUnique(false);
 
             builder.HasOne(x => x.User)
                 .WithMany(u => u.Messages)
@@ -25,6 +26,11 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
             builder.HasOne(x => x.ReplyMessage)
                 .WithOne()
                 .HasForeignKey<Message>(x => x.ReplyId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.HasOne(x => x.Participant)
+                .WithOne()
+                .HasForeignKey<Message>(x => x.ParticipantId)
                 .OnDelete(DeleteBehavior.NoAction);
         }
     }

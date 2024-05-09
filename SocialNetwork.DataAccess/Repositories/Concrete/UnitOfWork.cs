@@ -54,7 +54,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
 
         public async Task<bool> CompleteAsync()
         {
-            return await _context.SaveChangesAsync() > 0;
+            return (await _context.SaveChangesAsync()) > 0;
         }
 
 

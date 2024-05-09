@@ -21,11 +21,13 @@ namespace SocialNetwork.Business.Services.Concrete
     {
         private readonly UserManager<User> _userManager;
         private readonly INotificationService _notificationService;
+        private readonly IHubControl _hubControl;
 
-        public FriendshipService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<FriendshipService> logger, UserManager<User> userManager, INotificationService notificationService) : base(unitOfWork, mapper, logger)
+        public FriendshipService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<FriendshipService> logger, UserManager<User> userManager, INotificationService notificationService, IHubControl hubControl) : base(unitOfWork, mapper, logger)
         {
             _userManager = userManager;
             _notificationService = notificationService;
+            _hubControl = hubControl;
         }
 
         public async Task<IResponse> GetByUser(string requestUserId, string? searchString, int pageSize, int pageNumber, FriendType type)
@@ -401,6 +403,13 @@ namespace SocialNetwork.Business.Services.Concrete
             var user = await _userManager.FindByIdAsync(userId);
 
             return user != null;
+        }
+
+        public async Task<IResponse> GetFriendActive(string requestId)
+        {
+            var data = await Task.Run(() => _hubControl.GetFriendActive(requestId));
+            return new DataResponse<List<string>?>(data, 200);
+
         }
     }
 }

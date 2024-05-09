@@ -156,5 +156,17 @@ namespace SocialNetwork.API.Controllers
         {
             return ResponseModel(await _friendshipService.GetSuggestFriend(UserId, pageSize, pageNumber));
         }
+        
+        /// <summary>
+        /// Get friend active
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("Active")]
+        [ProducesResponseType(typeof(List<string>), 200)]
+        public async Task<IActionResult> GetActiveFriend()
+        {
+            return ResponseModel(await _friendshipService.GetFriendActive(UserId));
+        }
+        
     }
 }
