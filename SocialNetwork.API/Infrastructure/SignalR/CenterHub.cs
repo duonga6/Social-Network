@@ -20,8 +20,6 @@ namespace SocialNetwork.API.Infrastructure.SignalR
             get { return Context.User?.GetUserId(); }
         }
 
-        private HashSet<string> FriendIds = new();
-
         public CenterHub(ConnectionManagementService connectionManagement, ILogger<CenterHub> logger, IUnitOfWork unitOfWork, IHubControl hubControl)
         {
             _connectionManagement = connectionManagement;
@@ -39,9 +37,17 @@ namespace SocialNetwork.API.Infrastructure.SignalR
                 var listConnected = string.Join("\n\t\t", _connectionManagement.GetConnectionId(UserId) ?? new());
                 _logger.LogInformation($"User: {UserId} connected with connection id: {Context.ConnectionId}\nList connection id of user:\n{listConnected}");
 
-                FriendIds = (await _unitOfWork.FriendshipRepository.GetFriendIds(UserId)).ToHashSet();
-                await _hubControl.FriendIsActive(FriendIds, UserId);
-                _connectionManagement.AddFriendActive(UserId, FriendIds);
+                
+                if (_connectionManagement.GetFriendIds(UserId) == null)
+                {
+                    _connectionManagement.AddConnectionFriend(UserId, (await _unitOfWork.FriendshipRepository.GetFriendIds(UserId)).ToHashSet());
+                }
+
+                var friendIds = _connectionManagement.GetFriendIds(UserId);
+
+
+                await _hubControl.FriendIsActive(_connectionManagement.GetFriendIds(UserId) ?? new(), UserId);
+                _connectionManagement.AddFriendActive(UserId, friendIds ?? new());
 
             }
 
@@ -53,11 +59,12 @@ namespace SocialNetwork.API.Infrastructure.SignalR
             if (UserId != null)
             {
                 _connectionManagement.RemoveConnection(UserId, Context.ConnectionId);
-                var listConnected = string.Join("\n\n\n", _connectionManagement.GetConnectionId(UserId)?.ToArray<string?>() ?? new string[] {});
+                var listConnected = string.Join("\n\n\n", _connectionManagement.GetConnectionId(UserId) ?? new());
                 _logger.LogInformation($"User: {UserId} disconnected with connection id: {Context.ConnectionId}\n\nList connection id of user:\n{listConnected}");
 
-                await _hubControl.FriendIsInActive(FriendIds, UserId);
-                _connectionManagement.RemoveFriendActive(UserId, FriendIds);
+                var friendIds = _connectionManagement.GetFriendIds(UserId);
+                await _hubControl.FriendIsInActive(friendIds ?? new(), UserId);
+                _connectionManagement.RemoveFriendActive(UserId, friendIds ?? new());
             }
 
             await base.OnDisconnectedAsync(exception);

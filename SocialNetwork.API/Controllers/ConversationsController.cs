@@ -5,6 +5,7 @@ using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.Services.Abstract;
 using SocialNetwork.Business.Wrapper;
+using SocialNetwork.DataAccess.Utilities.Enum;
 using System.ComponentModel.DataAnnotations;
 
 namespace SocialNetwork.API.Controllers
@@ -27,12 +28,13 @@ namespace SocialNetwork.API.Controllers
         /// <param name="pageSize"></param>
         /// <param name="searchString"></param>
         /// <param name="cursor"></param>
+        /// <param name="type">0- conversation pruvate ; 1 - conversation group</param>
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(CursorResponse<List<GetConversationResponse>>), 200)]
-        public async Task<IActionResult> Get([FromQuery, Required, Range(1, int.MaxValue)] int pageSize, string? searchString, DateTime? cursor)
+        public async Task<IActionResult> Get([FromQuery, Required, Range(1, int.MaxValue)] int pageSize, string? searchString, DateTime? cursor, ConversationType? type)
         {
-            return ResponseModel(await _conversationService.GetConversation(UserId, pageSize, searchString, cursor));
+            return ResponseModel(await _conversationService.GetConversation(UserId, pageSize, searchString, cursor, type));
         }
 
         /// <summary>

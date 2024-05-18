@@ -22,6 +22,11 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 .OnDelete(DeleteBehavior.NoAction)
                 .IsRequired(false);
 
+            builder.HasOne(x => x.Post)
+                .WithMany(x => x.Comments)
+                .HasForeignKey(x => x.PostId)
+                .OnDelete(DeleteBehavior.NoAction);
+
             builder.HasKey(x => x.Id);
 
             builder.HasIndex(x => x.CreatedAt);

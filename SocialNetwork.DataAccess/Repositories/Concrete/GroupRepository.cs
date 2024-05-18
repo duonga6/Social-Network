@@ -34,5 +34,14 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             var group = await _dbSet.FirstOrDefaultAsync(x => x.Id == groupId);
             group.TotalMember++;
         }
+
+        public async Task MinusMember(Guid groupId)
+        {
+            var group = await _dbSet.FirstOrDefaultAsync(x => x.Id == groupId);
+            if (group != null)
+            {
+                group.TotalMember--;
+            }
+        }
     }
 }

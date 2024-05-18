@@ -6,5 +6,7 @@ namespace SocialNetwork.DataAccess.Repositories.Abstract
     {
         Task Seen(Guid Id);
         Task<ICollection<Notification>> GetUserNotifications(string userId);
+        Task SeenAllNoticiation(string userId);
+        Task<int> CountNotSeen(string userId);
     }
 }

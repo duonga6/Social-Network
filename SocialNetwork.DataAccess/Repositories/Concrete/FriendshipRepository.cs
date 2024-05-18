@@ -21,6 +21,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             if (entityUpdate != null) 
             { 
                 entityUpdate.Status = entity.Status;
+                entityUpdate.FriendshipTypeId = entity.FriendshipTypeId;
                 entityUpdate.UpdatedAt = DateTime.UtcNow;
             }
         }
@@ -74,6 +75,17 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 .Where(x => (x.RequestUserId == userId || x.TargetUserId == userId) && x.Status == 1 && x.FriendshipTypeId == (int)FriendshipEnum.Accepted)
                 .Select(x => x.RequestUserId == userId ? x.TargetUserId : x.RequestUserId)
                 .ToListAsync();
+        }
+
+        public async Task<bool> ExistFriendShip(string userId1, string userId2)
+        {
+            return await _dbSet.AsNoTracking().FirstOrDefaultAsync(
+                x => 
+                ((x.RequestUserId == userId1 && x.TargetUserId == userId2) || (x.RequestUserId == userId2 && x.TargetUserId == userId1)) &&
+                x.Status == 1 &&
+                x.FriendshipTypeId == (int) FriendshipEnum.Accepted
+                ) != null;
+            
         }
     }
 }

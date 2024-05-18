@@ -1,11 +1,12 @@
 ﻿using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.Wrapper.Abstract;
+using SocialNetwork.DataAccess.Utilities.Enum;
 
 namespace SocialNetwork.Business.Services.Abstract
 {
     public interface IConversationService
     {
-        Task<IResponse> GetConversation(string requestId, int pageSize, string? searchString, DateTime? cursor);
+        Task<IResponse> GetConversation(string requestId, int pageSize, string? searchString, DateTime? cursor, ConversationType? type);
         Task<IResponse> GetById(string requestId, Guid conversationId);
         Task<IResponse> GetByUserId(string requestId, string userId);
         Task<IResponse> Create(string requestId, CreateConversationRequest request);

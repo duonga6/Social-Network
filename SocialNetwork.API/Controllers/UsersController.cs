@@ -64,7 +64,7 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPost("ResetPassword")]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(DataResponse<Token>), 200)]
+        [ProducesResponseType(typeof(DataResponse<UserWithTokenResponse>), 200)]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
         {
             return ResponseModel(await _userService.ResetPassword(request));
@@ -115,7 +115,6 @@ namespace SocialNetwork.API.Controllers
         /// <param name="pageNumber">Current page</param>
         /// <returns></returns>
         [HttpGet]
-        [Authorize(Roles = RoleName.Administrator)]
         [ProducesResponseType(typeof(PagedResponse<List<GetUserResponse>>), 200)]
         public async Task<IActionResult> GetAll(string? searchString,[FromQuery, Required, Range(1, int.MaxValue)] int pageSize, [FromQuery, Required, Range(1, int.MaxValue)] int pageNumber)
         {
@@ -187,11 +186,48 @@ namespace SocialNetwork.API.Controllers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpPost("ChangePassword")]
+        [HttpPut("ChangePassword")]
         [ProducesResponseType(typeof(SuccessResponse), 200)]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
         {
             return ResponseModel(await _userService.ChangePassword(UserId, request));
+        }
+
+        /// <summary>
+        /// Change cover image
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPut("CoverImage")]
+        [ProducesResponseType(typeof(DataResponse<GetUserResponse>), 200)]
+        public async Task<IActionResult> ChangeCoverImage([FromBody] ChangeCoverImageRequest request)
+        {
+            return ResponseModel(await _userService.ChangeCoverImage(UserId, request));
+        }
+
+        /// <summary>
+        /// Change avatar
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPut("Avatar")]
+        [ProducesResponseType(typeof(DataResponse<BasicUserResponse>), 200)]
+        public async Task<IActionResult> ChangeAvatar([FromBody] ChangeCoverImageRequest request)
+        {
+            return ResponseModel(await _userService.ChangeAvatar(UserId, request));
+        }
+
+        /// <summary>
+        /// Find user by email
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        [HttpGet("FindByEmail")]
+        [ProducesResponseType(typeof(DataResponse<GetUserResponse>), 200)]
+        public async Task<IActionResult> FindByEmail([FromQuery, Required] string email)
+        {
+            return ResponseModel(await _userService.FindByEmail(UserId, email));
         }
 
         #endregion
@@ -346,5 +382,17 @@ namespace SocialNetwork.API.Controllers
         }
 
         #endregion
+
+        /// <summary>
+        /// Get stats of user
+        /// </summary>
+        /// <returns></returns>
+        //[Authorize(Roles = RoleName.Administrator)]
+        [HttpGet("Stats")]
+        [ProducesResponseType(typeof(DataResponse<StatsUserResponse>), 200)]
+        public async Task<IActionResult> GetStats()
+        {
+            return ResponseModel(await _userService.Stats(UserId));
+        }
     }
 }

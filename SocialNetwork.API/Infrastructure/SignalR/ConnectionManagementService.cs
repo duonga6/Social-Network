@@ -3,6 +3,7 @@
     public class ConnectionManagementService
     {
         private readonly Dictionary<string, HashSet<string>> connections;
+        private readonly Dictionary<string, HashSet<string>> connectionFriends;
         private readonly Dictionary<string, HashSet<string>> friendActives;
         private readonly ILogger _logger;
 
@@ -10,8 +11,11 @@
         {
             connections = new();
             friendActives = new();
+            connectionFriends = new();
             _logger = logger;
         }
+
+        public int CountUser() => connections.Count;
 
         public void AddConnection(string userId, string connectionId)
         {
@@ -100,6 +104,26 @@
             if (friendActives.ContainsKey(userId))
             {
                 return friendActives[userId].ToList();
+            }
+
+            return null;
+        }
+
+        public void AddConnectionFriend(string userId, HashSet<string> friendIds)
+        {
+            connectionFriends[userId] = friendIds;
+        }
+
+        public void RemoveConnectionFriend(string userId)
+        {
+            connectionFriends.Remove(userId);
+        }
+
+        public HashSet<string>? GetFriendIds(string userId)
+        {
+            if (connectionFriends.ContainsKey(userId))
+            {
+                return connectionFriends[userId];
             }
 
             return null;

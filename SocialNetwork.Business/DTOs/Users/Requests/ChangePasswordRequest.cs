@@ -4,9 +4,8 @@ namespace SocialNetwork.Business.DTOs.Requests
 {
     public class ChangePasswordRequest
     {
-        [Required]
         [EmailAddress]
-        public string Email { get; set; } = string.Empty;
+        public string? Email { get; set; }
         [Required]
         [MinLength(8)]
         public string OldPassword { get; set; } = string.Empty;

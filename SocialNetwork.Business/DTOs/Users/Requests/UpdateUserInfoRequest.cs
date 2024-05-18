@@ -12,6 +12,6 @@ namespace SocialNetwork.Business.DTOs.Requests
         public string Address { get; set; } = string.Empty;
         public DateTime DateOfBirth { get; set; }
         [Required]
-        public string PhoneNumber { set; get; } = string.Empty;
+        public int Gender { set; get; }
     }
 }

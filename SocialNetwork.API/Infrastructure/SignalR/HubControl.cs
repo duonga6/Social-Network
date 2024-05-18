@@ -137,6 +137,16 @@ namespace SocialNetwork.API.Infrastructure.SignalR
         {
             return _connectionManagement.GetFriendActive(userId);
         }
+
+        public async Task ChangeConversationImage(ICollection<string> userIds, GetConversationResponse conversation)
+        {
+            await EventSend(userIds, conversation, "ChangeImageConversation");
+        }
+
+        public int GetActivingUser()
+        {
+            return _connectionManagement.CountUser();
+        }
     }
 
 }

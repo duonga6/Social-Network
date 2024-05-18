@@ -6,5 +6,6 @@ namespace SocialNetwork.Business.Services.Interfaces
     public interface IMailService
     {
         Task<IResponse> SendMailAsync(SendMailRequest request);
+        Task SendMailWithoutResponseAsync(SendMailRequest request);
     }
 }

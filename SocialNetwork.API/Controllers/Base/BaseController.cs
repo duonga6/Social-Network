@@ -1,7 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Formatters;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using SocialNetwork.API.Utilities;
 using SocialNetwork.Business.Wrapper.Abstract;
 

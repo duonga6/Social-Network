@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.DataAccess.Context;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Abstract;
+using SocialNetwork.DataAccess.Utilities.Enum;
 using System.Linq;
 using System.Linq.Expressions;
 

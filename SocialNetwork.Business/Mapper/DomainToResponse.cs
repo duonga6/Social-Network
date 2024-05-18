@@ -11,8 +11,7 @@ namespace SocialNetwork.Business.Mapper
         {
             CreateMap<Reaction, GetReactionResponse>();
 
-            CreateMap<User, GetUserResponse>()
-                .ForMember(d => d.Gender, o => o.MapFrom(s => s.Gender_FK.Name));
+            CreateMap<User, GetUserResponse>();
 
             CreateMap<User, BasicUserResponse>();
 
@@ -67,7 +66,8 @@ namespace SocialNetwork.Business.Mapper
 
             CreateMap<Conversation, GetConversationResponse>()
                 .ForMember(d => d.LastMessage, o => o.MapFrom(x => x.Messages.FirstOrDefault()))
-                .ForMember(d => d.UpdatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.UpdatedAt, DateTimeKind.Utc)));
+                .ForMember(d => d.UpdatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.UpdatedAt, DateTimeKind.Utc)))
+                .ForMember(d => d.Images, o => o.MapFrom(x => new List<string>() { x.Image }));
 
             CreateMap<ConversationParticipant, GetConversationParticipantResponse>();
 

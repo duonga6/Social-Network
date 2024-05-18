@@ -10,5 +10,7 @@ namespace SocialNetwork.Business.Services.Interfaces
         Task<IResponse> SeenNotification(string userId, Guid id);
         Task<IResponse> GetById(string userId, Guid id);
         Task<IResponse> GetCursor(string requestUserId, int pageSize, DateTime? cursor, bool getNext);
+        Task<IResponse> SeenAll(string requestUserId);
+        Task<IResponse> GetCountNotSeen(string requestId);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using LinqKit;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Org.BouncyCastle.Asn1.Ocsp;
@@ -13,14 +14,18 @@ using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Abstract;
+using SocialNetwork.DataAccess.Utilities.Roles;
 using System.Linq.Expressions;
 
 namespace SocialNetwork.Business.Services.Concrete
 {
     public class GroupService : BaseServices<GroupService>, IGroupService
     {
-        public GroupService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<GroupService> logger) : base(unitOfWork, mapper, logger)
+        private readonly UserManager<User> _userManager;
+
+        public GroupService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<GroupService> logger, UserManager<User> userManager) : base(unitOfWork, mapper, logger)
         {
+            _userManager = userManager;
         }
 
         public async Task<IResponse> Create(string requestId, CreateGroupRequest request)
@@ -285,6 +290,11 @@ namespace SocialNetwork.Business.Services.Concrete
 
             DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedAt : null;
 
+            if (endCursor != null)
+            {
+                endCursor = DateTime.SpecifyKind(endCursor.Value, DateTimeKind.Utc);
+            }
+
             var response = _mapper.Map<List<GetPostResponse>>(data);
 
             return new CursorResponse<List<GetPostResponse>>(response, endCursor, hasNext, 0);
@@ -367,6 +377,11 @@ namespace SocialNetwork.Business.Services.Concrete
 
             DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedAt : null;
 
+            if (endCursor != null)
+            {
+                endCursor = DateTime.SpecifyKind(endCursor.Value, DateTimeKind.Utc);
+            }
+
             var response = _mapper.Map<List<GetPostResponse>>(data);
 
             return new CursorResponse<List<GetPostResponse>>(response, endCursor, hasNext, totalItems);
@@ -376,6 +391,25 @@ namespace SocialNetwork.Business.Services.Concrete
         {
             var group = await _unitOfWork.GroupRepository.GetById(groupId) ?? throw new NotFoundException("Group id: " + groupId.ToString());
             return !(!group.IsPublic && await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.GroupId == groupId && x.UserId == userId) == null);
+        }
+
+        public async Task<IResponse> StatsGroupResponse(string requestId)
+        {
+            //var user = await _userManager.FindByIdAsync(requestId) ?? throw new NotFoundException("User id: " + requestId);
+
+            //if (!await _userManager.IsInRoleAsync(user, RoleName.Administrator)) return new ErrorResponse(401, Messages.UnAuthorized);
+
+            var totalGroup = await _unitOfWork.GroupRepository.GetCount(x => x.Status == 1);
+            var privateGroup = await _unitOfWork.GroupRepository.GetCount(x => x.Status == 1 && !x.IsPublic);
+
+            var response = new StatsGroupResponse
+            {
+                TotalGroup = totalGroup,
+                PrivateGroup = privateGroup,
+                PublicGroup = totalGroup - privateGroup,
+            };
+
+            return new DataResponse<StatsGroupResponse>(response, 200);
         }
     }
 }

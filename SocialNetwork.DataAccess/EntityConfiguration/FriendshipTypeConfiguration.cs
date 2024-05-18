@@ -17,7 +17,6 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
             {
                 new() { Id = 1, Name = "Pending" },
                 new() { Id = 2, Name = "Accepted"},
-                new() { Id = 3, Name = "Blocked" },
             };
 
             builder.HasData(dataDefault);

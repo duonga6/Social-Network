@@ -36,6 +36,8 @@ namespace SocialNetwork.Business.Services.Concrete
                 HtmlBody = request.HtmlBody,
             };
 
+            message.Body = body.ToMessageBody();
+
             using var smtp = new SmtpClient();
             try
             {
@@ -56,6 +58,41 @@ namespace SocialNetwork.Business.Services.Concrete
             smtp.Disconnect(true);
             _logger.LogInformation($"Sent email to {request.ToEmail}");
             return new SuccessResponse(Messages.EmailSent + $"to {request.ToEmail}", 200);
+        }
+
+        public async Task SendMailWithoutResponseAsync(SendMailRequest request)
+        {
+            var message = new MimeMessage();
+            message.Sender = new MailboxAddress(_mailSettings.DisplayName, _mailSettings.Mail);
+            message.From.Add(new MailboxAddress(_mailSettings.DisplayName, _mailSettings.Mail));
+            message.To.Add(MailboxAddress.Parse(request.ToEmail));
+            message.Subject = request.Subject;
+
+            var body = new BodyBuilder()
+            {
+                HtmlBody = request.HtmlBody,
+            };
+
+            message.Body = body.ToMessageBody();
+
+            using var smtp = new SmtpClient();
+            try
+            {
+                smtp.Connect(_mailSettings.Host, _mailSettings.Port, MailKit.Security.SecureSocketOptions.StartTls);
+                smtp.Authenticate(_mailSettings.Mail, _mailSettings.Password);
+                await smtp.SendAsync(message);
+            }
+            catch (Exception ex)
+            {
+                Directory.CreateDirectory("MailsErrorSave");
+                var emailErrorPath = $"MailsErrorSave/{Guid.NewGuid()}.eml";
+                await message.WriteToAsync(emailErrorPath);
+                _logger.LogError($"Error send email to {request.ToEmail} {DateTime.UtcNow.ToString("HH:mm dd/MM/yyyy")}:\n{ex.Message}");
+
+            }
+
+            smtp.Disconnect(true);
+            _logger.LogInformation($"Sent email to {request.ToEmail}");
         }
     }
 }

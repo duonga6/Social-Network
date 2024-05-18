@@ -173,6 +173,11 @@ namespace SocialNetwork.Business.Services.Concrete
 
             DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedAt : null;
 
+            if (endCursor != null)
+            {
+                endCursor = DateTime.SpecifyKind(endCursor.Value, DateTimeKind.Utc);
+            }
+
             var response = _mapper.Map<List<GetMessageResponse>>(data);
 
             return new CursorResponse<List<GetMessageResponse>>(response, cursor, hasNext, 0);

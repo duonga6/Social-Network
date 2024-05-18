@@ -11,13 +11,12 @@ namespace SocialNetwork.Business
     {
         public static void AddServicesBLL(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            services.AddScoped<IUserService, UserService>();
 
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.Configure<JWTSettings>(configuration.GetSection("JWTSettings"));
             services.Configure<MailSettings>(configuration.GetSection("MailSettings"));
-
             services.AddScoped<IReactionService, ReactionService>();
-            services.AddScoped<IUserService, UserService>();
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IPostService, PostService>();
@@ -33,6 +32,7 @@ namespace SocialNetwork.Business
             services.AddScoped<IGroupInviteService, GroupInviteService>();
             services.AddScoped<IGroupMemberService, GroupMemberService>();
             services.AddScoped<IConversationService, ConversationService>();
+            services.AddScoped<IAdminService, AdminService>();
         }
     }
 }

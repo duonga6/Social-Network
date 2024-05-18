@@ -7,6 +7,7 @@ namespace SocialNetwork.Business.Services.Interfaces
     {
         Task<IResponse> GetAll(string requestUserId, string? searchString, int pageSize, int pageNumber);
         Task<IResponse> GetCursor(string requestUserId, int pageSize, DateTime? cursor, string? searchString);
+        Task<IResponse> SearchCursor(string requestUserId, int pageSize, DateTime? cursor, string? searchString);
         Task<IResponse> GetById(string requestingUserId, Guid id);
         Task<IResponse> Create(string requestUserId, CreatePostRequest request);
         Task<IResponse> CreateShare(string requestUserId, CreateSharePostRequest request);
@@ -25,5 +26,10 @@ namespace SocialNetwork.Business.Services.Interfaces
         Task<IResponse> CreateReaction(string requestUserId, Guid postId, CreatePostReactionRequest request);
         Task<IResponse> UpdateReaction(string requestUserId, Guid postId,int reactionId, CreatePostReactionRequest request);
         Task<IResponse> DeleteReaction(string requestUserId, Guid postId,int reactionId);
+
+        Task<bool> CheckPermission(string userId, Guid postId);
+
+        Task<IResponse> StatsReport(string requestUserId);
+    
     }
 }

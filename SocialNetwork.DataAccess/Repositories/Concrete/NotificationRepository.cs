@@ -85,5 +85,18 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             }
         }
 
+        public async Task SeenAllNoticiation(string userId)
+        {
+            var notifications = await _dbSet.Where(x => x.ToId == userId && x.Status == 1).ToListAsync();
+            foreach (var notification in notifications)
+            {
+                notification.ReadAt = DateTime.UtcNow;
+            }
+        }
+
+        public async Task<int> CountNotSeen(string userId)
+        {
+            return await _dbSet.AsNoTracking().Where(x => x.ToId == userId && x.Status == 1 && x.ReadAt == null).CountAsync();
+        }
     }
 }

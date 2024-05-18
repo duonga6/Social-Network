@@ -77,8 +77,8 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 updateUser.FirstName = user.FirstName;
                 updateUser.LastName = user.LastName;
                 updateUser.Address = user.Address;
-                updateUser.PhoneNumber = updateUser.PhoneNumber;
-                updateUser.DateOfBirth = updateUser.DateOfBirth;
+                updateUser.DateOfBirth = user.DateOfBirth;
+                updateUser.Gender = user.Gender;
             }
         }
 
@@ -91,6 +91,24 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 return await _dbSet.AsNoTracking().Where(filter).ToListAsync();
             }
             return await _dbSet.Where(filter).ToListAsync();
+        }
+
+        public async Task UpdateCoverImage(string id, string url)
+        {
+            var user = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
+            if (user != null)
+            {
+                user.CoverImageUrl = url;
+            }
+        }
+
+        public async Task UpdateAvatar(string id, string url)
+        {
+            var user = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
+            if (user != null)
+            {
+                user.AvatarUrl= url;
+            }
         }
     }
 }

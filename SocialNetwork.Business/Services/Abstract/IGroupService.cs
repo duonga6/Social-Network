@@ -17,5 +17,7 @@ namespace SocialNetwork.Business.Services.Interfaces
 
         Task<IResponse> GetPost(string requestId, Guid groupId, int pageSize, int pageNumber, string? searchString);
         Task<IResponse> GetPost(string requestId, Guid groupId, int pageSize, DateTime? cursor, string? searchString, bool getNext = true);
+
+        Task<IResponse> StatsGroupResponse(string requestId);
     }
 }

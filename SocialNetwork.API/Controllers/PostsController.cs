@@ -9,6 +9,7 @@ using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Utilities.Enum;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
+using SocialNetwork.DataAccess.Utilities.Roles;
 using System.ComponentModel.DataAnnotations;
 
 namespace SocialNetwork.API.Controllers
@@ -237,6 +238,17 @@ namespace SocialNetwork.API.Controllers
             return ResponseModel(await _postService.DeleteReaction(UserId, Id, reactionId));
         }
         #endregion
+
+        /// <summary>
+        /// Get stats of post
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("Stats")]
+        [ProducesResponseType(typeof(DataResponse<StatsPostResponse>), 200)]
+        public async Task<IActionResult> GetStats()
+        {
+            return ResponseModel(await _postService.StatsReport(UserId));
+        }
     }
 
 }

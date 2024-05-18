@@ -13,6 +13,7 @@ using SocialNetwork.DataAccess.Utilities.Enum;
 using System.Linq.Expressions;
 using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.DTOs.Responses;
+using SocialNetwork.Business.Exceptions;
 
 
 namespace SocialNetwork.Business.Services.Concrete
@@ -138,12 +139,7 @@ namespace SocialNetwork.Business.Services.Concrete
         {
 
             var entity = await _unitOfWork.FriendshipRepository
-                    .GetById(id);
-            
-            if (entity == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound("Friendship"));
-            }
+                    .GetById(id) ?? throw new NotFoundException("Friendship id: " + id.ToString());
 
             if (entity.TargetUserId != requestUserId)
             {
@@ -254,12 +250,7 @@ namespace SocialNetwork.Business.Services.Concrete
         {
 
             var entity = await _unitOfWork.FriendshipRepository
-                    .GetById(id);
-
-            if (entity == null || entity.RequestUserId != requestUserId)
-            {
-                return new ErrorResponse(404, Messages.NotFound());
-            }
+                    .GetById(id) ?? throw new NotFoundException("Friendship id: "+ id.ToString());
 
             if (entity.FriendshipTypeId != (int)FriendshipEnum.Pending)
             {
@@ -359,7 +350,11 @@ namespace SocialNetwork.Business.Services.Concrete
                 .FriendshipRepository
                 .FindOneBy(x => 
                     (x.TargetUserId == requestUserId && x.RequestUserId == targetUserId) || 
-                    (x.TargetUserId == targetUserId && x.RequestUserId == requestUserId));
+                    (x.TargetUserId == targetUserId && x.RequestUserId == requestUserId), new Expression<Func<Friendship, object>>[]
+                    {
+                        x => x.RequestUser,
+                        x => x.TargetUser,
+                    });
 
             var result = _mapper.Map<GetFriendshipResponse>(friendShip);
 

@@ -165,9 +165,14 @@ namespace SocialNetwork.Business.Services.Concrete
             return new DataResponse<GetConversationResponse>(response, 200);
         }
 
-        public async Task<IResponse> GetConversation(string requestId, int pageSize, string? searchString, DateTime? cursor)
+        public async Task<IResponse> GetConversation(string requestId, int pageSize, string? searchString, DateTime? cursor, ConversationType? type)
         {
-            Expression<Func<Conversation, bool>> filter = x => x.Status == 1 && x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.Status == 1) && x.Messages.Any();
+            Expression<Func<Conversation, bool>> filter = x => x.Status == 1 && x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.Status == 1);
+
+            if (type != null)
+            {
+                filter = filter.And(x => x.Type == type);
+            }
 
             if (!string.IsNullOrWhiteSpace(searchString))
             {
@@ -190,6 +195,11 @@ namespace SocialNetwork.Business.Services.Concrete
             }
 
             DateTime? endCursor = hasNext ? data.LastOrDefault()?.UpdatedAt : null;
+
+            if (endCursor != null)
+            {
+                endCursor = DateTime.SpecifyKind(endCursor.Value, DateTimeKind.Utc);
+            }
 
             var response = new List<GetConversationResponse>();
 
@@ -215,16 +225,17 @@ namespace SocialNetwork.Business.Services.Concrete
                 }
                 else
                 {
-                    if (conversation.Name == null || conversation.Image == null)
+                    if (string.IsNullOrEmpty(conversation.Name) || string.IsNullOrEmpty(conversation.Image))
                     {
 
                         var participants = await _unitOfWork.ConversationParticipantRepository.GetPaged(2, 1, new Expression<Func<ConversationParticipant, object>>[]
                         {
                             x => x.User
                         }, x => x.ConversationId == conversation.Id, x => x.CreatedAt);
-                        mappedConversation.Name = string.Join(", ", participants.Select(x => x.User.FirstName));
 
-                        if (conversation.Image == null)
+                        mappedConversation.Name ??= string.Join(", ", participants.Select(x => x.User.FirstName));
+
+                        if (string.IsNullOrEmpty(conversation.Image))
                         {
                             mappedConversation.Images = participants.Select(x => x.User.AvatarUrl).ToList();
                         }
@@ -273,17 +284,29 @@ namespace SocialNetwork.Business.Services.Concrete
             await _unitOfWork.ConversationRepository.Update(conversation);
             if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
 
-            var response = _mapper.Map<GetConversationResponse>(conversation);
+            var conversationUpdated = (DataResponse<GetConversationResponse>)await this.GetById(requestId, conversationId);
+
 
             var participant = await _unitOfWork.ConversationParticipantRepository.GetConversationParticipantId(conversation.Id);
 
-            Task sendNotification = Task.Run(async () =>
+            if (!string.IsNullOrEmpty(request.Name))
             {
-                await _centerHub.ChangeConversationName(participant, response);
-            });
+                Task sendNotification = Task.Run(async () =>
+                {
+                    await _centerHub.ChangeConversationName(participant, conversationUpdated.Data);
+                });
+            }
+            else
+            {
+                Task sendNotification = Task.Run(async () =>
+                {
+                    await _centerHub.ChangeConversationImage(participant, conversationUpdated.Data);
+                });
+            }
 
 
-            return new DataResponse<GetConversationResponse>(response, 200, Messages.UpdatedSuccessfully);
+
+            return new DataResponse<GetConversationResponse>(conversationUpdated.Data, 200, Messages.UpdatedSuccessfully);
         }
 
         public async Task<IResponse> GetByUserId(string requestId, string userId)
@@ -625,6 +648,11 @@ namespace SocialNetwork.Business.Services.Concrete
             }
 
             DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedAt : null;
+
+            if (endCursor != null)
+            {
+                endCursor = DateTime.SpecifyKind(endCursor.Value, DateTimeKind.Utc);
+            }
 
             var response = _mapper.Map<List<GetMessageResponse>>(data);
 

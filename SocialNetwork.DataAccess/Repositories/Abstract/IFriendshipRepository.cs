@@ -7,5 +7,6 @@ namespace SocialNetwork.DataAccess.Repositories.Abstract
     {
         Task<ICollection<Friendship>> GetAllFriendship(string userId);
         Task<ICollection<string>> GetFriendIds(string userId);
+        Task<bool> ExistFriendShip(string userId1, string userId2);
     }
 }

@@ -7,6 +7,7 @@ using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Utilities.Enum;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
+using SocialNetwork.DataAccess.Utilities.Roles;
 using System.ComponentModel.DataAnnotations;
 
 namespace SocialNetwork.API.Controllers
@@ -133,6 +134,17 @@ namespace SocialNetwork.API.Controllers
         public async Task<IActionResult> GetGroupPost([FromQuery] string? searchString, [FromQuery] DateTime? cursor, [FromQuery, Required, Range(1, int.MaxValue)] int pageSize, Guid Id)
         {
             return ResponseModel(await _groupService.GetPost(UserId, Id, pageSize, cursor, searchString));
+        }
+
+        /// <summary>
+        /// Get stats of group
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("Stats")]
+        [ProducesResponseType(typeof(DataResponse<StatsGroupResponse>), 200)]
+        public async Task<IActionResult> GetStats()
+        {
+            return ResponseModel(await _groupService.StatsGroupResponse(UserId));
         }
     }
 }

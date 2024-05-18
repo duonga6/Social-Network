@@ -216,5 +216,15 @@ namespace SocialNetwork.API.Controllers
 
         #endregion
 
+        /// <summary>
+        /// Get stats of comment
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("Stats")]
+        [ProducesResponseType(typeof(DataResponse<StatsCommentResponse>), 200)]
+        public async Task<IActionResult> GetStats()
+        {
+            return ResponseModel(await _postCommentService.StatsReport(UserId));
+        }
     }
 }

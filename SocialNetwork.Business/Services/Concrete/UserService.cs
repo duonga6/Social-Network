@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
 using LinqKit;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.DTOs.Responses;
+using SocialNetwork.Business.DTOs.Utilities.Requests;
 using SocialNetwork.Business.Exceptions;
 using SocialNetwork.Business.Helper;
 using SocialNetwork.Business.Services.Interfaces;
@@ -16,6 +19,8 @@ using SocialNetwork.DataAccess.Repositories.Abstract;
 using SocialNetwork.DataAccess.Utilities.Enum;
 using SocialNetwork.DataAccess.Utilities.Roles;
 using System.Linq.Expressions;
+using System.Text;
+using System.Text.Encodings.Web;
 
 namespace SocialNetwork.Business.Services.Concrete
 {
@@ -25,10 +30,11 @@ namespace SocialNetwork.Business.Services.Concrete
         private readonly ITokenService _tokenService;
         private readonly SignInManager<User> _signInManager;
         private readonly IPostService _postService;
-        private readonly IFriendshipService _friendshipService;
-        private readonly IMessageService _messageService;
         private readonly INotificationService _notificationService;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IMailService _mailService;
+        private readonly IHubControl _hubControl;
+        private readonly IHostingEnvironment _env;
 
         public UserService(IUnitOfWork unitOfWork,
                            IMapper mapper,
@@ -37,35 +43,33 @@ namespace SocialNetwork.Business.Services.Concrete
                            ITokenService tokenService,
                            SignInManager<User> signInManager,
                            IPostService postService,
-                           IFriendshipService friendshipService,
-                           IMessageService messageService,
                            INotificationService notificationService,
-                           RoleManager<IdentityRole> roleManager) : base(unitOfWork, mapper, logger)
+                           RoleManager<IdentityRole> roleManager,
+                           IMailService mailService,
+                           IHostingEnvironment env,
+                           IHubControl hubControl) : base(unitOfWork, mapper, logger)
         {
             _userManager = userManager;
             _tokenService = tokenService;
             _signInManager = signInManager;
             _postService = postService;
-            _friendshipService = friendshipService;
-            _messageService = messageService;
             _notificationService = notificationService;
             _roleManager = roleManager;
+            _mailService = mailService;
+            _env = env;
+            _hubControl = hubControl;
         }
 
         #region Auth + User info
 
         public async Task<IResponse> GetAll(string? searchString, int pageSize, int pageNumber)
         {
-            Expression<Func<User, bool>> filter;
+            Expression<Func<User, bool>> filter = x => x.Status == 1;
 
-            if (searchString != null)
+            if (!string.IsNullOrWhiteSpace(searchString))
             {
-                filter = x => (x.FirstName + " " + x.LastName).Contains(searchString) && x.Status == 1;
-            }   
-            else
-            {
-                filter = x => x.Status == 1;
-            }
+                filter = filter.And( x => (x.FirstName + " " + x.LastName).Contains(searchString.Trim()));
+            } 
 
             int totalItems = await _unitOfWork.UserRepository.Count(filter);
             int pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
@@ -129,26 +133,46 @@ namespace SocialNetwork.Business.Services.Concrete
             if (user == null)
             {
                 return new ErrorResponse(404, Messages.NotFound("User"));
-            }    
+            }
+
+            string host = _env.IsDevelopment() ? "http://localhost:8080" : "https://facebook.duonga6.top"; 
 
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+            var url = HtmlEncoder.Default.Encode(host + $"/reset-password?code={code}&email={user.Email}");
+
+            var mail = new SendMailRequest
+            {
+                ToEmail = user.Email,
+                Subject = "Đặt lại mật khẩu",
+                HtmlBody = $"<html><body>Bạn đã yêu cầu đặt lại mật khẩu. Hãy <a href='{url}'>click vào đây</a> để đặt lại mật khẩu của bạn</body></html>"
+            };
+
+
+            await _mailService.SendMailWithoutResponseAsync(mail);
+
             return new DataResponse<ForgotPasswordCodeResponse>(new ForgotPasswordCodeResponse(code), 200, Messages.GetCodeResetPassword);
         }
 
         public async Task<IResponse> ResetPassword(ResetPasswordRequest request)
-        {
+        { 
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
             {
                 return new ErrorResponse(404, Messages.NotFound("User"));
             }    
 
-            var result = await _userManager.ResetPasswordAsync(user, request.Code, request.Password);
+            var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Code));
+
+            var result = await _userManager.ResetPasswordAsync(user, code, request.Password);
 
             if (result.Succeeded)
             {
+                var response = _mapper.Map<UserWithTokenResponse>(user);
                 var token = await _tokenService.CreateToken(user);
-                return new DataResponse<Token>(token, 200, Messages.ResetPasswordSuccessfully);
+                response.Token = token;
+                return new DataResponse<UserWithTokenResponse>(response, 200, Messages.ResetPasswordSuccessfully);
             }   
             else
             {
@@ -223,9 +247,9 @@ namespace SocialNetwork.Business.Services.Concrete
             if (user == null)
             {
                 return new ErrorResponse(404, Messages.NotFound());
-            }    
+            }
 
-            if (user.Email != request.Email)
+            if (request.Email != null && request.Email != user.Email)
             {
                 return new ErrorResponse(400, Messages.BadRequest);
             }    
@@ -402,6 +426,12 @@ namespace SocialNetwork.Business.Services.Concrete
             return true;
         }
 
+        public async Task<IResponse> FindByEmail(string requestId, string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email) ?? throw new NotFoundException("User with email: " + email);
+
+            return new DataResponse<BasicUserResponse>(_mapper.Map<BasicUserResponse>(user), 200);
+        }
 
         #endregion
 
@@ -478,6 +508,11 @@ namespace SocialNetwork.Business.Services.Concrete
             }
 
             DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedAt : null;
+
+            if (endCursor != null)
+            {
+                endCursor = DateTime.SpecifyKind(endCursor.Value, DateTimeKind.Utc);
+            }
 
             var response = _mapper.Map<List<GetPostResponse>>(data);
 
@@ -562,8 +597,6 @@ namespace SocialNetwork.Business.Services.Concrete
 
         #endregion
 
-        private bool CheckCompareId(string loggedUserId, string requestUserId) => loggedUserId == requestUserId;
-
         #region Notification
 
         public async Task<IResponse> GetNotifications(string loggedUserId, string requestUserId, string? searchString, int pageSize, int pageNumber)
@@ -629,15 +662,12 @@ namespace SocialNetwork.Business.Services.Concrete
             return new PagedResponse<List<GetFriendshipResponse>>(result, totalItem, 200);
         }
 
-
-        #endregion
-
         private async Task<bool> IsFriend(string userId1, string userId2)
         {
             var result = await _unitOfWork.FriendshipRepository.FindOneBy(x => x.RequestUserId == userId1 && x.TargetUserId == userId2 || x.RequestUserId == userId1 && x.TargetUserId == userId2);
             return result != null;
         }
-        
+
         private async Task<bool> CheckOwnerOrAdminAsync(string loggedId, string requestId)
         {
             if (loggedId == requestId) return true;
@@ -646,6 +676,44 @@ namespace SocialNetwork.Business.Services.Concrete
             if (user == null) return false;
 
             return await _userManager.IsInRoleAsync(user, RoleName.Administrator);
+        }
+
+        public async Task<IResponse> ChangeCoverImage(string requestId, ChangeCoverImageRequest request)
+        {
+            await _unitOfWork.UserRepository.UpdateCoverImage(requestId, request.Url);
+            if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
+
+            var data = (DataResponse<GetUserResponse>)await this.GetById(requestId);
+
+            return new DataResponse<GetUserResponse>(data.Data, 200);
+        }
+
+        public async Task<IResponse> ChangeAvatar(string requestId, ChangeCoverImageRequest request)
+        {
+            await _unitOfWork.UserRepository.UpdateAvatar(requestId, request.Url);
+            if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
+
+            var data = (DataResponse<GetUserResponse>)await this.GetById(requestId);
+
+            return new DataResponse<GetUserResponse>(data.Data, 200);
+        }
+
+
+        #endregion
+
+
+        public async Task<IResponse> Stats(string requestUserId)
+        {
+            int totalUser = await _unitOfWork.UserRepository.GetQueryable().CountAsync(x => x.Status == 1);
+            int activingUser = _hubControl.GetActivingUser();
+
+            var response = new StatsUserResponse
+            {
+                TotalUser = totalUser,
+                ActivingUser = activingUser,
+            };
+
+            return new DataResponse<StatsUserResponse>(response, 200);
         }
     }
 }

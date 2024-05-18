@@ -12,5 +12,7 @@ namespace SocialNetwork.DataAccess.Repositories.Abstract
         Task Update(User user);
         IQueryable<User> GetQueryable();
         Task<ICollection<User>> FindBy(Expression<Func<User, bool>> filter = null, bool asNoTracking = true);
+        Task UpdateCoverImage(string id, string url);
+        Task UpdateAvatar(string id, string url);
     }
 }

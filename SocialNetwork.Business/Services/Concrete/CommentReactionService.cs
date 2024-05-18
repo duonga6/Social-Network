@@ -31,15 +31,9 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(404, Messages.NotFound($"Comment {request.CommentId}"));
             }
 
-            var post = await _unitOfWork.PostRepository.GetById(comment.PostId);
-            if (post == null)
+            if (!await CheckPermission(requestUserId, comment.PostId))
             {
-                return new ErrorResponse(404, Messages.NotFound($"Post of this comment"));
-            }
-
-            if (!(await CheckAccess(requestUserId, post.AuthorId)))
-            {
-                return new ErrorResponse(400, Messages.NotFriend);
+                return new ErrorResponse(400, Messages.PostAccessDenied(comment.PostId.ToString()));
             }
 
             var checkExist = await _unitOfWork.CommentReactionRepository.GetById(request.CommentId, requestUserId, request.ReactionId);
@@ -171,6 +165,31 @@ namespace SocialNetwork.Business.Services.Concrete
             }
 
             return false;
+        }
+
+        private async Task<bool> CheckPermission(string requestId, Guid postId)
+        {
+            var post = await _unitOfWork.PostRepository.GetById(postId, new System.Linq.Expressions.Expression<Func<Post, object>>[]
+            {
+                x => x.Group
+            }) ?? throw new NotFoundException("Post");
+
+            if (requestId == post.AuthorId) return true;
+
+            switch (post.Access)
+            {
+                case PostAccess.ONLY_ME:
+                    return post.AuthorId == requestId;
+                case PostAccess.ONLY_FRIEND:
+                    return await _unitOfWork.FriendshipRepository.ExistFriendShip(requestId, post.AuthorId);
+                case PostAccess.PUBLIC:
+                    return true;
+                case PostAccess.GROUP:
+                    if (post.Group.IsPublic) return true;
+                    return await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.GroupId == post.GroupId && x.UserId == requestId) != null;
+                default:
+                    return false;
+            }
         }
     }
 }

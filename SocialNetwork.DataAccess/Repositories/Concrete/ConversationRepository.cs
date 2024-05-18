@@ -19,6 +19,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             {
                 entity.Name = conversation.Name;
                 entity.Image = conversation.Image;
+                entity.UpdatedAt = DateTime.UtcNow;
             }
         }
 

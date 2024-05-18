@@ -266,6 +266,11 @@ namespace SocialNetwork.Business.Services.Concrete
 
             DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedAt : null;
 
+            if (endCursor != null)
+            {
+                endCursor = DateTime.SpecifyKind(endCursor.Value, DateTimeKind.Utc);
+            }
+
             var response = _mapper.Map<List<GetGroupInviteResponse>>(data);
 
             return new CursorResponse<List<GetGroupInviteResponse>>(response, endCursor, hasNext, totalItem);
@@ -273,21 +278,33 @@ namespace SocialNetwork.Business.Services.Concrete
 
         private async Task<IResponse> AddMemberAndDeleteInvite(GroupInvite invite)
         {
-            var newMember = new GroupMember
+            try
             {
-                UserId = invite.UserId,
-                GroupId = invite.GroupId,
-            };
+                await _unitOfWork.BeginTransactionAsync();
 
-            await _unitOfWork.GroupRepository.PlusMember(invite.GroupId);
-            await _unitOfWork.GroupInviteRepository.Delete(invite.Id);
-            await _unitOfWork.GroupMemberRepository.Add(newMember);
+                var newMember = new GroupMember
+                {
+                    UserId = invite.UserId,
+                    GroupId = invite.GroupId,
+                };
 
-            if (!await _unitOfWork.CompleteAsync()) return new ErrorResponse(500, Messages.STWrong);
+                await _unitOfWork.GroupRepository.PlusMember(invite.GroupId);
+                await _unitOfWork.GroupInviteRepository.Delete(invite.Id);
+                await _unitOfWork.GroupMemberRepository.Add(newMember);
 
-            var response = await _unitOfWork.GroupMemberRepository.GetById(newMember.Id, new Expression<Func<GroupMember, object>>[] {x => x.User });
+                if (!await _unitOfWork.CommitAsync()) return new ErrorResponse(500, Messages.STWrong);
 
-            return new DataResponse<GetGroupMemberResponse>(_mapper.Map<GetGroupMemberResponse>(response), 201, Messages.GroupMemberJoined);
+                var response = await _unitOfWork.GroupMemberRepository.GetById(newMember.Id, new Expression<Func<GroupMember, object>>[] { x => x.User });
+
+                return new DataResponse<GetGroupMemberResponse>(_mapper.Map<GetGroupMemberResponse>(response), 201, Messages.GroupMemberJoined);
+            }
+            catch(Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                _logger.LogError("Error AddMemberAndDeleteInvite :" + ex);
+                return new ErrorResponse(501, Messages.STWrong);
+            }
+           
 
         }
 

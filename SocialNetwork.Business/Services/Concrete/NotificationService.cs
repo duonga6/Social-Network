@@ -249,11 +249,29 @@ namespace SocialNetwork.Business.Services.Concrete
 
             DateTime? endCursor = notifications.LastOrDefault()?.CreatedAt;
 
+            if (endCursor != null)
+            {
+                endCursor = DateTime.SpecifyKind(endCursor.Value, DateTimeKind.Utc);
+            }
+
             var response = _mapper.Map<List<GetNotificationResponse>>(notifications);
 
             return new CursorResponse<List<GetNotificationResponse>>(response, endCursor, hasNext, totalItems);
 
         }
 
+        public async Task<IResponse> SeenAll(string requestUserId)
+        {
+            await _unitOfWork.NotificationRepository.SeenAllNoticiation(requestUserId);
+            await _unitOfWork.CompleteAsync();
+            return new SuccessResponse(Messages.NotificationSeen, 200);
+        }
+
+        public async Task<IResponse> GetCountNotSeen(string requestId)
+        {
+            var data = await _unitOfWork.NotificationRepository.CountNotSeen(requestId);
+
+            return new DataResponse<int>(data, 200);
+        }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SocialNetwork.DataAccess.Entities;
-using SocialNetwork.DataAccess.Utilities;
 using System.Reflection;
 
 namespace SocialNetwork.DataAccess.Context

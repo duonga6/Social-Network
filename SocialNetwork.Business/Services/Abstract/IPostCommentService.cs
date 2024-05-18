@@ -22,5 +22,6 @@ namespace SocialNetwork.Business.Services.Interfaces
         Task<IResponse> UpdateReaction(string requestUserId, Guid commentId, Guid commentReactionId, CreateCommentReactionRequest request);
         Task<IResponse> DeleteReaction(string requestUserId, Guid commentId, Guid commentReactionId);
 
+        Task<IResponse> StatsReport(string requestId);
     }
 }

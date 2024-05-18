@@ -17,6 +17,9 @@ namespace SocialNetwork.DataAccess.Entities
 
         [JsonIgnore]
         public virtual ICollection<PostReaction> Reactions { get; set; }
+        [JsonIgnore]
         public virtual ICollection<PostMedia> PostMedias { get; set; }
+        [JsonIgnore]
+        public ICollection<PostComment> Comments { set; get; }
     }
 }

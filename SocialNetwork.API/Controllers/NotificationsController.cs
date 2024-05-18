@@ -72,5 +72,26 @@ namespace SocialNetwork.API.Controllers
             return ResponseModel(await _notificationService.GetCursor(UserId, pageSize, endCursor, getNext));
         }
         
+        /// <summary>
+        /// Seen all noticiation
+        /// </summary>
+        /// <returns></returns>
+        [HttpPut]
+        [ProducesResponseType(typeof(SuccessResponse), 200)]
+        public async Task< IActionResult> SeenAll()
+        {
+            return ResponseModel(await _notificationService.SeenAll(UserId));
+        }
+
+        /// <summary>
+        /// Get notification not seen
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("Count")]
+        [ProducesResponseType(typeof(DataResponse<int>), 200)]
+        public async Task<IActionResult> Count()
+        {
+            return ResponseModel(await _notificationService.GetCountNotSeen(UserId));
+        }
     }
 }

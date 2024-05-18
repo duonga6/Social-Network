@@ -33,15 +33,28 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.GroupAccessDenied);
             }
 
-            await _unitOfWork.GroupMemberRepository.Delete(id);
-            var result = await _unitOfWork.CompleteAsync();
-
-            if (!result)
+            try
             {
-                return new ErrorResponse(501, Messages.DeleteError);
+                await _unitOfWork.BeginTransactionAsync();
+                await _unitOfWork.GroupMemberRepository.Delete(id);
+                await _unitOfWork.GroupRepository.MinusMember(memberDelete.GroupId);
+
+
+                if (!await _unitOfWork.CommitAsync())
+                {
+                    return new ErrorResponse(501, Messages.DeleteError);
+                }
+
+                return new SuccessResponse(Messages.DeletedSuccessfully, 200);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error service GroupMember/Delete" + ex);
+                await _unitOfWork.RollbackAsync();
+                return new ErrorResponse(501, Messages.STWrong);
             }
 
-            return new SuccessResponse(Messages.DeletedSuccessfully, 200);
+            
         }
 
         public async Task<IResponse> Delete(string requestId, Guid groupId, string userId)
@@ -64,15 +77,26 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.GroupAccessDenied);
             }
 
-            await _unitOfWork.GroupMemberRepository.Delete(memberDelete.Id);
-            var result = await _unitOfWork.CompleteAsync();
-
-            if (!result)
+            try
             {
+                await _unitOfWork.BeginTransactionAsync();
+
+                await _unitOfWork.GroupRepository.MinusMember(groupId);
+                await _unitOfWork.GroupMemberRepository.Delete(memberDelete.Id);
+
+                if (!await _unitOfWork.CommitAsync())
+                {
+                    return new ErrorResponse(501, Messages.DeleteError);
+                }
+
+                return new SuccessResponse(Messages.DeletedSuccessfully, 200);
+            } 
+            catch(Exception ex)
+            {
+                _logger.LogError("Error GroupMemberService/Delete by userId:" + ex);
+                await _unitOfWork.RollbackAsync();
                 return new ErrorResponse(501, Messages.DeleteError);
             }
-
-            return new SuccessResponse(Messages.DeletedSuccessfully, 200);
         }
 
         public async Task<IResponse> GetAll(string requestId, int pageSize, int pageNumber, string? searchString, Guid groupId, MemberType memberType)

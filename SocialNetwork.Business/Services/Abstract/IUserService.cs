@@ -18,6 +18,9 @@ namespace SocialNetwork.Business.Services.Interfaces
         Task<IResponse> ResendConfirmEmail(ResendConfirmEmailRequest request);
         Task<IResponse> ChangePassword(string requestUserId, ChangePasswordRequest request);
         Task<IResponse> GetPhoto(string requestUserId, string targetUserId, int pageSize, int pageNumber);
+        Task<IResponse> ChangeCoverImage(string requestId, ChangeCoverImageRequest request);
+        Task<IResponse> ChangeAvatar(string requestId, ChangeCoverImageRequest request);
+        Task<IResponse> FindByEmail(string requestId, string email);
 
 
         Task<IResponse> AddRoles(string userId, AddRolesToUserRequest request);
@@ -37,5 +40,8 @@ namespace SocialNetwork.Business.Services.Interfaces
         Task<IResponse> SeenNotifications(string loggedUserId, string requestUserId, Guid id);
 
         Task<IResponse> GetFriends(string requestUserId, string targetUserId, int pageSize, int pageNumber, string? searchString);
+
+
+        Task<IResponse> Stats(string requestUserId);
     }
 }
