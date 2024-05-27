@@ -90,7 +90,7 @@ namespace SocialNetwork.API.Controllers
         /// <returns></returns>
         [HttpPost("ConfirmEmail")]
         [AllowAnonymous]
-        [ProducesResponseType(typeof(SuccessResponse), 200)]
+        [ProducesResponseType(typeof(DataResponse<UserWithTokenResponse>), 200)]
         public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest request)
         {
             return ResponseModel(await _userService.ConfirmEmail(request));
@@ -228,6 +228,60 @@ namespace SocialNetwork.API.Controllers
         public async Task<IActionResult> FindByEmail([FromQuery, Required] string email)
         {
             return ResponseModel(await _userService.FindByEmail(UserId, email));
+        }
+
+        /// <summary>
+        /// Add role to user
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [Authorize(Roles = RoleName.Administrator)]
+        [HttpPost("{Id}/Roles")]
+        [ProducesResponseType(typeof(SuccessResponse),201)]
+        public async Task<IActionResult> AddRoles(string Id, [FromBody] CreateUserRoleRequest request)
+        {
+            return ResponseModel(await _userService.AddRole(UserId, Id, request));
+        }
+
+        /// <summary>
+        /// Remove role to user
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [Authorize(Roles = RoleName.Administrator)]
+        [HttpPut("{Id}/Roles")]
+        [ProducesResponseType(typeof(SuccessResponse), 200)]
+        public async Task<IActionResult> RemoveRoles(string Id, [FromBody] CreateUserRoleRequest request)
+        {
+            return ResponseModel(await _userService.RemoveRole(UserId, Id, request));
+        }
+
+        /// <summary>
+        /// Lock a user
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        [Authorize(Roles = RoleName.Administrator)]
+        [HttpPost("{Id}/Lockout")]
+        [ProducesResponseType(typeof(SuccessResponse), 200)]
+        public async Task<IActionResult> LockOut(string Id)
+        {
+            return ResponseModel(await _userService.LockOut(UserId, Id));
+        }
+
+        /// <summary>
+        /// UnLock a user
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        [Authorize(Roles = RoleName.Administrator)]
+        [HttpPost("{Id}/UnLockout")]
+        [ProducesResponseType(typeof(SuccessResponse), 200)]
+        public async Task<IActionResult> UnLockOut(string Id)
+        {
+            return ResponseModel(await _userService.UnLockOut(UserId, Id));
         }
 
         #endregion

@@ -64,6 +64,12 @@ namespace SocialNetwork.DataAccess.Entities
         public ICollection<StrangeMessageBlock> StrangeMessageBlocked { set; get; }
         [JsonIgnore]
         public ICollection<StrangeMessageBlock> StrangeMessageIsBlocked { set; get; }
+        [JsonIgnore]
+        public ICollection<ReportViolation> ReportsSend { set; get; }
+        [JsonIgnore]
+        public ICollection<ReportViolation> ReportsSolved { set; get; }
+        [JsonIgnore]
+        public ICollection<ActionReportDid> ActionReportsDid { set; get; }
 
     }
 }   

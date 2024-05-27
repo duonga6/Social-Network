@@ -14,5 +14,6 @@ namespace SocialNetwork.DataAccess.Repositories.Abstract
         Task<ICollection<User>> FindBy(Expression<Func<User, bool>> filter = null, bool asNoTracking = true);
         Task UpdateCoverImage(string id, string url);
         Task UpdateAvatar(string id, string url);
+        Task SetLockoutEndDate(string id, DateTime? time);
     }
 }

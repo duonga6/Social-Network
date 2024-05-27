@@ -11,6 +11,7 @@
         public int Gender { set; get; }
         public int TotalPost { set; get; }
         public int TotalFriend { set; get; }
+        public bool IsLocked { set; get; }
         public string[] Roles { set; get; } = null!;
     }
 }

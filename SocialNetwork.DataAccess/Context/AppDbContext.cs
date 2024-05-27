@@ -42,5 +42,8 @@ namespace SocialNetwork.DataAccess.Context
         public DbSet<ConversationParticipant> ConversationParticipants { set; get; }
         public DbSet<StrangeMessageBlock> StrangeMessageBlocks { set; get; }
         public DbSet<MessageMemberReaded> MessageMemberReadeds { set; get; }
+        public DbSet<ReportViolation> ReportViolations { set; get; }
+        public DbSet<ActionReport> ActionReports { set; get; }
+        public DbSet<ActionReportDid> ActionReportDids { set; get; }
     }
 }

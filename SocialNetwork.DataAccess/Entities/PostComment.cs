@@ -1,4 +1,6 @@
-﻿namespace SocialNetwork.DataAccess.Entities
+﻿using Newtonsoft.Json;
+
+namespace SocialNetwork.DataAccess.Entities
 {
     public class PostComment : BaseEntity<Guid>
     {
@@ -14,7 +16,9 @@
         public Guid? ParentCommentId { set; get; }
         public virtual PostComment ParentComment { set; get; }
 
+        [JsonIgnore]
         public virtual ICollection<CommentReaction> Reactions { set; get; }
+        [JsonIgnore]
         public virtual ICollection<PostComment> ChildrenComment { set; get; }
     }
 }

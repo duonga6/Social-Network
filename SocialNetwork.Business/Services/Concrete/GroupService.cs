@@ -63,7 +63,7 @@ namespace SocialNetwork.Business.Services.Concrete
         {
             var group = await _unitOfWork.GroupRepository.GetById(Id) ?? throw new NotFoundException("Group id " + Id.ToString());
 
-            if (requestId != group.CreatedId)
+            if (!await CheckPermissionGroup(requestId, group.CreatedId))
             {
                 return new ErrorResponse(400, Messages.GroupAccessDenied);
             }
@@ -391,6 +391,17 @@ namespace SocialNetwork.Business.Services.Concrete
         {
             var group = await _unitOfWork.GroupRepository.GetById(groupId) ?? throw new NotFoundException("Group id: " + groupId.ToString());
             return !(!group.IsPublic && await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.GroupId == groupId && x.UserId == userId) == null);
+        }
+
+        private async Task<bool> CheckPermissionGroup(string userId, string authorId)
+        {
+            if (userId == authorId) return true;
+
+
+            return await _userManager.IsInRoleAsync(new User
+            {
+                Id = userId,
+            }, RoleName.Administrator);
         }
 
         public async Task<IResponse> StatsGroupResponse(string requestId)

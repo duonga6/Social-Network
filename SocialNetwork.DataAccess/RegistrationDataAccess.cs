@@ -45,7 +45,7 @@ namespace SocialNetwork.DataAccess
                 options.User.RequireUniqueEmail = false;
 
                 // Sign settings
-                options.SignIn.RequireConfirmedEmail = false;
+                options.SignIn.RequireConfirmedEmail = true;
             });
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();

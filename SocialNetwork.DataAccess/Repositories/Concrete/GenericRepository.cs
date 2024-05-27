@@ -33,7 +33,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             {
                 foreach (var include in includes)
                 {
-                    query.Include(include);
+                    query = query.Include(include);
                 }
             }
 
@@ -185,6 +185,15 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 var result = await query.OrderBy(orderBy).ThenBy(x => x.Id).Take(pageSize).ToListAsync();
                 result.Reverse();
                 return result;
+            }
+        }
+
+        public async Task RestoreEntity(TKey id)
+        {
+            var entity = await _dbSet.FirstOrDefaultAsync(x => x.Id.Equals(id));
+            if (entity != null)
+            {
+                entity.Status = 1;
             }
         }
     }

@@ -13,5 +13,6 @@
         public string AvatarUrl { set; get; } = string.Empty;
         public string CoverImageUrl { set; get; } = string.Empty;
         public int Gender { set; get; }
+        public string[] Roles { set; get; } = null!;
     }
 }

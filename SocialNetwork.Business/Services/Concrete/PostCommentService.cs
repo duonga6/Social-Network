@@ -24,18 +24,25 @@ namespace SocialNetwork.Business.Services.Concrete
         private readonly INotificationService _notificationService;
         private readonly IFriendshipService _friendshipService;
         private readonly ICommentReactionService _commentReactionService;
+        private readonly TimeLimitService _timeLimitService;
 
-        public PostCommentService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<PostCommentService> logger, UserManager<User> userManager, INotificationService notificationService, IFriendshipService friendshipService, ICommentReactionService commentReactionService) : base(unitOfWork, mapper, logger)
+        public PostCommentService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<PostCommentService> logger, UserManager<User> userManager, INotificationService notificationService, IFriendshipService friendshipService, ICommentReactionService commentReactionService, TimeLimitService timeLimitService) : base(unitOfWork, mapper, logger)
         {
             _userManager = userManager;
             _notificationService = notificationService;
             _friendshipService = friendshipService;
             _commentReactionService = commentReactionService;
+            _timeLimitService = timeLimitService;
         }
 
         #region Comment
         public async Task<IResponse> Create(string requestUserId, CreatePostCommentRequest request)
         {
+            if (!_timeLimitService.CheckLimitCreateComment(requestUserId, request.PostId))
+            {
+                return new ErrorResponse(400, Messages.LimitTimeComment(_timeLimitService.TimeLimitComment));
+            }
+
             if (!await CheckPermission(requestUserId, request.PostId)) return new ErrorResponse(400, Messages.PostAccessDenied());
 
             var post = await _unitOfWork.PostRepository.GetById(request.PostId);
@@ -74,6 +81,8 @@ namespace SocialNetwork.Business.Services.Concrete
             {
                 await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.POST_COMMENT, response);
             }
+
+            _timeLimitService.SetTimeCreateComment(requestUserId, request.PostId);
 
             return new DataResponse<GetPostCommentResponse>(response, 200, Messages.CreatedSuccessfully);
         }
@@ -393,7 +402,7 @@ namespace SocialNetwork.Business.Services.Concrete
         {
             var post = await _unitOfWork.PostRepository.GetById(postId, new Expression<Func<Post, object>>[]
             {
-        x => x.Group
+                x => x.Group
             }) ?? throw new NotFoundException("Post");
 
             if (userId == post.AuthorId) return true;

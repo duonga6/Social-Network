@@ -26,6 +26,7 @@ namespace SocialNetwork.Business.Services.Concrete
         private readonly INotificationService _notificationService;
         private readonly IPostCommentService _postCommentService;
         private readonly IFriendshipService _friendshipService;
+        private readonly TimeLimitService _timeLimitService;
 
         public PostService(IUnitOfWork unitOfWork,
                            IMapper mapper,
@@ -33,12 +34,14 @@ namespace SocialNetwork.Business.Services.Concrete
                            INotificationService notificationService,
                            UserManager<User> userManager,
                            IPostCommentService postCommentService,
-                           IFriendshipService friendshipService) : base(unitOfWork, mapper, logger)
+                           IFriendshipService friendshipService,
+                           TimeLimitService timeLimitService) : base(unitOfWork, mapper, logger)
         {
             _notificationService = notificationService;
             _userManager = userManager;
             _postCommentService = postCommentService;
             _friendshipService = friendshipService;
+            _timeLimitService = timeLimitService;
         }
 
         #region Post
@@ -211,6 +214,11 @@ namespace SocialNetwork.Business.Services.Concrete
      
         public async Task<IResponse> Create(string requestUserId, CreatePostRequest request)
         {
+            if (!_timeLimitService.CheckLimitCreatePost(requestUserId))
+            {
+                return new ErrorResponse(400, Messages.LimitTimePost(_timeLimitService.TimeLimitPost));
+            }
+
             if (string.IsNullOrEmpty(request.Content) && request.PostMedias?.Count == 0 && request.SharePostId == null)
             {
                 return new ErrorResponse(400, Messages.PostEmpty);
@@ -283,6 +291,8 @@ namespace SocialNetwork.Business.Services.Concrete
             {
                 await _notificationService.CreateNotification(addEntity.AuthorId, "", NotificationEnum.CREATE_POST, response);
             }
+
+            _timeLimitService.SetTimeCreatePost(requestUserId);
 
             return new DataResponse<GetPostResponse>(response, 201, Messages.CreatedSuccessfully);
         }
@@ -395,14 +405,6 @@ namespace SocialNetwork.Business.Services.Concrete
      
         private async Task<bool> CheckPermission(string requestingUserId, string targetUserId)
         {
-            var requestUser = await _userManager.FindByIdAsync(requestingUserId);
-            var targetUser = await _userManager.FindByIdAsync(targetUserId);
-
-            if (requestUser == null || targetUser == null)
-            {
-                return false;
-            }
-
             // Is owner
             if (requestingUserId == targetUserId)
             {
@@ -410,7 +412,10 @@ namespace SocialNetwork.Business.Services.Concrete
             }
 
             // Is admin
-            return await _userManager.IsInRoleAsync(requestUser, RoleName.Administrator);
+            return await _userManager.IsInRoleAsync(new User
+            {
+                Id = requestingUserId
+            }, RoleName.Administrator);
         }
 
         #endregion

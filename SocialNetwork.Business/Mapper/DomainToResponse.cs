@@ -71,6 +71,15 @@ namespace SocialNetwork.Business.Mapper
 
             CreateMap<ConversationParticipant, GetConversationParticipantResponse>();
 
+            CreateMap<ReportViolation, GetReportResponse>()
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)));
+
+
+            CreateMap<ActionReport, GetReportActionResponse>()
+                .ForMember(d => d.ActionReportDid, o => o.MapFrom(x => x.ActionReportDids.FirstOrDefault()));
+
+            CreateMap<ActionReportDid, GetReportActionDidResponse>()
+                .ForMember(d => d.CreatedAt, o => o.MapFrom(x => DateTime.SpecifyKind(x.CreatedAt, DateTimeKind.Utc)));
         }
     }
 }

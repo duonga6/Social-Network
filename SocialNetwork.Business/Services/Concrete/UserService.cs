@@ -97,11 +97,23 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, result.GetErrors());
             }
 
-            var token = await _tokenService.CreateToken(user);
-            var userResponse = _mapper.Map<UserWithTokenResponse>(user);
-            userResponse.Token = token;
+            string host = _env.IsDevelopment() ? "http://localhost:8080" : "https://facebook.duonga6.top";
 
-            return new DataResponse<UserWithTokenResponse>(userResponse, 201, Messages.RegistrationSuccessfully);
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+            var url = HtmlEncoder.Default.Encode(host + $"/confirm-email?code={code}&email={user.Email}");
+
+            var mail = new SendMailRequest
+            {
+                ToEmail = user.Email,
+                Subject = "Xác thực tài khoản",
+                HtmlBody = $"<html><body>Bạn đã đăng ký thành công tài khoản trên FBook. Hãy <a href='{url}'>click vào đây</a> để xác thực tài khoản của bạn</body></html>"
+            };
+
+            await _mailService.SendMailWithoutResponseAsync(mail);
+
+            return new SuccessResponse(Messages.RegistrationSuccessfully, 201);
         }
 
         public async Task<IResponse> Login(LoginRequest request)
@@ -112,7 +124,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(404, Messages.IncorrectEP);
             }    
 
-            var signInResult = await _signInManager.PasswordSignInAsync(user, request.Password, false, false);
+            var signInResult = await _signInManager.PasswordSignInAsync(user, request.Password, false, true);
             if (!signInResult.Succeeded)
             {
                 return new ErrorResponse(400, signInResult.GetErrors());
@@ -122,7 +134,6 @@ namespace SocialNetwork.Business.Services.Concrete
 
             var response = _mapper.Map<UserWithTokenResponse>(user);
             response.Token = token;
-
 
             return new DataResponse<UserWithTokenResponse>(response, 200, Messages.LoginSuccessfully);
         }
@@ -148,7 +159,6 @@ namespace SocialNetwork.Business.Services.Concrete
                 Subject = "Đặt lại mật khẩu",
                 HtmlBody = $"<html><body>Bạn đã yêu cầu đặt lại mật khẩu. Hãy <a href='{url}'>click vào đây</a> để đặt lại mật khẩu của bạn</body></html>"
             };
-
 
             await _mailService.SendMailWithoutResponseAsync(mail);
 
@@ -183,14 +193,12 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetById(string id)
         {
-            var user = await _unitOfWork.UserRepository.GetById(id);
+            var user = await _unitOfWork.UserRepository.GetById(id) ?? throw new NotFoundException("User id : " + id);
 
-            if (user == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound());
-            }
+            var response = _mapper.Map<GetUserResponse>(user);
+            response.Roles = (await _userManager.GetRolesAsync(user)).ToArray();
 
-            return new DataResponse<GetUserResponse>(_mapper.Map<GetUserResponse>(user), 200);
+            return new DataResponse<GetUserResponse>(response, 200);
         }
 
         public async Task<IResponse> UpdateInfo(string loggedUserId, string requestUserId, UpdateUserInfoRequest request)
@@ -347,13 +355,21 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(404, Messages.NotFound("User"));
             }
 
-            var result = await _userManager.ConfirmEmailAsync(user, request.Code);
+            var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Code));
+
+            var result = await _userManager.ConfirmEmailAsync(user, code);
             if (!result.Succeeded)
             {
                 return new ErrorResponse(404, result.GetErrors());
             }
+            await _userManager.AddToRoleAsync(user, RoleName.User);
 
-            return new SuccessResponse(Messages.ConfirmEmailSuccess, 200);
+            var token = await _tokenService.CreateToken(user);
+
+            var response = _mapper.Map<UserWithTokenResponse>(user);
+            response.Token = token;
+
+            return new DataResponse<UserWithTokenResponse>(response, 200);
         }
 
         public async Task<IResponse> ResendConfirmEmail(ResendConfirmEmailRequest request)
@@ -714,6 +730,92 @@ namespace SocialNetwork.Business.Services.Concrete
             };
 
             return new DataResponse<StatsUserResponse>(response, 200);
+        }
+
+        public async Task<IResponse> AddRole(string requestUserId, string targetUserId, CreateUserRoleRequest request)
+        {
+            if (await _userManager.IsInRoleAsync(new User
+            {
+                Id = targetUserId
+            }, RoleName.SuperAdministrator))
+            {
+                return new ErrorResponse(400, Messages.Forbidden);
+            }
+
+            if (request.Roles.Length < 1)
+            {
+                return new ErrorResponse(400, Messages.BadRequest);
+            }
+
+            var user = await _userManager.FindByIdAsync(targetUserId) ?? throw new NotFoundException("User id: " + targetUserId);
+
+            foreach (var role in request.Roles)
+            {
+                if (!(await _roleManager.RoleExistsAsync(role)))
+                return new ErrorResponse(400, Messages.InvalidRole);
+            }
+
+            await _userManager.AddToRolesAsync(user, request.Roles);
+
+            return new SuccessResponse(Messages.AddRoleToUserSuccess, 201);
+        }
+
+        public async Task<IResponse> RemoveRole(string requestUserId, string targetUserId, CreateUserRoleRequest request)
+        {
+            if (await _userManager.IsInRoleAsync(new User
+            {
+                Id = targetUserId
+            }, RoleName.SuperAdministrator))
+            {
+                return new ErrorResponse(400, Messages.Forbidden);
+            }
+
+            if (request.Roles.Length < 1)
+            {
+                return new ErrorResponse(400, Messages.BadRequest);
+            }
+
+            var user = await _userManager.FindByIdAsync(targetUserId) ?? throw new NotFoundException("User id: " + targetUserId);
+
+            foreach (var role in request.Roles)
+            {
+                if (!(await _roleManager.RoleExistsAsync(role)))
+                    return new ErrorResponse(400, Messages.InvalidRole);
+            }
+
+            await _userManager.RemoveFromRolesAsync(user, request.Roles);
+
+            return new SuccessResponse(Messages.RemovedRole, 201);
+        }
+
+        public async Task<IResponse> LockOut(string requestId, string targetId)
+        {
+            if (await _userManager.IsInRoleAsync(new User
+            {
+                Id = targetId
+            }, RoleName.Administrator))
+            {
+                return new ErrorResponse(400, Messages.Forbidden);
+            }
+
+            var user = await _userManager.FindByIdAsync(targetId) ?? throw new NotFoundException("User id: " + targetId);
+            await _userManager.SetLockoutEndDateAsync(user, DateTime.UtcNow.AddYears(999));
+            return new SuccessResponse(Messages.UserLocked, 200);
+        }
+
+        public async Task<IResponse> UnLockOut(string requestId, string targetId)
+        {
+            if (await _userManager.IsInRoleAsync(new User
+            {
+                Id = targetId
+            }, RoleName.Administrator))
+            {
+                return new ErrorResponse(400, Messages.Forbidden);
+            }
+
+            var user = await _userManager.FindByIdAsync(targetId) ?? throw new NotFoundException("User id: " + targetId);
+            await _userManager.SetLockoutEndDateAsync(user, null);
+            return new SuccessResponse(Messages.UserLocked, 200);
         }
     }
 }

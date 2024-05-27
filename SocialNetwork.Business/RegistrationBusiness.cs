@@ -33,6 +33,8 @@ namespace SocialNetwork.Business
             services.AddScoped<IGroupMemberService, GroupMemberService>();
             services.AddScoped<IConversationService, ConversationService>();
             services.AddScoped<IAdminService, AdminService>();
+            services.AddScoped<IReportsService, ReportsService>();
+            services.AddSingleton<TimeLimitService>();
         }
     }
 }

@@ -11,7 +11,8 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
         {
             builder.HasData(
                 new IdentityRole() { Name = RoleName.Administrator, NormalizedName = RoleName.Administrator.ToUpper() },
-                new IdentityRole() { Name = RoleName.User, NormalizedName = RoleName.User.ToUpper() }
+                new IdentityRole() { Name = RoleName.User, NormalizedName = RoleName.User.ToUpper() },
+                new IdentityRole() { Name = RoleName.SuperAdministrator, NormalizedName = RoleName.SuperAdministrator.ToUpper() }
             );
         }
     }

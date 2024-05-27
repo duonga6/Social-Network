@@ -33,5 +33,7 @@ namespace SocialNetwork.DataAccess.Repositories.Abstract
         Task Delete(TKey id);
 
         IQueryable<TEntity> GetQueryable();
+
+        Task RestoreEntity(TKey id);
     }
 }

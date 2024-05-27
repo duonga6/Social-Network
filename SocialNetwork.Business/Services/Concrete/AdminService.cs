@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SocialNetwork.Business.Constants;
 using SocialNetwork.Business.DTOs.Responses;
+using SocialNetwork.Business.Exceptions;
 using SocialNetwork.Business.Services.Abstract;
 using SocialNetwork.Business.Utilities.Enum;
 using SocialNetwork.Business.Wrapper;
@@ -11,6 +12,7 @@ using SocialNetwork.Business.Wrapper.Abstract;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Abstract;
 using SocialNetwork.DataAccess.Utilities.Enum;
+using System.Linq.Expressions;
 
 namespace SocialNetwork.Business.Services.Concrete
 {
@@ -23,6 +25,11 @@ namespace SocialNetwork.Business.Services.Concrete
         {
             _roleManager = roleManager;
             _userManager = userManager;
+        }
+
+        public Task<IResponse> GetActionDid(string requestId, Guid reportId)
+        {
+            throw new NotImplementedException();
         }
 
         public Task<IResponse> GetComment(int pageSize, int pageNumber, string? searchString)
@@ -125,15 +132,197 @@ namespace SocialNetwork.Business.Services.Concrete
 
             foreach (var user in users)
             {
-                var roles = await _userManager.GetRolesAsync(new User
-                {
-                    Id = user.Id
-                });
+                var userRaw = await _userManager.FindByIdAsync(user.Id);
+                var roles = await _userManager.GetRolesAsync(userRaw);
 
                 user.Roles = roles.ToArray();
+
+                user.IsLocked = await _userManager.IsLockedOutAsync(userRaw);
             }
 
             return new PagedResponse<List<GetUserByAdminResponse>>(users, totalItems, 200);
+        }
+
+        public async Task<IResponse> LockUserReport(string requestId, Guid reportId)
+        {
+            var report = await _unitOfWork.ReportRepository.GetById(reportId, new Expression<Func<ReportViolation, object>>[]
+            {
+                x => x.ActionReportDids
+            }) ?? throw new NotFoundException("Report id: " + reportId.ToString());
+
+            if (report.IsSolved)
+            {
+                return new ErrorResponse(400, Messages.ReportSolved);
+            }
+
+            if (report.ActionReportDids.Any(x => x.ActionReportId == (int)ReportActionId.REPORT_GROUP_LOCK_USER
+                || x.ActionReportId == (int)ReportActionId.REPORT_POST_LOCK_USER
+                || x.ActionReportId == (int)ReportActionId.REPORT_USER_LOCK_USER
+
+            ))
+            {
+                return new ErrorResponse(400, Messages.BadRequest);
+            }
+
+            string userId;
+            switch (report.ReportType)
+            {
+                case ReportTypeEnum.POST:
+                    var post = await _unitOfWork.PostRepository.GetById(Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Post report");
+                    userId = post.AuthorId;
+                    break;
+                case ReportTypeEnum.GROUP:
+                    var group = await _unitOfWork.GroupRepository.GetById(Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Group report");
+                    userId = group.CreatedId;
+                    break;
+                case ReportTypeEnum.COMMENT:
+                    var comment = await _unitOfWork.PostCommentRepository.GetById(Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Group report");
+                    userId = comment.UserId;
+                    break;
+                case ReportTypeEnum.USER:
+                    var userReport = await _userManager.FindByIdAsync(report.RelatedId) ?? throw new NotFoundException("User report");
+                    userId = userReport.Id;
+                    break;
+                default:
+                    userId = "";
+                    break;
+            }
+
+            var user = await _userManager.FindByIdAsync(userId) ?? throw new NotFoundException("User report");
+            await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddDays(999));
+
+            return new SuccessResponse(Messages.UserLocked, 200);
+        }
+       
+        public async Task<IResponse> UnLockUserReport(string requestId, Guid reportId)
+        {
+            var report = await _unitOfWork.ReportRepository.GetById(reportId, new Expression<Func<ReportViolation, object>>[]
+            {
+                x => x.ActionReportDids
+            }) ?? throw new NotFoundException("Report id: " + reportId.ToString());
+
+            if (report.IsSolved)
+            {
+                return new ErrorResponse(400, Messages.ReportSolved);
+            }
+
+            if (!report.ActionReportDids.Any(x => x.ActionReportId == (int)ReportActionId.REPORT_GROUP_LOCK_USER
+                || x.ActionReportId == (int)ReportActionId.REPORT_POST_LOCK_USER
+                || x.ActionReportId == (int)ReportActionId.REPORT_USER_LOCK_USER
+
+            ))
+            {
+                return new ErrorResponse(400, Messages.BadRequest);
+            }
+
+            string userId;
+            switch (report.ReportType)
+            {
+                case ReportTypeEnum.POST:
+                    var post = await _unitOfWork.PostRepository.GetById(Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Post report");
+                    userId = post.AuthorId;
+                    break;
+                case ReportTypeEnum.GROUP:
+                    var group = await _unitOfWork.GroupRepository.GetById(Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Group report");
+                    userId = group.CreatedId;
+                    break;
+                case ReportTypeEnum.COMMENT:
+                    var comment = await _unitOfWork.PostCommentRepository.GetById(Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Group report");
+                    userId = comment.UserId;
+                    break;
+                case ReportTypeEnum.USER:
+                    var userReport = await _userManager.FindByIdAsync(report.RelatedId) ?? throw new NotFoundException("User report");
+                    userId = userReport.Id;
+                    break;
+                default:
+                    userId = "";
+                    break;
+            }
+
+            var user = await _userManager.FindByIdAsync(userId) ?? throw new NotFoundException("User report");
+            await _userManager.SetLockoutEndDateAsync(user, null);
+
+            return new SuccessResponse(Messages.UserLocked, 200);
+        }
+
+        public async Task<IResponse> UnDeleteRelatedReport(string requestId, Guid reportId)
+        {
+            var report = await _unitOfWork.ReportRepository.GetById(reportId, new Expression<Func<ReportViolation, object>>[]
+            {
+                x => x.ActionReportDids
+            }) ?? throw new NotFoundException("Report id: " + reportId.ToString());
+
+            if (report.IsSolved)
+            {
+                return new ErrorResponse(400, Messages.ReportSolved);
+            }
+
+            if (!report.ActionReportDids.Any(x => x.ActionReportId == (int)ReportActionId.REPORT_GROUP_DELETE_GROUP
+                || x.ActionReportId == (int)ReportActionId.REPORT_POST_DELETE_POST
+
+            ))
+            {
+                return new ErrorResponse(400, Messages.BadRequest);
+            }
+
+            switch (report.ReportType)
+            {
+                case ReportTypeEnum.POST:
+                    await _unitOfWork.PostRepository.RestoreEntity(Guid.Parse(report.RelatedId));
+                    break;
+                case ReportTypeEnum.GROUP:
+                    await _unitOfWork.GroupRepository.RestoreEntity(Guid.Parse(report.RelatedId));
+                    break;
+                case ReportTypeEnum.COMMENT:
+                    await _unitOfWork.PostCommentRepository.RestoreEntity(Guid.Parse(report.RelatedId));
+                    break;
+                default:
+                    break;
+            }
+
+            if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
+
+            return new SuccessResponse("Restore success", 200);
+        }
+
+        public async Task<IResponse> DeleteRelatedReport(string requestId, Guid reportId)
+        {
+            var report = await _unitOfWork.ReportRepository.GetById(reportId, new Expression<Func<ReportViolation, object>>[]
+            {
+                x => x.ActionReportDids
+            }) ?? throw new NotFoundException("Report id: " + reportId.ToString());
+
+            if (report.IsSolved)
+            {
+                return new ErrorResponse(400, Messages.ReportSolved);
+            }
+
+            if (report.ActionReportDids.Any(x => x.ActionReportId == (int)ReportActionId.REPORT_GROUP_DELETE_GROUP
+                || x.ActionReportId == (int)ReportActionId.REPORT_POST_DELETE_POST
+
+            ))
+            {
+                return new ErrorResponse(400, Messages.BadRequest);
+            }
+
+            switch (report.ReportType)
+            {
+                case ReportTypeEnum.POST:
+                    await _unitOfWork.PostRepository.Delete(Guid.Parse(report.RelatedId));
+                    break;
+                case ReportTypeEnum.GROUP:
+                    await _unitOfWork.GroupRepository.Delete(Guid.Parse(report.RelatedId));
+                    break;
+                case ReportTypeEnum.COMMENT:
+                    await _unitOfWork.PostCommentRepository.Delete(Guid.Parse(report.RelatedId));
+                    break;
+                default:
+                    break;
+            }
+
+            if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
+
+            return new SuccessResponse("Delete success", 200);
         }
     }
 }

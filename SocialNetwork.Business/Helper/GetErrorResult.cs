@@ -22,11 +22,11 @@ namespace SocialNetwork.Business.Helper
 
             if (signInResult.IsNotAllowed)
             {
-                errors.Add("Email chưa được xác thực");
+                errors.Add("Email chưa được xác thực. Vui lòng kiểm tra email");
             }
             else if (signInResult.IsLockedOut)
             {
-                errors.Add("Tài khoản đã bị khóa");
+                errors.Add("Tài khoản đã bị khóa vui lòng liên hệ quản trị viên");
             }
             else if (signInResult.RequiresTwoFactor)
             {
@@ -35,7 +35,7 @@ namespace SocialNetwork.Business.Helper
             else
             {
                 errors.Add("Email hoặc mật khẩu không chính xác");
-            }    
+            }
 
             return errors;
         }

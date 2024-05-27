@@ -135,12 +135,7 @@ namespace SocialNetwork.Business.Services.Concrete
         {
             var post = await _unitOfWork.PostRepository.GetById(request.PostId);
 
-            if (post == null)
-            {
-                return new ErrorResponse(404, Messages.NotFound("Post"));
-            }
-
-            if (!await CheckAccessPost(requestUserId, post.AuthorId))
+            if (!await CheckAccessPost(requestUserId, post.Id))
             {
                 return new ErrorResponse(400, Messages.NotFriend);
             }
@@ -250,6 +245,28 @@ namespace SocialNetwork.Business.Services.Concrete
 
             // Is admin
             return await _userManager.IsInRoleAsync(targetUser, RoleName.Administrator);
+        }
+
+        private async Task<bool> CheckAccessPost(string requestId, Guid postId)
+        {
+            var post = await _unitOfWork.PostRepository.GetById(postId) ?? throw new NotFoundException("Post id: " + postId.ToString());
+
+            switch (post.Access)
+            {
+                case PostAccess.ONLY_ME:
+                    return post.AuthorId == requestId;
+                case PostAccess.GROUP:
+                    var group = await _unitOfWork.GroupRepository.GetById(post.GroupId!.Value) ?? throw new NotFoundException("Group id: " + post.GroupId.ToString());
+                    if (group.IsPublic) return true;
+
+                    return await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.GroupId == group.Id && x.UserId == requestId) != null;
+                case PostAccess.PUBLIC:
+                    return true;
+                case PostAccess.ONLY_FRIEND:
+                    return await _unitOfWork.FriendshipRepository.ExistFriendShip(requestId, post.AuthorId);
+                default:
+                    return false;
+            }
         }
     
         private async Task<PostReactionDetail?> GetPostReactionByReaction(string requestUserId, Guid postId, int reactionId)

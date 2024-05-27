@@ -110,5 +110,14 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 user.AvatarUrl= url;
             }
         }
+
+        public async Task SetLockoutEndDate(string id, DateTime? time)
+        {
+            var user = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
+            if (user != null)
+            {
+                user.LockoutEnd = time;
+            }
+        }
     }
 }

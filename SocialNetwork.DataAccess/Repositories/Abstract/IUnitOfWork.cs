@@ -20,7 +20,9 @@
         IConversationRepository ConversationRepository { get; }
         IConversationParticipantRepository ConversationParticipantRepository { get; }
         IMessageMemberReadRepository MessageMemberReadRepository { get; }
-
+        IReportRepository ReportRepository { get; }
+        IActionReportRepository ActionReportRepository { get; }
+        IActionReportDidRepository ActionReportDidRepository { get; }
 
         Task<bool> CompleteAsync();
 
