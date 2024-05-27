@@ -23,6 +23,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 .Include(x => x.SharePost)
                 .ThenInclude(x => x.PostMedias.Where(i => i.Status == 1))
                 .Include(x => x.SharePost.Author)
+                .Include(x => x.Group)
                 .AsQueryable();
 
             return await query

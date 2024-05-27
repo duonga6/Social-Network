@@ -7,7 +7,7 @@ namespace SocialNetwork.Business.Services.Interfaces
     {
         Task<IResponse> GetAll(string? searchString, int pageSize, int pageNumber);
         Task<IResponse> GetById(string id);
-        Task<IResponse> Register(RegistrationRequest request);
+        Task<IResponse> Register(RegistrationRequest request, string ipaddress);
         Task<IResponse> Login(LoginRequest request);
         Task<IResponse> RenewToken(RenewTokenRequest token);
         Task<IResponse> ForgotPassword(ForgotPasswordRequest request);

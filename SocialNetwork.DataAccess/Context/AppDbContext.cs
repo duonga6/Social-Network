@@ -45,5 +45,6 @@ namespace SocialNetwork.DataAccess.Context
         public DbSet<ReportViolation> ReportViolations { set; get; }
         public DbSet<ActionReport> ActionReports { set; get; }
         public DbSet<ActionReportDid> ActionReportDids { set; get; }
+        public DbSet<IPLimit> IPLimits { set; get; }
     }
 }

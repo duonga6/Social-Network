@@ -30,7 +30,7 @@ namespace SocialNetwork.API.Controllers
         [ProducesResponseType(typeof(DataResponse<UserWithTokenResponse>), 200)]
         public async Task<IActionResult> Register([FromBody] RegistrationRequest request)
         {
-            return ResponseModel(await _userService.Register(request));
+            return ResponseModel(await _userService.Register(request, HttpContext.Connection.RemoteIpAddress?.ToString()));
         }
 
         /// <summary>

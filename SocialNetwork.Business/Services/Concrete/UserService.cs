@@ -82,8 +82,13 @@ namespace SocialNetwork.Business.Services.Concrete
             return new PagedResponse<List<GetUserResponse>>(_mapper.Map<List<GetUserResponse>>(users), totalItems, 200);
         }
 
-        public async Task<IResponse> Register(RegistrationRequest request)
+        public async Task<IResponse> Register(RegistrationRequest request, string ipaddress)
         {
+            if (!await _unitOfWork.IPLimitRepository.CheckIPRegistered(ipaddress))
+            {
+                return new ErrorResponse(400, Messages.IPLimitRegister);
+            }
+
             var checkExistUser = await _userManager.FindByEmailAsync(request.Email);
             if (checkExistUser != null && checkExistUser.Status != 0)
             {

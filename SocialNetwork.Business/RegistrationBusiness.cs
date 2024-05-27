@@ -35,6 +35,7 @@ namespace SocialNetwork.Business
             services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<IReportsService, ReportsService>();
             services.AddSingleton<TimeLimitService>();
+            services.AddSingleton<BadWordService>();
         }
     }
 }

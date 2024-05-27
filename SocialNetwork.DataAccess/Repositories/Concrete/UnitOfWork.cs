@@ -28,6 +28,8 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         public IReportRepository ReportRepository { get; }
         public IActionReportRepository ActionReportRepository { get; }
         public IActionReportDidRepository ActionReportDidRepository { get; }
+        public IIPLimitRepository IPLimitRepository { get; }
+
 
         private readonly AppDbContext _context;
         private IDbContextTransaction _transaction;
@@ -56,6 +58,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             ReportRepository = new ReportRepository(logger, context);
             ActionReportRepository = new ActionReportRepository(logger, context);
             ActionReportDidRepository = new ActionReportDidRepository(logger, context);
+            IPLimitRepository = new IPLimitRepository(logger, context);
         }
 
         public async Task<bool> CompleteAsync()

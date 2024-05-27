@@ -42,6 +42,7 @@
         public static string ChangePasswordSuccessfully = "Change password successfully";
         public static string UserLocked = "User has been locked";
         public static string UserUnLocked = "User has been unlocked";
+        public static string IPLimitRegister = "Bạn chỉ có thể tạo một tài khoản trong ngày";
 
         // Role
         public static string RoleEmpty => "Roles is empty";
@@ -55,6 +56,7 @@
         public static string PostAccessDenied(string? id = null) => $"Post {(id == null ? "" : "id: " + id + " ")}access denied";
         public static string SharePostMustNotHaveMedia => "Post share mustn't have media";
         public static string LimitTimePost(int minute) => "TIME_LIMIT:Bạn chỉ có thể đăng bài sau " + minute + " phút nữa.";
+        public static string BadWordContent => "BAD_WORD:Nội dung chứa từ ngữ không hợp lệ";
 
 
         // Post reaction

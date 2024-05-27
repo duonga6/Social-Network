@@ -23,7 +23,7 @@
         IReportRepository ReportRepository { get; }
         IActionReportRepository ActionReportRepository { get; }
         IActionReportDidRepository ActionReportDidRepository { get; }
-
+        IIPLimitRepository IPLimitRepository { get; }
         Task<bool> CompleteAsync();
 
         Task BeginTransactionAsync();

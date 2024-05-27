@@ -25,19 +25,26 @@ namespace SocialNetwork.Business.Services.Concrete
         private readonly IFriendshipService _friendshipService;
         private readonly ICommentReactionService _commentReactionService;
         private readonly TimeLimitService _timeLimitService;
+        private readonly BadWordService _badWordService;
 
-        public PostCommentService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<PostCommentService> logger, UserManager<User> userManager, INotificationService notificationService, IFriendshipService friendshipService, ICommentReactionService commentReactionService, TimeLimitService timeLimitService) : base(unitOfWork, mapper, logger)
+        public PostCommentService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<PostCommentService> logger, UserManager<User> userManager, INotificationService notificationService, IFriendshipService friendshipService, ICommentReactionService commentReactionService, TimeLimitService timeLimitService, BadWordService badWordService) : base(unitOfWork, mapper, logger)
         {
             _userManager = userManager;
             _notificationService = notificationService;
             _friendshipService = friendshipService;
             _commentReactionService = commentReactionService;
             _timeLimitService = timeLimitService;
+            _badWordService = badWordService;
         }
 
         #region Comment
         public async Task<IResponse> Create(string requestUserId, CreatePostCommentRequest request)
         {
+            if (_badWordService.CheckBadWord(request.Content ?? ""))
+            {
+                return new ErrorResponse(400, Messages.BadWordContent);
+            }
+
             if (!_timeLimitService.CheckLimitCreateComment(requestUserId, request.PostId))
             {
                 return new ErrorResponse(400, Messages.LimitTimeComment(_timeLimitService.TimeLimitComment));
@@ -81,8 +88,6 @@ namespace SocialNetwork.Business.Services.Concrete
             {
                 await _notificationService.CreateNotification(requestUserId, post.AuthorId, NotificationEnum.POST_COMMENT, response);
             }
-
-            _timeLimitService.SetTimeCreateComment(requestUserId, request.PostId);
 
             return new DataResponse<GetPostCommentResponse>(response, 200, Messages.CreatedSuccessfully);
         }

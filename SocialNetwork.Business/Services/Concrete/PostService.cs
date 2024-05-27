@@ -27,6 +27,7 @@ namespace SocialNetwork.Business.Services.Concrete
         private readonly IPostCommentService _postCommentService;
         private readonly IFriendshipService _friendshipService;
         private readonly TimeLimitService _timeLimitService;
+        private readonly BadWordService _badWordService;
 
         public PostService(IUnitOfWork unitOfWork,
                            IMapper mapper,
@@ -35,13 +36,15 @@ namespace SocialNetwork.Business.Services.Concrete
                            UserManager<User> userManager,
                            IPostCommentService postCommentService,
                            IFriendshipService friendshipService,
-                           TimeLimitService timeLimitService) : base(unitOfWork, mapper, logger)
+                           TimeLimitService timeLimitService,
+                           BadWordService badWordService) : base(unitOfWork, mapper, logger)
         {
             _notificationService = notificationService;
             _userManager = userManager;
             _postCommentService = postCommentService;
             _friendshipService = friendshipService;
             _timeLimitService = timeLimitService;
+            _badWordService = badWordService;
         }
 
         #region Post
@@ -224,6 +227,11 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.PostEmpty);
             }
 
+            if (_badWordService.CheckBadWord(request.Content ?? ""))
+            {
+                return new ErrorResponse(400, Messages.BadWordContent);
+            }
+
             if (request.SharePostId != null)
             {
                 var sharePost = await _unitOfWork.PostRepository.GetById(request.SharePostId.Value, new Expression<Func<Post, object>>[] {x => x.Group, x => x.Author}) ?? throw new NotFoundException("Post to share id: " + request.SharePostId.ToString());
@@ -291,8 +299,6 @@ namespace SocialNetwork.Business.Services.Concrete
             {
                 await _notificationService.CreateNotification(addEntity.AuthorId, "", NotificationEnum.CREATE_POST, response);
             }
-
-            _timeLimitService.SetTimeCreatePost(requestUserId);
 
             return new DataResponse<GetPostResponse>(response, 201, Messages.CreatedSuccessfully);
         }
