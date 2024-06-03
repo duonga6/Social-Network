@@ -21,7 +21,7 @@ namespace SocialNetwork.Business.Services.Concrete
             if (File.Exists(path))
             {
                 BadWords = File.ReadAllLines(path).ToHashSet();
-                _logger.LogInformation("Logged bad words: " + BadWords.Count);
+                _logger.LogInformation("Loaded bad words: " + BadWords.Count);
             } else
             {
                 _logger.LogInformation("Not found bad word file: " + path);

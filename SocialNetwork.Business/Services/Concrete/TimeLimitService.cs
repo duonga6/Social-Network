@@ -3,8 +3,8 @@
     public class TimeLimitService
     {
         // Miliseconds
-        public int TimeLimitPost { get; private set; } = 5 * 60 * 1000;
-        public int TimeLimitComment { get; private set; } = 1 * 60 * 1000;
+        public int TimeLimitPost { get; private set; } = 5;
+        public int TimeLimitComment { get; private set; } = 1;
 
         private Dictionary<string, DateTime> LimitPost;
         private Dictionary<string, DateTime> LimitComment;
@@ -24,7 +24,7 @@
                 return true;
             }
 
-            return DateTime.Now.Millisecond - LimitPost[userId].Millisecond >= TimeLimitPost;
+            return DateTime.Now.Millisecond - LimitPost[userId].Millisecond >= TimeLimitPost * 60 * 1000;
         }
 
         public bool CheckLimitCreateComment(string userId, Guid postId)
@@ -37,7 +37,7 @@
                 return true;
             }
 
-            return DateTime.Now.Millisecond - LimitComment[key].Millisecond >= TimeLimitComment;
+            return DateTime.Now.Millisecond - LimitComment[key].Millisecond >= TimeLimitComment * 60 * 1000;
         }
     }
 }

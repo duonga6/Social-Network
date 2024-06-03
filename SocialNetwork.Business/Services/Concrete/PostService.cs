@@ -217,11 +217,6 @@ namespace SocialNetwork.Business.Services.Concrete
      
         public async Task<IResponse> Create(string requestUserId, CreatePostRequest request)
         {
-            if (!_timeLimitService.CheckLimitCreatePost(requestUserId))
-            {
-                return new ErrorResponse(400, Messages.LimitTimePost(_timeLimitService.TimeLimitPost));
-            }
-
             if (string.IsNullOrEmpty(request.Content) && request.PostMedias?.Count == 0 && request.SharePostId == null)
             {
                 return new ErrorResponse(400, Messages.PostEmpty);
@@ -230,6 +225,11 @@ namespace SocialNetwork.Business.Services.Concrete
             if (_badWordService.CheckBadWord(request.Content ?? ""))
             {
                 return new ErrorResponse(400, Messages.BadWordContent);
+            }
+
+            if (!_timeLimitService.CheckLimitCreatePost(requestUserId))
+            {
+                return new ErrorResponse(400, Messages.LimitTimePost(_timeLimitService.TimeLimitPost));
             }
 
             if (request.SharePostId != null)
