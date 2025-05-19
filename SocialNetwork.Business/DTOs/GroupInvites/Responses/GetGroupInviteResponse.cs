@@ -7,6 +7,6 @@
         public BasicUserResponse User { set; get; } = null!;
         public bool AdminAccepted { set; get; }
         public bool UserAccepted { set; get; }
-        public DateTime CreatedAt { set; get; }
+        public DateTime CreatedDate { set; get; }
     }
 }

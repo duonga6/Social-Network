@@ -2,9 +2,8 @@
 using Microsoft.Extensions.Logging;
 using SocialNetwork.DataAccess.Context;
 using SocialNetwork.DataAccess.Entities;
+using SocialNetwork.DataAccess.Enums;
 using SocialNetwork.DataAccess.Repositories.Abstract;
-using SocialNetwork.DataAccess.Utilities.Enum;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Concrete
@@ -15,18 +14,18 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         {
         }
 
-        public override async Task Update(Friendship entity)
+        public override async Task UpdateAsync(Friendship entity)
         {
             var entityUpdate = await _dbSet.FindAsync(entity.Id);
             if (entityUpdate != null) 
             { 
-                entityUpdate.Status = entity.Status;
+                entityUpdate.IsDeleted = entity.IsDeleted;
                 entityUpdate.FriendshipTypeId = entity.FriendshipTypeId;
-                entityUpdate.UpdatedAt = DateTime.UtcNow;
+                entityUpdate.ModifiedDate = DateTime.UtcNow;
             }
         }
 
-        public async Task<ICollection<Friendship>> GetAllFriendship(string userId)
+        public async Task<ICollection<Friendship>> GetAllFriendshipAsync(string userId)
         {
             var friends = await _dbSet.Where(x => (x.TargetUserId == userId || x.RequestUserId == userId) && x.FriendshipTypeId == (int)FriendshipEnum.Accepted)
                                         .AsNoTracking()
@@ -35,12 +34,12 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             return friends;
         }
 
-        public override async Task<Friendship> GetById(Guid id)
+        public override async Task<Friendship> GetByIdAsync(Guid id)
         {
                 return await _dbSet.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        public override async Task<ICollection<Friendship>> GetPaged(int pageSize,
+        public override async Task<ICollection<Friendship>> GetPagedAsync(int pageSize,
                                                                      int pageNumber,
                                                                      Expression<Func<Friendship, bool>> filter = null,
                                                                      Expression<Func<Friendship, object>> orderBy = null,
@@ -68,21 +67,21 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 .ToListAsync();
         }
 
-        public async Task<ICollection<string>> GetFriendIds(string userId)
+        public async Task<ICollection<string>> GetFriendIdsAsync(string userId)
         {
             return await _dbSet
                 .AsNoTracking()
-                .Where(x => (x.RequestUserId == userId || x.TargetUserId == userId) && x.Status == 1 && x.FriendshipTypeId == (int)FriendshipEnum.Accepted)
+                .Where(x => (x.RequestUserId == userId || x.TargetUserId == userId) && !x.IsDeleted && x.FriendshipTypeId == (int)FriendshipEnum.Accepted)
                 .Select(x => x.RequestUserId == userId ? x.TargetUserId : x.RequestUserId)
                 .ToListAsync();
         }
 
-        public async Task<bool> ExistFriendShip(string userId1, string userId2)
+        public async Task<bool> IsExistFriendshipAsync(string userId1, string userId2)
         {
             return await _dbSet.AsNoTracking().FirstOrDefaultAsync(
                 x => 
                 ((x.RequestUserId == userId1 && x.TargetUserId == userId2) || (x.RequestUserId == userId2 && x.TargetUserId == userId1)) &&
-                x.Status == 1 &&
+                !x.IsDeleted &&
                 x.FriendshipTypeId == (int) FriendshipEnum.Accepted
                 ) != null;
             

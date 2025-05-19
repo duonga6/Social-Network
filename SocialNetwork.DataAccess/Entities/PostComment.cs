@@ -2,7 +2,7 @@
 
 namespace SocialNetwork.DataAccess.Entities
 {
-    public class PostComment : BaseEntity<Guid>
+    public class PostComment : EntityAuditBase<Guid>
     {
         public string Content { set; get; }
 

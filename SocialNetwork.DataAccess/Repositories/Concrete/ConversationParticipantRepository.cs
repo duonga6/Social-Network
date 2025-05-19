@@ -12,7 +12,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         {
         }
 
-        public override async Task Update(ConversationParticipant entity)
+        public override async Task UpdateAsync(ConversationParticipant entity)
         {
             var participant = await _dbSet.FirstOrDefaultAsync(x => x.Id == entity.Id);
             if (participant != null)
@@ -20,11 +20,11 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 participant.UserContactName = entity.UserContactName;
                 participant.IsAdmin = entity.IsAdmin;
                 participant.IsSuperAdmin = entity.IsSuperAdmin;
-                participant.UpdatedAt = entity.UpdatedAt;
+                participant.ModifiedDate = entity.ModifiedDate;
             }
         }
 
-        public async Task<List<string>> GetConversationParticipantId(Guid conversationId)
+        public async Task<List<string>> GetConversationParticipantIdAsync(Guid conversationId)
         {
             return await _dbSet.AsNoTracking()
                 .Where(x => x.ConversationId == conversationId)
@@ -33,27 +33,27 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 .ToListAsync();
         }
 
-        public override async Task Delete(Guid id)
+        public override async Task DeleteAsync(Guid id)
         {
             var participant = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
             if (participant != null)
             {
-                participant.Status = 0;
+                participant.IsDeleted = true;
                 participant.IsAdmin = false;
                 participant.IsSuperAdmin = false;
             }
         }
 
-        public async Task AddParticipantExisted(Guid id)
+        public async Task AddParticipantExistedAsync(Guid id)
         {
             var pariticipant = await _dbSet.Where(x => x.Id == id).Include(x => x.User).FirstOrDefaultAsync();
             if (pariticipant != null)
             {
-                pariticipant.Status = 1;
+                pariticipant.IsDeleted = false;
                 pariticipant.IsAdmin = false;
                 pariticipant.IsSuperAdmin = false;
                 pariticipant.UserContactName = pariticipant.User.GetFullName();
-                pariticipant.CreatedAt = DateTime.UtcNow;
+                pariticipant.CreatedDate = DateTime.UtcNow;
             }
         }
     }

@@ -17,7 +17,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetAll()
         {
-            var mediaTypes = await _unitOfWork.MediaTypeRepository.GetAll();
+            var mediaTypes = await _unitOfWork.MediaTypeRepository.GetAllAsync();
 
             var response = _mapper.Map<List<GetMediaTypeResponse>>(mediaTypes);
             return new DataResponse<List<GetMediaTypeResponse>>(response, 200);
@@ -25,7 +25,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetById(int id)
         {
-            var mediaType = await _unitOfWork.MediaTypeRepository.GetById(id);
+            var mediaType = await _unitOfWork.MediaTypeRepository.GetByIdAsync(id);
 
             if (mediaType == null)
             {

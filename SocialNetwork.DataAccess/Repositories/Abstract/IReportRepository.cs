@@ -4,6 +4,6 @@ namespace SocialNetwork.DataAccess.Repositories.Abstract
 {
     public interface IReportRepository : IGenericRepository<ReportViolation, Guid>
     {
-        Task MarkProccessed(Guid Id, string userId);
+        Task MarkProccessedAsync(Guid Id, string userId);
     }
 }

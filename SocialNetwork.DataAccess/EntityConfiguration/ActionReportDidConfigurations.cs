@@ -16,7 +16,7 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 .WithMany(d => d.ActionReportDids)
                 .HasForeignKey(x => x.ReportId);
 
-            builder.HasOne(x => x.CreatedBy)
+            builder.HasOne(x => x.CreatedUser)
                 .WithMany(d => d.ActionReportsDid)
                 .HasForeignKey(x => x.CreatedById);
         }

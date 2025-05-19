@@ -3,25 +3,23 @@ using Microsoft.Extensions.Logging;
 using SocialNetwork.DataAccess.Context;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Abstract;
-using SocialNetwork.DataAccess.Utilities.Enum;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Concrete
 {
-    public class PostRepository : GenericRepository<Post, Guid>, IPostRepository
+    public class PostRepository : SoftDeleteRepository<Post, Guid>, IPostRepository
     {
         public PostRepository(ILogger logger, AppDbContext context) : base(logger, context)
         {
         }
 
-        public override async Task<Post> GetById(Guid id)
+        public override async Task<Post> GetByIdAsync(Guid id)
         {
-            var query = _dbSet.Where(x => x.Status == 1 && x.Id == id)
-                .Include(x => x.PostMedias.Where(i => i.Status == 1))
+            var query = _dbSet.Where(x => !x.IsDeleted && x.Id == id)
+                .Include(x => x.PostMedias.Where(i => i.IsDeleted == false))
                 .Include(x => x.Author)
                 .Include(x => x.SharePost)
-                .ThenInclude(x => x.PostMedias.Where(i => i.Status == 1))
+                .ThenInclude(x => x.PostMedias.Where(i => i.IsDeleted == false))
                 .Include(x => x.SharePost.Author)
                 .Include(x => x.Group)
                 .AsQueryable();
@@ -31,18 +29,18 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                     .FirstOrDefaultAsync();
         }
 
-        public override async Task Update(Post post)
+        public override async Task UpdateAsync(Post post)
         {
-            var updatePost = await _dbSet.FirstOrDefaultAsync(x => x.Id == post.Id && x.Status == 1);
+            var updatePost = await _dbSet.FirstOrDefaultAsync(x => x.Id == post.Id && !x.IsDeleted);
             if (updatePost != null)
             {
                 updatePost.Content = post.Content;
                 updatePost.Access = post.Access;
-                updatePost.UpdatedAt = DateTime.UtcNow;
+                updatePost.ModifiedDate = DateTime.UtcNow;
             }
         }
 
-        public override async Task<ICollection<Post>> GetPaged(int pageSize, int pageNumber, Expression<Func<Post, bool>> filter = null, Expression<Func<Post, object>> orderBy = null, bool isDesc = true)
+        public override async Task<ICollection<Post>> GetPagedAsync(int pageSize, int pageNumber, Expression<Func<Post, bool>> filter = null, Expression<Func<Post, object>> orderBy = null, bool isDesc = true)
         {
             var query = _dbSet
                 .AsNoTracking()
@@ -50,7 +48,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 .Include(x => x.Author)
                 .Include(x => x.PostMedias)
                 .Include(x => x.SharePost)
-                    .ThenInclude(x => x.PostMedias.Where(p => p.Status == 1))
+                    .ThenInclude(x => x.PostMedias.Where(p => p.IsDeleted == false))
                 .Include(x => x.SharePost.Author)
                 .AsQueryable();
 
@@ -69,18 +67,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 .Take(pageSize)
                 .ToListAsync();
         }
-        
-        public override async Task Delete(Guid id)
-        {
-            var post = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
-
-            if (post != null) {
-                post.Status = 0;
-            }
-
-        }
-
-        public async Task<bool> IsOwnerPost(string userId, Guid postId)
+        public async Task<bool> IsOwnerPostAsync(string userId, Guid postId)
         {
             return await _dbSet.AsNoTracking().AnyAsync(x => x.AuthorId == userId && x.Id == postId);
         }

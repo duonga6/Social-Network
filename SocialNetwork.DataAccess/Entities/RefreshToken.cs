@@ -1,6 +1,6 @@
 ﻿namespace SocialNetwork.DataAccess.Entities
 {
-    public class RefreshToken : BaseEntity<Guid>
+    public class RefreshToken : EntityTrackingBase<Guid>
     {
         public string UserId { get; set; }
         public string Token { set; get; }

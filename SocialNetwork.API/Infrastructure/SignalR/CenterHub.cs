@@ -40,7 +40,7 @@ namespace SocialNetwork.API.Infrastructure.SignalR
                 
                 if (_connectionManagement.GetFriendIds(UserId) == null)
                 {
-                    _connectionManagement.AddConnectionFriend(UserId, (await _unitOfWork.FriendshipRepository.GetFriendIds(UserId)).ToHashSet());
+                    _connectionManagement.AddConnectionFriend(UserId, (await _unitOfWork.FriendshipRepository.GetFriendIdsAsync(UserId)).ToHashSet());
                 }
 
                 var friendIds = _connectionManagement.GetFriendIds(UserId);

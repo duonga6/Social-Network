@@ -30,4 +30,8 @@
     <Folder Include="Migrations\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SocialNetwork.Common\SocialNetwork.Common.csproj" />
+  </ItemGroup>
+
 </Project>

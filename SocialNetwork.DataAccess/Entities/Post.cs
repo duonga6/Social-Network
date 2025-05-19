@@ -1,9 +1,9 @@
 ﻿using Newtonsoft.Json;
-using SocialNetwork.DataAccess.Utilities.Enum;
+using SocialNetwork.DataAccess.Enums;
 
 namespace SocialNetwork.DataAccess.Entities
 {
-    public class Post : BaseEntity<Guid>
+    public class Post : EntityAuditBase<Guid>
     {
         public string Content { get; set; }
         public string AuthorId { get; set; }

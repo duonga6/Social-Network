@@ -1,6 +1,6 @@
 ﻿namespace SocialNetwork.DataAccess.Entities
 {
-    public class MessageMemberReaded : BaseEntity<Guid>
+    public class MessageMemberReaded : EntityTrackingBase<Guid>
     {
         public Guid MessageId { set; get; }
         public string UserId { set; get; }

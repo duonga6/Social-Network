@@ -2,9 +2,9 @@
 
 namespace SocialNetwork.DataAccess.Repositories.Abstract
 {
-    public interface IGroupRepository : IGenericRepository<Group, Guid>
+    public interface IGroupRepository : ISoftDeleteRepository<Group, Guid>
     {
-        Task PlusMember(Guid groupId);
-        Task MinusMember(Guid groupId);
+        Task IncreaseMemberAsync(Guid groupId);
+        Task ReduceMemberAsync(Guid groupId);
     }
 }

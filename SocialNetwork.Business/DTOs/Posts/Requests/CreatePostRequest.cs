@@ -1,4 +1,4 @@
-﻿using SocialNetwork.DataAccess.Utilities.Enum;
+﻿using SocialNetwork.DataAccess.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace SocialNetwork.Business.DTOs.Requests

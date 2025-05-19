@@ -14,7 +14,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         {
         }
 
-        public async Task Seen(Guid Id)
+        public async Task SeenAsync(Guid Id)
         {
             var entity = await _dbSet.FindAsync(Id);
             if (entity != null) 
@@ -23,24 +23,24 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             }
         }
 
-        public async Task<ICollection<Notification>> GetUserNotifications(string userId)
+        public async Task<ICollection<Notification>> GetUserNotificationsAsync(string userId)
         {
             var notifications = await _dbSet.AsNoTracking()
                 .Where(x => x.ToId == userId)
                 .Include(x => x.FromUser)
                 .Include(x => x.ToUser)
-                .OrderByDescending(x => x.CreatedAt)
+                .OrderByDescending(x => x.CreatedDate)
                 .ToListAsync();
             return notifications;
         }
 
-        public override async Task<Notification> GetById(Guid id)
+        public override async Task<Notification> GetByIdAsync(Guid id)
         {
                 return await _dbSet.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
 
         }
 
-        public override async Task<ICollection<Notification>> GetPaged(int pageSize, int pageNumber, Expression<Func<Notification, bool>> filter = null, Expression<Func<Notification, object>> orderBy = null, bool isDesc = true)
+        public override async Task<ICollection<Notification>> GetPagedAsync(int pageSize, int pageNumber, Expression<Func<Notification, bool>> filter = null, Expression<Func<Notification, object>> orderBy = null, bool isDesc = true)
         {
             var query = _dbSet
                 .AsNoTracking()
@@ -65,7 +65,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 .ToListAsync();
         }
 
-        public override async Task<ICollection<Notification>> GetCursorPaged(int pageSize, Expression<Func<Notification, bool>> filter, bool getNext = true)
+        public override async Task<ICollection<Notification>> GetCursorPagedAsync(int pageSize, Expression<Func<Notification, bool>> filter, bool getNext = true)
         {
             var query = _dbSet
                 .AsNoTracking()
@@ -75,28 +75,28 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
 
             if (getNext)
             {
-                return await query.OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.Id).Take(pageSize).ToListAsync();
+                return await query.OrderByDescending(x => x.CreatedDate).ThenByDescending(x => x.Id).Take(pageSize).ToListAsync();
             }
             else
             {
-                var result = await query.OrderBy(x => x.CreatedAt).ThenBy(x => x.Id).Take(pageSize).ToListAsync();
+                var result = await query.OrderBy(x => x.CreatedDate).ThenBy(x => x.Id).Take(pageSize).ToListAsync();
                 result.Reverse();
                 return result;
             }
         }
 
-        public async Task SeenAllNoticiation(string userId)
+        public async Task SeenAllNoticiatioAsync(string userId)
         {
-            var notifications = await _dbSet.Where(x => x.ToId == userId && x.Status == 1).ToListAsync();
+            var notifications = await _dbSet.Where(x => x.ToId == userId && !x.IsDeleted).ToListAsync();
             foreach (var notification in notifications)
             {
                 notification.ReadAt = DateTime.UtcNow;
             }
         }
 
-        public async Task<int> CountNotSeen(string userId)
+        public async Task<int> CountNotSeenAsync(string userId)
         {
-            return await _dbSet.AsNoTracking().Where(x => x.ToId == userId && x.Status == 1 && x.ReadAt == null).CountAsync();
+            return await _dbSet.AsNoTracking().Where(x => x.ToId == userId && !x.IsDeleted && x.ReadAt == null).CountAsync();
         }
     }
 }

@@ -8,41 +8,41 @@ using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Concrete
 {
-    public class PostCommentRepository : GenericRepository<PostComment, Guid>, IPostCommentRepository
+    public class PostCommentRepository : SoftDeleteRepository<PostComment, Guid>, IPostCommentRepository
     {
         public PostCommentRepository(ILogger logger, AppDbContext context) : base(logger, context)
         {
         }
 
-        public override async Task<PostComment> GetById(Guid id)
+        public override async Task<PostComment> GetByIdAsync(Guid id)
         {
-           return await _dbSet.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && x.Status == 1);
+           return await _dbSet.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
         }
 
-        public override async Task Update(PostComment entity)
+        public override async Task UpdateAsync(PostComment entity)
         {
-            var entityUpdate = await _dbSet.FirstOrDefaultAsync(x => x.Id == entity.Id && x.Status == 1);
+            var entityUpdate = await _dbSet.FirstOrDefaultAsync(x => x.Id == entity.Id && !x.IsDeleted);
             if (entityUpdate != null)
             {
                 entityUpdate.Content = entity.Content;
-                entityUpdate.UpdatedAt = DateTime.UtcNow;
+                entityUpdate.ModifiedDate = DateTime.UtcNow;
             }
         }
 
-        public async Task<ICollection<PostComment>> GetByPost(Guid postId)
+        public async Task<ICollection<PostComment>> GetByPostAsync(Guid postId)
         {
             var comments = await _dbSet.AsNoTracking()
-                .Where(x => x.PostId == postId && x.Status == 1 && x.ParentCommentId == null)
+                .Where(x => x.PostId == postId && !x.IsDeleted && x.ParentCommentId == null)
                 .Include(x => x.User)
                 .Include(x => x.ChildrenComment)
                 .ThenInclude(x => x.User)
-                .OrderByDescending(x => x.CreatedAt)
+                .OrderByDescending(x => x.CreatedDate)
                 .ToListAsync();
 
             return comments;
         }
 
-        public override async Task<ICollection<PostComment>> GetPaged(int pageSize, int pageNumber, Expression<Func<PostComment, bool>> filter = null, Expression<Func<PostComment, object>> orderBy = null, bool isDesc = true)
+        public override async Task<ICollection<PostComment>> GetPagedAsync(int pageSize, int pageNumber, Expression<Func<PostComment, bool>> filter = null, Expression<Func<PostComment, object>> orderBy = null, bool isDesc = true)
         {
             var query = _dbSet
                 .AsNoTracking()
@@ -66,7 +66,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 .ToListAsync();
         }
 
-        public override async Task Delete(Guid id)
+        public override async Task DeleteAsync(Guid id)
         {
             await UpdateDeep(_dbSet, id);
         }
@@ -77,7 +77,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
 
             if (comment != null)
             {
-                comment.Status = 0;
+                comment.IsDeleted = true;
                 if (comment.ChildrenComment != null)
                 {
                     foreach (var item in comment.ChildrenComment)
@@ -89,16 +89,16 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         }
 
 
-        public override async Task<ICollection<PostComment>> GetCursorPaged(int pageSize, Expression<Func<PostComment, bool>> filter, bool getNext = true)
+        public override async Task<ICollection<PostComment>> GetCursorPagedAsync(int pageSize, Expression<Func<PostComment, bool>> filter, bool getNext = true)
         {
             var query = _dbSet.AsNoTracking().Where(filter).Include(x => x.User);
             if (getNext)
             {
-                return await query.OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.Id).Take(pageSize).ToListAsync();
+                return await query.OrderByDescending(x => x.CreatedDate).ThenByDescending(x => x.Id).Take(pageSize).ToListAsync();
             }
             else
             {
-                var result = await query.OrderBy(x => x.CreatedAt).ThenBy(x => x.Id).Take(pageSize).ToListAsync();
+                var result = await query.OrderBy(x => x.CreatedDate).ThenBy(x => x.Id).Take(pageSize).ToListAsync();
                 result.Reverse();
                 return result;
             }

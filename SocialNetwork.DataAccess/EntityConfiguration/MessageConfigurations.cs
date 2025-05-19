@@ -10,7 +10,7 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
         {
             builder.Property(x => x.MessageType).HasColumnType("int");
 
-            builder.HasIndex(x => x.CreatedAt).IsUnique(false);
+            builder.HasIndex(x => x.CreatedDate).IsUnique(false);
             builder.HasIndex(x => x.ParticipantId).IsUnique(false);
 
             builder.HasOne(x => x.User)

@@ -4,7 +4,7 @@ namespace SocialNetwork.DataAccess.Repositories.Abstract
 {
     public interface IConversationParticipantRepository : IGenericRepository<ConversationParticipant, Guid>
     {
-        Task<List<string>> GetConversationParticipantId(Guid conversationId);
-        Task AddParticipantExisted(Guid id);
+        Task<List<string>> GetConversationParticipantIdAsync(Guid conversationId);
+        Task AddParticipantExistedAsync(Guid id);
     }
 }

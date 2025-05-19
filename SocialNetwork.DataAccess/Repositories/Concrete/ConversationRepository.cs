@@ -12,32 +12,32 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         {
         }
 
-        public override async Task Update(Conversation conversation)
+        public override async Task UpdateAsync(Conversation conversation)
         {
             var entity = await _dbSet.FirstOrDefaultAsync(x => x.Id == conversation.Id);
             if (entity != null)
             {
                 entity.Name = conversation.Name;
                 entity.Image = conversation.Image;
-                entity.UpdatedAt = DateTime.UtcNow;
+                entity.ModifiedDate = DateTime.UtcNow;
             }
         }
 
-        public async Task UpdateNewestMessage(Guid conversationId)
+        public async Task UpdateNewestMessageAsync(Guid conversationId)
         {
             var conversation = await _dbSet.FirstOrDefaultAsync(x => x.Id == conversationId);
             if (conversation != null)
             {
-                conversation.UpdatedAt = DateTime.UtcNow;
+                conversation.ModifiedDate = DateTime.UtcNow;
             }
         }
 
-        public override async Task Delete(Guid id)
+        public override async Task DeleteAsync(Guid id)
         {
             var conversation = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
             if (conversation != null)
             {
-                conversation.Status = 0;
+                conversation.IsDeleted = true;
             }
         }
     }

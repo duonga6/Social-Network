@@ -12,7 +12,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         {
         }
 
-        public async Task MarkProccessed(Guid Id, string userId)
+        public async Task MarkProccessedAsync(Guid Id, string userId)
         {
             var report = await _dbSet.FirstOrDefaultAsync(x => x.Id == Id);
             if (report != null)

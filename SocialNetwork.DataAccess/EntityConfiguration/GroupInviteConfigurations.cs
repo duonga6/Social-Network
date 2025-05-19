@@ -22,7 +22,7 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 .OnDelete(DeleteBehavior.NoAction)
                 .IsRequired();
 
-            builder.HasOne(x => x.CreatedBy)
+            builder.HasOne(x => x.CreatedUser)
                 .WithMany(x => x.GroupInvitesCreate)
                 .HasForeignKey(x => x.CreatedId)
                 .OnDelete(DeleteBehavior.NoAction)

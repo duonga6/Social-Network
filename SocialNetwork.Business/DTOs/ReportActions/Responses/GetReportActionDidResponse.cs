@@ -6,6 +6,6 @@
         public Guid ReportId { set; get; }
         public int ActionReportId { set; get; }
         public BasicUserResponse CreatedBy { set; get; } = null!;
-        public DateTime CreatedAt { set; get; }
+        public DateTime CreatedDate { set; get; }
     }
 }

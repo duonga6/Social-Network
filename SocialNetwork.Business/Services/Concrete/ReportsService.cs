@@ -13,7 +13,7 @@ using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Abstract;
-using SocialNetwork.DataAccess.Utilities.Enum;
+using SocialNetwork.DataAccess.Enums;
 using System.Linq.Expressions;
 
 namespace SocialNetwork.Business.Services.Concrete
@@ -26,7 +26,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> CreateReport(string requestId, CreateReportRequest request)
         {
-            var checkExist = await _unitOfWork.ReportRepository.FindOneBy(x => x.UserId == requestId && x.RelatedId == request.RelationId);
+            var checkExist = await _unitOfWork.ReportRepository.FindOneByAsync(x => x.UserId == requestId && x.RelatedId == request.RelationId);
             if (checkExist != null)
             {
                 return new ErrorResponse(400, Messages.ReportExisted);
@@ -37,10 +37,10 @@ namespace SocialNetwork.Business.Services.Concrete
             switch (request.ReportType)
             {
                 case ReportTypeEnum.USER:
-                    objectRelation = _mapper.Map<GetUserResponse>(await _unitOfWork.UserRepository.GetById(request.RelationId) ?? throw new NotFoundException("User id: " + request.RelationId));
+                    objectRelation = _mapper.Map<GetUserResponse>(await _unitOfWork.UserRepository.GetByIdAsync(request.RelationId) ?? throw new NotFoundException("User id: " + request.RelationId));
                     break;
                 case ReportTypeEnum.POST:
-                    objectRelation = _mapper.Map<GetPostResponse>(await _unitOfWork.PostRepository.GetById(Guid.Parse(request.RelationId),
+                    objectRelation = _mapper.Map<GetPostResponse>(await _unitOfWork.PostRepository.GetByIdAsync(Guid.Parse(request.RelationId),
                         new Expression<Func<Post, object>>[]
                         {
                             x => x.PostMedias,
@@ -53,14 +53,14 @@ namespace SocialNetwork.Business.Services.Concrete
                         }) ?? throw new NotFoundException("User id: " + request.RelationId));
                     break;
                 case ReportTypeEnum.GROUP:
-                    objectRelation = _mapper.Map<GetGroupResponse>( await _unitOfWork.GroupRepository.GetById(Guid.Parse(request.RelationId),
+                    objectRelation = _mapper.Map<GetGroupResponse>( await _unitOfWork.GroupRepository.GetByIdAsync(Guid.Parse(request.RelationId),
                         new Expression<Func<Group, object>>[]
                         {
-                            x => x.CreatedBy
+                            x => x.CreatedUser
                         }) ?? throw new NotFoundException("Group id: " + request.RelationId));
                         break;
                 case ReportTypeEnum.COMMENT:
-                    objectRelation = _mapper.Map<GetPostCommentResponse>(await _unitOfWork.PostCommentRepository.GetById(Guid.Parse(request.RelationId),
+                    objectRelation = _mapper.Map<GetPostCommentResponse>(await _unitOfWork.PostCommentRepository.GetByIdAsync(Guid.Parse(request.RelationId),
                         new Expression<Func<PostComment, object>>[]
                         {
                             x => x.User
@@ -88,17 +88,17 @@ namespace SocialNetwork.Business.Services.Concrete
                 UserId = requestId,
             };
 
-            await _unitOfWork.ReportRepository.Add(newReport);
+            await _unitOfWork.ReportRepository.AddAsync(newReport);
             if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
 
-            var response = _mapper.Map<GetReportResponse>(await _unitOfWork.ReportRepository.GetById(newReport.Id));
+            var response = _mapper.Map<GetReportResponse>(await _unitOfWork.ReportRepository.GetByIdAsync(newReport.Id));
 
             return new DataResponse<GetReportResponse>(response, 201);
         }
 
         public async Task<IResponse> GetReport(string requestId, int pageSize, int pageNumber, string? searchString, ReportTypeEnum? type)
         {
-            Expression<Func<ReportViolation, bool>> filter = x => x.Status == 1;
+            Expression<Func<ReportViolation, bool>> filter = x => x.IsDeleted == false;
 
             if (!string.IsNullOrWhiteSpace(searchString))
             {
@@ -110,18 +110,18 @@ namespace SocialNetwork.Business.Services.Concrete
                 filter = filter.And(x => x.ReportType == type);
             }
 
-            var totalItems = await _unitOfWork.ReportRepository.GetCount(filter);
+            var totalItems = await _unitOfWork.ReportRepository.GetCountAsync(filter);
             var totalPage = (int)Math.Ceiling((decimal)totalItems / pageSize);
             if (pageNumber > totalPage && totalPage != 0)
             {
                 return new ErrorResponse(400, Messages.OutOfPage);
             }
 
-            var data = await _unitOfWork.ReportRepository.GetPaged(pageSize, pageNumber, new Expression<Func<ReportViolation, object>>[]
+            var data = await _unitOfWork.ReportRepository.GetPagedAsync(pageSize, pageNumber, new Expression<Func<ReportViolation, object>>[]
             {
                 x => x.User,
                 x => x.SolvedUser
-            }, filter, x => x.CreatedAt);
+            }, filter, x => x.CreatedDate);
 
             var response = _mapper.Map<List<GetReportResponse>>(data);
 
@@ -130,7 +130,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetReportById(string requestId, Guid Id)
         {
-            var report = await _unitOfWork.ReportRepository.GetById(Id, new Expression<Func<ReportViolation, object>>[]
+            var report = await _unitOfWork.ReportRepository.GetByIdAsync(Id, new Expression<Func<ReportViolation, object>>[]
             {
                 x => x.User,
                 x => x.SolvedUser
@@ -141,12 +141,12 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> MarkProccessed(string requestId, Guid Id)
         {
-            var report = await _unitOfWork.ReportRepository.GetById(Id) ?? throw new NotFoundException("Report id: " + Id.ToString());
+            var report = await _unitOfWork.ReportRepository.GetByIdAsync(Id) ?? throw new NotFoundException("Report id: " + Id.ToString());
 
-            await _unitOfWork.ReportRepository.MarkProccessed(Id, requestId);
+            await _unitOfWork.ReportRepository.MarkProccessedAsync(Id, requestId);
             if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
 
-            var response = _mapper.Map<GetReportResponse>(await _unitOfWork.ReportRepository.GetById(Id, new Expression<Func<ReportViolation, object>>[]
+            var response = _mapper.Map<GetReportResponse>(await _unitOfWork.ReportRepository.GetByIdAsync(Id, new Expression<Func<ReportViolation, object>>[]
             {
                 x => x.User,
                 x => x.SolvedUser
@@ -157,9 +157,9 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetActionReport(string requestId, Guid Id)
         {
-            var report = await _unitOfWork.ReportRepository.GetById(Id) ?? throw new NotFoundException("Report id: " + Id.ToString());
+            var report = await _unitOfWork.ReportRepository.GetByIdAsync(Id) ?? throw new NotFoundException("Report id: " + Id.ToString());
 
-            var reportAction = await _unitOfWork.ActionReportRepository.FindBy(x => x.ReportType == report.ReportType, new Expression<Func<ActionReport, object>>[]
+            var reportAction = await _unitOfWork.ActionReportRepository.FindByAsync(x => x.ReportType == report.ReportType, new Expression<Func<ActionReport, object>>[]
             {
                 x => x.ActionReportDids,
             });
@@ -171,15 +171,15 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> CreateActionReport(string requestId, Guid Id, CreateReportActionRequest request)
         {
-            var report = await _unitOfWork.ReportRepository.GetById(Id) ?? throw new NotFoundException("Report id: " + Id.ToString());
+            var report = await _unitOfWork.ReportRepository.GetByIdAsync(Id) ?? throw new NotFoundException("Report id: " + Id.ToString());
 
-            var checkAction = await _unitOfWork.ActionReportRepository.GetById(request.ActionId) ?? throw new NotFoundException("Action id: " + request.ActionId);
+            var checkAction = await _unitOfWork.ActionReportRepository.GetByIdAsync(request.ActionId) ?? throw new NotFoundException("Action id: " + request.ActionId);
             if (checkAction.ReportType != report.ReportType)
             {
                 return new ErrorResponse(400, Messages.InvalidActionReport);
             }
 
-            var checkExistReportAction = await _unitOfWork.ActionReportDidRepository.FindOneBy(x => x.ReportId == report.Id && x.ActionReportId == request.ActionId);
+            var checkExistReportAction = await _unitOfWork.ActionReportDidRepository.FindOneByAsync(x => x.ReportId == report.Id && x.ActionReportId == request.ActionId);
 
             if (checkExistReportAction != null)
             {
@@ -194,39 +194,39 @@ namespace SocialNetwork.Business.Services.Concrete
                 {
                     case (int)ReportActionId.REPORT_GROUP_DELETE_GROUP:
                         {
-                            var group = await _unitOfWork.GroupRepository.FindOneBy(x => x.Id == Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Related id: " + report.RelatedId);
-                            await _unitOfWork.GroupRepository.Delete(group.Id);
+                            var group = await _unitOfWork.GroupRepository.FindOneByAsync(x => x.Id == Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Related id: " + report.RelatedId);
+                            await _unitOfWork.GroupRepository.DeleteAsync(group.Id);
                             break;
                         }
                     case (int)ReportActionId.REPORT_GROUP_LOCK_USER:
                         {
-                            var group = await _unitOfWork.GroupRepository.FindOneBy(x => x.Id == Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Related id: " + report.RelatedId);
-                            await _unitOfWork.UserRepository.SetLockoutEndDate(group.CreatedId, DateTime.UtcNow.AddYears(999));
+                            var group = await _unitOfWork.GroupRepository.FindOneByAsync(x => x.Id == Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Related id: " + report.RelatedId);
+                            await _unitOfWork.UserRepository.SetLockoutEndDateAsync(group.CreatedId, DateTime.UtcNow.AddYears(999));
                             break;
                         }
                     case (int)ReportActionId.REPORT_POST_DELETE_POST:
                         {
-                            var post = await _unitOfWork.PostRepository.FindOneBy(x => x.Id == Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Related id: " + report.RelatedId);
-                            await _unitOfWork.PostRepository.Delete(post.Id);
+                            var post = await _unitOfWork.PostRepository.FindOneByAsync(x => x.Id == Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Related id: " + report.RelatedId);
+                            await _unitOfWork.PostRepository.DeleteAsync(post.Id);
                             break;
                         }
                     case (int)ReportActionId.REPORT_POST_LOCK_USER:
                         {
-                            var post = await _unitOfWork.PostRepository.FindOneBy(x => x.Id == Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Related id: " + report.RelatedId);
-                            await _unitOfWork.UserRepository.SetLockoutEndDate(post.AuthorId, DateTime.UtcNow.AddYears(999));
+                            var post = await _unitOfWork.PostRepository.FindOneByAsync(x => x.Id == Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Related id: " + report.RelatedId);
+                            await _unitOfWork.UserRepository.SetLockoutEndDateAsync(post.AuthorId, DateTime.UtcNow.AddYears(999));
                             break;
                         }
                     case (int)ReportActionId.REPORT_USER_LOCK_USER:
-                        await _unitOfWork.UserRepository.SetLockoutEndDate(report.RelatedId, DateTime.UtcNow.AddYears(999));
+                        await _unitOfWork.UserRepository.SetLockoutEndDateAsync(report.RelatedId, DateTime.UtcNow.AddYears(999));
                         break;
                     case (int)ReportActionId.REPORT_COMMENT_DELETE_COMMENT:
                         {
-                            var commet = await _unitOfWork.PostCommentRepository.FindOneBy(x => x.Id == Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Related id: " + report.RelatedId);
-                            await _unitOfWork.UserRepository.SetLockoutEndDate(commet.UserId, DateTime.UtcNow.AddYears(999));
+                            var commet = await _unitOfWork.PostCommentRepository.FindOneByAsync(x => x.Id == Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Related id: " + report.RelatedId);
+                            await _unitOfWork.UserRepository.SetLockoutEndDateAsync(commet.UserId, DateTime.UtcNow.AddYears(999));
                             break;
                         }
                     case (int)ReportActionId.REPORT_COMMENT_DELETE_USER:
-                        await _unitOfWork.UserRepository.SetLockoutEndDate(report.RelatedId, DateTime.UtcNow.AddYears(999));
+                        await _unitOfWork.UserRepository.SetLockoutEndDateAsync(report.RelatedId, DateTime.UtcNow.AddYears(999));
                         break;
                 }
 
@@ -237,12 +237,12 @@ namespace SocialNetwork.Business.Services.Concrete
                     ReportId = report.Id,
                 };
 
-                await _unitOfWork.ActionReportDidRepository.Add(newReportActionDid);
+                await _unitOfWork.ActionReportDidRepository.AddAsync(newReportActionDid);
                 if (!await _unitOfWork.CommitAsync()) throw new NoDataChangeException();
 
-                var actionDidAdded = await _unitOfWork.ActionReportDidRepository.GetById(newReportActionDid.Id, new Expression<Func<ActionReportDid, object>>[]
+                var actionDidAdded = await _unitOfWork.ActionReportDidRepository.GetByIdAsync(newReportActionDid.Id, new Expression<Func<ActionReportDid, object>>[]
                 {
-                    x => x.CreatedBy
+                    x => x.CreatedUser
                 });
 
                 var response = _mapper.Map<GetReportActionDidResponse>(actionDidAdded);
@@ -259,8 +259,8 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> DeleteActionReport(string requestId, Guid Id, Guid actionId)
         {
-            var actionDid = await _unitOfWork.ActionReportDidRepository.GetById(actionId) ?? throw new NotFoundException("Action id: " + actionId.ToString());
-            var report = await _unitOfWork.ReportRepository.GetById(actionDid.ReportId) ?? throw new NotFoundException("Report id: " + actionDid.ReportId.ToString());
+            var actionDid = await _unitOfWork.ActionReportDidRepository.GetByIdAsync(actionId) ?? throw new NotFoundException("Action id: " + actionId.ToString());
+            var report = await _unitOfWork.ReportRepository.GetByIdAsync(actionDid.ReportId) ?? throw new NotFoundException("Report id: " + actionDid.ReportId.ToString());
 
             try
             {
@@ -270,43 +270,43 @@ namespace SocialNetwork.Business.Services.Concrete
                 {
                     case (int)ReportActionId.REPORT_GROUP_DELETE_GROUP:
                         {
-                            await _unitOfWork.GroupRepository.RestoreEntity(Guid.Parse(report.RelatedId));
+                            await _unitOfWork.GroupRepository.RestoreEntityAsync(Guid.Parse(report.RelatedId));
                             break;
                         }
                     case (int)ReportActionId.REPORT_GROUP_LOCK_USER:
                         {
-                            var group = await _unitOfWork.GroupRepository.FindOneBy(x => x.Id == Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Related id: " + report.RelatedId);
-                            await _unitOfWork.UserRepository.SetLockoutEndDate(group.CreatedId, null);
+                            var group = await _unitOfWork.GroupRepository.FindOneByAsync(x => x.Id == Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Related id: " + report.RelatedId);
+                            await _unitOfWork.UserRepository.SetLockoutEndDateAsync(group.CreatedId, null);
                             break;
                         }
                     case (int)ReportActionId.REPORT_POST_DELETE_POST:
                         {
-                            await _unitOfWork.PostRepository.RestoreEntity(Guid.Parse(report.RelatedId));
+                            await _unitOfWork.PostRepository.RestoreEntityAsync(Guid.Parse(report.RelatedId));
                             break;
                         }
                     case (int)ReportActionId.REPORT_POST_LOCK_USER:
                         {
-                            var post = await _unitOfWork.PostRepository.FindOneBy(x => x.Id == Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Related id: " + report.RelatedId);
-                            await _unitOfWork.UserRepository.SetLockoutEndDate(post.AuthorId, null);
+                            var post = await _unitOfWork.PostRepository.FindOneByAsync(x => x.Id == Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Related id: " + report.RelatedId);
+                            await _unitOfWork.UserRepository.SetLockoutEndDateAsync(post.AuthorId, null);
                             break;
                         }
                     case (int)ReportActionId.REPORT_USER_LOCK_USER:
-                        await _unitOfWork.UserRepository.SetLockoutEndDate(report.RelatedId, null);
+                        await _unitOfWork.UserRepository.SetLockoutEndDateAsync(report.RelatedId, null);
                         break;
                     case (int)ReportActionId.REPORT_COMMENT_DELETE_COMMENT:
                         {
-                            await _unitOfWork.PostCommentRepository.RestoreEntity(Guid.Parse(report.RelatedId));
+                            await _unitOfWork.PostCommentRepository.RestoreEntityAsync(Guid.Parse(report.RelatedId));
                             break;
                         }
                     case (int)ReportActionId.REPORT_COMMENT_DELETE_USER:
                         {
-                            var comment = await _unitOfWork.PostCommentRepository.FindOneBy(x => x.Id == Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Related id: " + report.RelatedId);
-                            await _unitOfWork.UserRepository.SetLockoutEndDate(comment.UserId, null);
+                            var comment = await _unitOfWork.PostCommentRepository.FindOneByAsync(x => x.Id == Guid.Parse(report.RelatedId)) ?? throw new NotFoundException("Related id: " + report.RelatedId);
+                            await _unitOfWork.UserRepository.SetLockoutEndDateAsync(comment.UserId, null);
                             break;
                         }
                 }
 
-                await _unitOfWork.ActionReportDidRepository.Delete(actionId);
+                await _unitOfWork.ActionReportDidRepository.DeleteAsync(actionId);
                 if (!await _unitOfWork.CommitAsync()) throw new NoDataChangeException();
 
                 return new SuccessResponse(Messages.DeletedSuccessfully, 200);
@@ -321,8 +321,8 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetStats(string requestId)
         {
-            int totalReport = await _unitOfWork.ReportRepository.GetCount();
-            int totalReportNotProcessed = await _unitOfWork.ReportRepository.GetCount(x => x.IsSolved);
+            int totalReport = await _unitOfWork.ReportRepository.GetCountAsync();
+            int totalReportNotProcessed = await _unitOfWork.ReportRepository.GetCountAsync(x => x.IsSolved);
 
             var response = new GetStatsReportResponse
             {

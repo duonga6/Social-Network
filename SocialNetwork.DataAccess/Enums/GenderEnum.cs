@@ -1,4 +1,4 @@
-﻿namespace SocialNetwork.DataAccess.Utilities.Enum
+﻿namespace SocialNetwork.DataAccess.Enums
 {
     public enum GenderEnum
     {

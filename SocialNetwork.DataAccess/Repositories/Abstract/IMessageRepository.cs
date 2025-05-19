@@ -4,7 +4,7 @@ namespace SocialNetwork.DataAccess.Repositories.Abstract
 {
     public interface IMessageRepository : IGenericRepository<Message, Guid>
     {
-        Task RevokeMessage(Guid messageId);
-        Task SeenMessage(Guid messageId);
+        Task RevokeMessageAsync(Guid messageId);
+        Task SeenMessageAsync(Guid messageId);
     }
 }

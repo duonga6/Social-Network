@@ -6,7 +6,7 @@ using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
-using SocialNetwork.DataAccess.Utilities.Roles;
+using SocialNetwork.DataAccess.Utilities;
 using System.ComponentModel.DataAnnotations;
 
 namespace SocialNetwork.API.Controllers
@@ -30,7 +30,7 @@ namespace SocialNetwork.API.Controllers
         [ProducesResponseType(typeof(DataResponse<UserWithTokenResponse>), 200)]
         public async Task<IActionResult> Register([FromBody] RegistrationRequest request)
         {
-            return ResponseModel(await _userService.Register(request, HttpContext.Connection.RemoteIpAddress?.ToString()));
+            return ResponseModel(await _userService.Register(request, HttpContext.Connection.RemoteIpAddress!.ToString()));
         }
 
         /// <summary>

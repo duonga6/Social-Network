@@ -2,7 +2,7 @@
 
 namespace SocialNetwork.DataAccess.Entities
 {
-    public class Group : BaseEntity<Guid>
+    public class Group : EntityAuditBase<Guid>
     {
         public string Name { set; get; }
         public string Description { set; get; }
@@ -12,7 +12,7 @@ namespace SocialNetwork.DataAccess.Entities
         public string CoverImage { set; get; }
         public int TotalMember { set; get; }
 
-        public virtual User CreatedBy { set; get; }
+        public virtual User CreatedUser { set; get; }
         [JsonIgnore]
         public virtual ICollection<Post> Posts { set; get; }
         [JsonIgnore]
