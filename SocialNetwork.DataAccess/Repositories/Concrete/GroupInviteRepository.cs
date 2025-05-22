@@ -12,14 +12,14 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         {
         }
 
-        public override async Task Update(GroupInvite invite)
+        public override async Task UpdateAsync(GroupInvite invite)
         {
             var entity = await _dbSet.FirstOrDefaultAsync(x => x.Id == invite.Id);
             if (entity != null)
             {
                 entity.UserAccepted = invite.UserAccepted;
                 entity.AdminAccepted = invite.AdminAccepted;
-                entity.UpdatedAt = DateTime.UtcNow;
+                entity.ModifiedDate = DateTime.UtcNow;
             }
         }
     }

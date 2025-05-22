@@ -52,7 +52,7 @@ namespace SocialNetwork.Business.Services.Concrete
             var refreshToken = new RefreshToken()
             {
                 UserId = user.Id,
-                CreatedAt = DateTime.UtcNow,
+                CreatedDate = DateTime.UtcNow,
                 ExpiredAt = refreshTokenExpiration,
                 IsRevoked = false,
                 IsUsed = false,
@@ -60,7 +60,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 Token = GenerateRefreshToken()
             };
 
-            await _unitOfWork.RefreshTokenRepository.Add(refreshToken);
+            await _unitOfWork.RefreshTokenRepository.AddAsync(refreshToken);
             await _unitOfWork.CompleteAsync();
 
             return new Token
@@ -164,7 +164,7 @@ namespace SocialNetwork.Business.Services.Concrete
                     };
                 }
                 //  Check exits
-                var refreshToken = await _unitOfWork.RefreshTokenRepository.GetToken(token.RefreshToken, jti);
+                var refreshToken = await _unitOfWork.RefreshTokenRepository.GetTokenAsync(token.RefreshToken, jti);
                 if (refreshToken == null)
                 {
                     return new TokenWithMessage
@@ -213,7 +213,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 }
 
                 // Update token
-                await _unitOfWork.RefreshTokenRepository.RevokeToken(refreshToken);
+                await _unitOfWork.RefreshTokenRepository.RevokeTokenAsync(refreshToken);
                 var resultUpdate = await _unitOfWork.CompleteAsync();
                 if (!resultUpdate)
                 {

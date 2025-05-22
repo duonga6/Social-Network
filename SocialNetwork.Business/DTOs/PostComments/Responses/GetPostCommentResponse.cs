@@ -7,7 +7,7 @@
         public string[] Path { set; get; } = null!;
         public Guid PostId { get; set; }
         public BasicUserResponse User { set; get; } = null!;
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedDate { get; set; }
         public Guid? ParentCommentId { set; get; }
     }
 }

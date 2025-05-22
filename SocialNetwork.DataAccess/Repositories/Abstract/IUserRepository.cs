@@ -3,17 +3,13 @@ using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Abstract
 {
-    public interface IUserRepository
+    public interface IUserRepository : ISoftDeleteRepository<User, string>
     {
-        Task<int> Count(Expression<Func<User, bool>> filter);
-        Task<ICollection<User>> GetPaged(int pageSize, int pageNumber, Expression<Func<User, bool>> filter, Expression<Func<User, object>> orderBy, bool isDesc);
-        Task Delete(string id);
-        Task<User> GetById(string id, bool noTracking = true);
-        Task Update(User user);
-        IQueryable<User> GetQueryable();
-        Task<ICollection<User>> FindBy(Expression<Func<User, bool>> filter = null, bool asNoTracking = true);
-        Task UpdateCoverImage(string id, string url);
-        Task UpdateAvatar(string id, string url);
-        Task SetLockoutEndDate(string id, DateTime? time);
+        Task<int> CountAsync(Expression<Func<User, bool>> filter);
+        Task<User> GetByIdAsync(string id, bool noTracking = true);
+        Task<ICollection<User>> FindByAsync(Expression<Func<User, bool>> filter = null, bool asNoTracking = true);
+        Task UpdateCoverImageAsync(string id, string url);
+        Task UpdateAvatarAsync(string id, string url);
+        Task SetLockoutEndDateAsync(string id, DateTime? time);
     }
 }

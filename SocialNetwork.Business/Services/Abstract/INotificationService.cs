@@ -1,5 +1,5 @@
 ﻿using SocialNetwork.Business.Wrapper.Abstract;
-using SocialNetwork.DataAccess.Utilities.Enum;
+using SocialNetwork.DataAccess.Enums;
 
 namespace SocialNetwork.Business.Services.Interfaces
 {

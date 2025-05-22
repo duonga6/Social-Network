@@ -2,9 +2,9 @@
 
 namespace SocialNetwork.DataAccess.Repositories.Abstract
 {
-    public interface IPostRepository : IGenericRepository<Post, Guid>
+    public interface IPostRepository : ISoftDeleteRepository<Post, Guid>
     {
-        Task<bool> IsOwnerPost(string userId, Guid postId);
+        Task<bool> IsOwnerPostAsync(string userId, Guid postId);
     }
 
 }

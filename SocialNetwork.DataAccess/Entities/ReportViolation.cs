@@ -1,8 +1,8 @@
-﻿using SocialNetwork.DataAccess.Utilities.Enum;
+﻿using SocialNetwork.DataAccess.Enums;
 
 namespace SocialNetwork.DataAccess.Entities
 {
-    public class ReportViolation : BaseEntity<Guid>
+    public class ReportViolation : EntityAuditBase<Guid>
     {
         public string UserId { set; get; }
         public string Content { set; get; }

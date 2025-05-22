@@ -1,6 +1,6 @@
 ﻿namespace SocialNetwork.DataAccess.Entities
 {
-    public class Notification : BaseEntity<Guid>
+    public class Notification : EntityAuditBase<Guid>
     {
         public string FromId { get; set; }
         public string ToId { set; get; }

@@ -1,7 +1,7 @@
 ﻿using SocialNetwork.DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SocialNetwork.DataAccess.Utilities.Enum;
+using SocialNetwork.DataAccess.Enums;
 
 namespace SocialNetwork.DataAccess.EntityConfiguration
 {
@@ -33,7 +33,7 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
             builder.HasIndex(x => x.SharePostId)
                 .IsUnique(false);
 
-            builder.HasIndex(x => x.CreatedAt);
+            builder.HasIndex(x => x.CreatedDate);
 
             builder.Property(x => x.Access).HasColumnType("int").HasDefaultValue(PostAccess.PUBLIC);
 

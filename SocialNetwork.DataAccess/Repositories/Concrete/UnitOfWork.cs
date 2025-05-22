@@ -5,7 +5,7 @@ using SocialNetwork.DataAccess.Repositories.Abstract;
 
 namespace SocialNetwork.DataAccess.Repositories.Concrete
 {
-    public class UnitOfWork : IUnitOfWork, IDisposable
+    public class UnitOfWork : IUnitOfWork
     {
         public IReactionRepository ReactionRepository { get; }
         public IRefreshTokenRepository RefreshTokenRepository { get; }

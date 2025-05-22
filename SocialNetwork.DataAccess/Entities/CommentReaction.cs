@@ -1,6 +1,6 @@
 ﻿namespace SocialNetwork.DataAccess.Entities
 {
-    public class CommentReaction : BaseEntity<Guid>
+    public class CommentReaction : EntityTrackingBase<Guid>
     {
         public int ReactionId { get; set; }
         public Reaction Reaction { get; set; }

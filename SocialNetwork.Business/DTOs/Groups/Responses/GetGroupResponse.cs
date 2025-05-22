@@ -10,6 +10,6 @@
         public bool IsPublic { set; get; }
         public int TotalMember { set; get; }
         public bool PreCensored { set; get; }
-        public DateTime CreatedAt { set; get; }
+        public DateTime CreatedDate { set; get; }
     }
 }

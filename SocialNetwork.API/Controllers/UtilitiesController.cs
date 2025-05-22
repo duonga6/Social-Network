@@ -5,7 +5,7 @@ using SocialNetwork.Business.DTOs.Utilities.Requests;
 using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
-using SocialNetwork.DataAccess.Utilities.Roles;
+using SocialNetwork.DataAccess.Utilities;
 
 namespace SocialNetwork.API.Controllers
 {

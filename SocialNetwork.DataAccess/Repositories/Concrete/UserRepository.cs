@@ -8,34 +8,27 @@ using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Concrete
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository : SoftDeleteRepository<User, string>, IUserRepository
     {
-        private readonly AppDbContext _context;
-        private readonly DbSet<User> _dbSet;
-        private readonly ILogger _logger;
-
-        public UserRepository(ILogger logger, AppDbContext context)
+        public UserRepository(ILogger logger, AppDbContext context) : base(logger, context)
         {
-            _context = context;
-            _dbSet = context.Set<User>();
-            _logger = logger;
         }
 
-        public async Task<int> Count(Expression<Func<User, bool>> filter)
+        public async Task<int> CountAsync(Expression<Func<User, bool>> filter)
         {
             return await _dbSet.AsNoTracking().Where(filter).CountAsync();
         }
 
-        public async Task Delete(string id)
+        public override async Task DeleteAsync(string id)
         {
             var user = await _dbSet.FindAsync(id);
             if (user != null)
             {
-                user.Status = 0;
+                user.IsDeleted = true;
             }
         }
 
-        public async Task<User> GetById(string id, bool noTracking = true)
+        public async Task<User> GetByIdAsync(string id, bool noTracking = true)
         {
             var query = _dbSet.Include(x => x.Gender_FK).AsQueryable();
             
@@ -44,10 +37,10 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 query = query.AsNoTracking();
             }
 
-            return await query.FirstOrDefaultAsync(x => x.Id == id);
+            return await query.FirstOrDefaultAsync(x => x.Id.Equals(id));
         }
 
-        public async Task<ICollection<User>> GetPaged(int pageSize, int pageNumber, Expression<Func<User, bool>> filter, Expression<Func<User, object>> orderBy, bool isDesc)
+        public override async Task<ICollection<User>> GetPagedAsync(int pageSize, int pageNumber, Expression<Func<User, bool>> filter, Expression<Func<User, object>> orderBy, bool isDesc)
         {
             var query = _dbSet
                 .AsNoTracking()
@@ -68,7 +61,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 .ToListAsync();
         }
 
-        public async Task Update(User user)
+        public override async Task UpdateAsync(User user)
         {
             var updateUser = await _dbSet.FindAsync(user.Id);
 
@@ -82,9 +75,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             }
         }
 
-        public IQueryable<User> GetQueryable() => _dbSet.AsQueryable();
-
-        public virtual async Task<ICollection<User>> FindBy(Expression<Func<User, bool>> filter = null, bool asNoTracking = true)
+        public virtual async Task<ICollection<User>> FindByAsync(Expression<Func<User, bool>> filter = null, bool asNoTracking = true)
         {
             if (asNoTracking)
             {
@@ -93,7 +84,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             return await _dbSet.Where(filter).ToListAsync();
         }
 
-        public async Task UpdateCoverImage(string id, string url)
+        public async Task UpdateCoverImageAsync(string id, string url)
         {
             var user = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
             if (user != null)
@@ -102,7 +93,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             }
         }
 
-        public async Task UpdateAvatar(string id, string url)
+        public async Task UpdateAvatarAsync(string id, string url)
         {
             var user = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
             if (user != null)
@@ -111,7 +102,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             }
         }
 
-        public async Task SetLockoutEndDate(string id, DateTime? time)
+        public async Task SetLockoutEndDateAsync(string id, DateTime? time)
         {
             var user = await _dbSet.FirstOrDefaultAsync(x => x.Id == id);
             if (user != null)

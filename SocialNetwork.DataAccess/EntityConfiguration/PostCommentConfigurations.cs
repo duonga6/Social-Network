@@ -29,7 +29,7 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
 
             builder.HasKey(x => x.Id);
 
-            builder.HasIndex(x => x.CreatedAt);
+            builder.HasIndex(x => x.CreatedDate);
 
         }
     }

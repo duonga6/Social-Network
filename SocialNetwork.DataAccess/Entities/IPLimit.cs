@@ -1,6 +1,6 @@
 ﻿namespace SocialNetwork.DataAccess.Entities
 {
-    public class IPLimit : BaseEntity<Guid>
+    public class IPLimit : EntityTrackingBase<Guid>
     {
         public string IpAddress { set; get; }
     }

@@ -1,4 +1,4 @@
-﻿using SocialNetwork.DataAccess.Utilities.Enum;
+﻿using SocialNetwork.DataAccess.Enums;
 
 namespace SocialNetwork.Business.DTOs.Responses
 {

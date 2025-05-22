@@ -2,8 +2,8 @@
 
 namespace SocialNetwork.DataAccess.Repositories.Abstract
 {
-    public interface IPostCommentRepository : IGenericRepository<PostComment, Guid>
+    public interface IPostCommentRepository : ISoftDeleteRepository<PostComment, Guid>
     {
-        Task<ICollection<PostComment>> GetByPost(Guid postId);
+        Task<ICollection<PostComment>> GetByPostAsync(Guid postId);
     }
 }

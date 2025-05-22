@@ -5,7 +5,7 @@ using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.DTOs.Responses;
 using SocialNetwork.Business.Services.Abstract;
 using SocialNetwork.Business.Wrapper;
-using SocialNetwork.DataAccess.Utilities.Enum;
+using SocialNetwork.DataAccess.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace SocialNetwork.API.Controllers

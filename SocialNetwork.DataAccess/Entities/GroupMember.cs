@@ -1,6 +1,6 @@
 ﻿namespace SocialNetwork.DataAccess.Entities
 {
-    public class GroupMember : BaseEntity<Guid>
+    public class GroupMember : EntityTrackingBase<Guid>
     {
         public Guid GroupId { set; get; }
         public string UserId { set; get; }

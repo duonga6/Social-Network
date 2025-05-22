@@ -1,4 +1,4 @@
-﻿namespace SocialNetwork.DataAccess.Utilities.Roles
+﻿namespace SocialNetwork.DataAccess.Utilities
 {
     public static class RoleName
     {
