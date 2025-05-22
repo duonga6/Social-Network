@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SocialNetwork.DataAccess.Entities
 {
-    public class User : IdentityUser, ISoftDelete
+    public class User : IdentityUser, IEntityAuditBase<string>
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
@@ -12,8 +12,10 @@ namespace SocialNetwork.DataAccess.Entities
         public int Gender { set; get; }
         public string AvatarUrl { get; set; }
         public string CoverImageUrl { set; get; }
-        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? ModifiedDate { get; set; }
+        public Guid CreatedBy { get; set; }
+        public Guid ModifiedBy { get; set; }
+        public DateTime CreatedDate { get; set; }
         public DateTime DateOfBirth { get; set; }
         public bool IsDeleted { get; set; }
         public DateTime? DeletedAt { get; set; }

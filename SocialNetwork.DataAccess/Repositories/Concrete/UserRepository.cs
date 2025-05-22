@@ -8,17 +8,10 @@ using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Concrete
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository : SoftDeleteRepository<User, string>, IUserRepository
     {
-        private readonly AppDbContext _context;
-        private readonly DbSet<User> _dbSet;
-        private readonly ILogger _logger;
-
-        public UserRepository(ILogger logger, AppDbContext context)
+        public UserRepository(ILogger logger, AppDbContext context) : base(logger, context)
         {
-            _context = context;
-            _dbSet = context.Set<User>();
-            _logger = logger;
         }
 
         public async Task<int> CountAsync(Expression<Func<User, bool>> filter)
@@ -26,7 +19,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             return await _dbSet.AsNoTracking().Where(filter).CountAsync();
         }
 
-        public async Task DeleteAsync(string id)
+        public override async Task DeleteAsync(string id)
         {
             var user = await _dbSet.FindAsync(id);
             if (user != null)
@@ -44,10 +37,10 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 query = query.AsNoTracking();
             }
 
-            return await query.FirstOrDefaultAsync(x => x.Id == id);
+            return await query.FirstOrDefaultAsync(x => x.Id.Equals(id));
         }
 
-        public async Task<ICollection<User>> GetPagedAsync(int pageSize, int pageNumber, Expression<Func<User, bool>> filter, Expression<Func<User, object>> orderBy, bool isDesc)
+        public override async Task<ICollection<User>> GetPagedAsync(int pageSize, int pageNumber, Expression<Func<User, bool>> filter, Expression<Func<User, object>> orderBy, bool isDesc)
         {
             var query = _dbSet
                 .AsNoTracking()
@@ -68,7 +61,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 .ToListAsync();
         }
 
-        public async Task UpdateAsync(User user)
+        public override async Task UpdateAsync(User user)
         {
             var updateUser = await _dbSet.FindAsync(user.Id);
 
@@ -81,8 +74,6 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 updateUser.Gender = user.Gender;
             }
         }
-
-        public IQueryable<User> GetQueryable() => _dbSet.AsQueryable();
 
         public virtual async Task<ICollection<User>> FindByAsync(Expression<Func<User, bool>> filter = null, bool asNoTracking = true)
         {

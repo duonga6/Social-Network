@@ -1,6 +1,6 @@
 ﻿namespace SocialNetwork.DataAccess.Entities
 {
-    public abstract class EntityTrackingBase<TKey> : EntityBase<TKey>, ITracking
+    public abstract class EntityTrackingBase<TKey> : EntityBase<TKey>, ITrackedEntity
     {
         public Guid CreatedBy { get; set; }
         public Guid ModifiedBy { get; set; }

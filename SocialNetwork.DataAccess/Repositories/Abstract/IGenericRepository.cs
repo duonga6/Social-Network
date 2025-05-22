@@ -1,8 +1,9 @@
-﻿using System.Linq.Expressions;
+﻿using SocialNetwork.DataAccess.Entities;
+using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Abstract
 {
-    public interface IGenericRepository<TEntity, in TKey> where TEntity : class
+    public interface IGenericRepository<TEntity, in TKey> where TEntity : class, IEntityBase<TKey>, IDateTracking
     {
         Task<TEntity> GetByIdAsync(TKey id);
         Task<TEntity> GetByIdAsync(TKey id, Expression<Func<TEntity, object>>[] includes);
