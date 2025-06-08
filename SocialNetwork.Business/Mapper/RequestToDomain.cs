@@ -19,7 +19,7 @@ namespace SocialNetwork.Business.Mapper
             CreateMap<RegistrationRequest, User>()
                 .ForMember(d => d.UserName, o => o.MapFrom(s => s.Email))
                 .ForMember(d => d.CreatedDate, o => o.MapFrom(s => DateTime.UtcNow))
-                .ForMember(d => d.ModifiedDate, o => o.MapFrom(s => DateTime.UtcNow))
+                .ForMember(d => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow))
                 .ForMember(d => d.AvatarUrl, o => o.MapFrom(s => DefaultImage.DefaultUserAvatar));
                 
 
@@ -60,7 +60,7 @@ namespace SocialNetwork.Business.Mapper
                 .ForMember(d => d.ModifiedDate, o => o.MapFrom(s => DateTime.UtcNow));
 
             CreateMap<UpdateUserInfoRequest, User>()
-                .ForMember(d  => d.ModifiedDate, o => o.MapFrom(s => DateTime.UtcNow));
+                .ForMember(d  => d.UpdatedAt, o => o.MapFrom(s => DateTime.UtcNow));
 
             CreateMap<CreatePostReactionsRequest, PostReaction>()
                 .ForMember(d => d.CreatedDate, o => o.MapFrom(s => DateTime.UtcNow))

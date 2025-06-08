@@ -1,6 +1,6 @@
 ﻿namespace SocialNetwork.DataAccess.Repositories.Abstract
 {
-    public interface IUnitOfWork : IDisposable
+    public interface IUnitOfWork
     {
         IReactionRepository ReactionRepository { get; }
         IRefreshTokenRepository RefreshTokenRepository { get; }
