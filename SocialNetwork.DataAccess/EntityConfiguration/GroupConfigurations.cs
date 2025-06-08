@@ -11,7 +11,7 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
             builder.Property(x => x.Name)
                 .IsRequired();
 
-            builder.HasOne(x => x.CreatedUser)
+            builder.HasOne(x => x.CreatedBy)
                 .WithMany(x => x.GroupOwner)
                 .HasForeignKey(x => x.CreatedId)
                 .OnDelete(DeleteBehavior.NoAction)
@@ -20,7 +20,7 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
             builder.Property(x => x.PreCensored)
                 .IsRequired();
 
-            builder.HasIndex(x => x.CreatedDate);
+            builder.HasIndex(x => x.CreatedAt);
         }
     }
 }

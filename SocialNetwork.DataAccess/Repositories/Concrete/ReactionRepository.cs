@@ -14,13 +14,13 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         {
         }
 
-        public override async Task UpdateAsync(Reaction entity)
+        public override async Task Update(Reaction entity)
         {
             var result = await _dbSet.FirstOrDefaultAsync(x => x.Id == entity.Id);
             if (result != null)
             {
                 result.Name = entity.Name;
-                result.ModifiedDate = DateTime.UtcNow;
+                result.UpdatedAt = DateTime.UtcNow;
             } 
         }
 

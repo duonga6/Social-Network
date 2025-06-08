@@ -26,7 +26,7 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
             builder.Property(r => r.IsRevoked)
                 .IsRequired();
 
-            builder.Property(r => r.CreatedDate)
+            builder.Property(r => r.CreatedAt)
                 .IsRequired();
 
             builder.Property(r => r.ExpiredAt)

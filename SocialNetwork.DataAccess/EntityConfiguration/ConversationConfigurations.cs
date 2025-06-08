@@ -13,12 +13,12 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
 
             builder.Property(x => x.Type).HasColumnType("int");
 
-            builder.HasOne(x => x.CreatedUser)
+            builder.HasOne(x => x.CreatedBy)
                 .WithMany(u => u.ConversationCreated)
                 .HasForeignKey(x => x.CreatedId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            builder.HasIndex(x => x.CreatedDate).IsUnique(false);
+            builder.HasIndex(x => x.UpdatedAt).IsUnique(false);
         }
     }
 }

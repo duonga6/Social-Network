@@ -7,6 +7,7 @@ using SocialNetwork.Business.Services.Interfaces;
 using SocialNetwork.Business.Utilities.Enum;
 using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
+using SocialNetwork.DataAccess.Utilities.Roles;
 using System.ComponentModel.DataAnnotations;
 
 namespace SocialNetwork.API.Controllers

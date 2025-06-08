@@ -13,12 +13,12 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         {
         }
 
-        public async Task<RefreshToken> GetTokenAsync(string Token, string Jti)
+        public async Task<RefreshToken> GetToken(string Token, string Jti)
         {
             return await _dbSet.FirstOrDefaultAsync(x => x.Token == Token && x.JwtId == Jti);
         }
 
-        public async Task RevokeTokenAsync(RefreshToken token)
+        public async Task RevokeToken(RefreshToken token)
         {
             var tokenRevoke = await _dbSet.FirstOrDefaultAsync(x => x.Id == token.Id);
             if (tokenRevoke != null)

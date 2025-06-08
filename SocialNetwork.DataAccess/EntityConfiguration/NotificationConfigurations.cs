@@ -22,7 +22,7 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 .OnDelete(DeleteBehavior.NoAction)
                 .IsRequired();
 
-            builder.HasIndex(x => x.CreatedDate);
+            builder.HasIndex(x => x.CreatedAt);
         }
     }
 }

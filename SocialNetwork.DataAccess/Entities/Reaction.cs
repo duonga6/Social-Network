@@ -1,6 +1,6 @@
 ﻿namespace SocialNetwork.DataAccess.Entities
 {
-    public class Reaction : EntityTrackingBase<int>
+    public class Reaction : BaseEntity<int>
     {
         public string Name { get; set; }
         public string IconUrl { set; get; }

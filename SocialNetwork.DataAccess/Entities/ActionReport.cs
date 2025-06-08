@@ -1,8 +1,8 @@
-﻿using SocialNetwork.DataAccess.Enums;
+﻿using SocialNetwork.DataAccess.Utilities.Enum;
 
 namespace SocialNetwork.DataAccess.Entities
 {
-    public class ActionReport : EntityTrackingBase<int>
+    public class ActionReport : BaseEntity<int>
     {
         public string ActionName { set; get; }
         public ReportTypeEnum ReportType { set; get; }

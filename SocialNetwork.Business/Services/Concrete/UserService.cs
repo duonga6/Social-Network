@@ -16,11 +16,11 @@ using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Abstract;
-using SocialNetwork.DataAccess.Enums;
+using SocialNetwork.DataAccess.Utilities.Enum;
+using SocialNetwork.DataAccess.Utilities.Roles;
 using System.Linq.Expressions;
 using System.Text;
 using System.Text.Encodings.Web;
-using SocialNetwork.DataAccess.Utilities;
 
 namespace SocialNetwork.Business.Services.Concrete
 {
@@ -64,33 +64,33 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetAll(string? searchString, int pageSize, int pageNumber)
         {
-            Expression<Func<User, bool>> filter = x => x.IsDeleted == false;
+            Expression<Func<User, bool>> filter = x => x.Status == 1;
 
             if (!string.IsNullOrWhiteSpace(searchString))
             {
                 filter = filter.And( x => (x.FirstName + " " + x.LastName).Contains(searchString.Trim()));
             } 
 
-            int totalItems = await _unitOfWork.UserRepository.CountAsync(filter);
+            int totalItems = await _unitOfWork.UserRepository.Count(filter);
             int pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
             if (pageNumber > pageCount && pageCount > 0)
             {
                 return new ErrorResponse(400, Messages.OutOfPage);
             }    
 
-            var users = await _unitOfWork.UserRepository.GetPagedAsync(pageSize, pageNumber, filter, x => x.FirstName, false);
+            var users = await _unitOfWork.UserRepository.GetPaged(pageSize, pageNumber, filter, x => x.FirstName, false);
             return new PagedResponse<List<GetUserResponse>>(_mapper.Map<List<GetUserResponse>>(users), totalItems, 200);
         }
 
         public async Task<IResponse> Register(RegistrationRequest request, string ipaddress)
         {
-            if (!await _unitOfWork.IPLimitRepository.IsIPRegisteredAsync(ipaddress))
+            if (!await _unitOfWork.IPLimitRepository.CheckIPRegistered(ipaddress))
             {
                 return new ErrorResponse(400, Messages.IPLimitRegister);
             }
 
             var checkExistUser = await _userManager.FindByEmailAsync(request.Email);
-            if (checkExistUser != null && !checkExistUser.IsDeleted)
+            if (checkExistUser != null && checkExistUser.Status != 0)
             {
                 return new ErrorResponse(400, Messages.EmailUsed);
             }
@@ -198,7 +198,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetById(string id)
         {
-            var user = await _unitOfWork.UserRepository.GetByIdAsync(id) ?? throw new NotFoundException("User id : " + id);
+            var user = await _unitOfWork.UserRepository.GetById(id) ?? throw new NotFoundException("User id : " + id);
 
             var response = _mapper.Map<GetUserResponse>(user);
             response.Roles = (await _userManager.GetRolesAsync(user)).ToArray();
@@ -216,7 +216,7 @@ namespace SocialNetwork.Business.Services.Concrete
             var updateUser = _mapper.Map<User>(request);
             updateUser.Id = requestUserId;
 
-            await _unitOfWork.UserRepository.UpdateAsync(updateUser);
+            await _unitOfWork.UserRepository.Update(updateUser);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -243,7 +243,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(404, Messages.NotFound());
             }
 
-            await _unitOfWork.UserRepository.DeleteAsync(user.Id);
+            await _unitOfWork.UserRepository.Delete(user.Id);
 
             var result = await _unitOfWork.CompleteAsync();
             if (!result)
@@ -393,7 +393,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetPhoto(string requestUserId, string targetUserId, int pageSize, int pageNumber)
         {
-            var user = await _unitOfWork.UserRepository.GetByIdAsync(targetUserId);
+            var user = await _unitOfWork.UserRepository.GetById(targetUserId);
             if (user == null)
             {
                 return new ErrorResponse(404, Messages.NotFound("User"));
@@ -401,7 +401,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
             Expression<Func<PostMedia, bool>> filter = x => x.MediaTypeId == (int)MediaTypeEnum.Image && x.UserId == targetUserId && x.Post.GroupId == null;
 
-            int totalItems = await _unitOfWork.PostMediaRepository.GetCountAsync(filter);
+            int totalItems = await _unitOfWork.PostMediaRepository.GetCount(filter);
 
             int pageCount = (int)Math.Ceiling((decimal)totalItems / pageSize);
 
@@ -411,7 +411,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.OutOfPage);
             }
 
-            var postMedias = await _unitOfWork.PostMediaRepository.GetPagedAsync(pageSize, pageNumber, filter, x => x.CreatedDate);
+            var postMedias = await _unitOfWork.PostMediaRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
 
             var result = _mapper.Map<List<GetPostMediaResponse>>(postMedias);
 
@@ -473,7 +473,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(403, Messages.Forbidden);
             }    
 
-            var post = await _unitOfWork.PostRepository.GetByIdAsync(postId);
+            var post = await _unitOfWork.PostRepository.GetById(postId);
             if (post == null || post.AuthorId != requestUserId)
             {
                 return new ErrorResponse(404, Messages.NotFound("Post"));
@@ -484,13 +484,13 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetPostCursor(string loggedUserId, string requestUserId, string? searchString, int pageSize, DateTime? cursor)
         {
-            var checkUser = await _unitOfWork.UserRepository.GetByIdAsync(requestUserId) ?? throw new NotFoundException("User id: " + requestUserId);
+            var checkUser = await _unitOfWork.UserRepository.GetById(requestUserId) ?? throw new NotFoundException("User id: " + requestUserId);
 
-            Expression<Func<Post, bool>> filter = x => x.IsDeleted == false && x.AuthorId == requestUserId && x.GroupId == null;
+            Expression<Func<Post, bool>> filter = x => x.Status == 1 && x.AuthorId == requestUserId && x.GroupId == null;
 
             if (loggedUserId != requestUserId)
             {
-                if (await _unitOfWork.FriendshipRepository.FindOneByAsync(x => (x.RequestUserId == loggedUserId && x.TargetUserId == requestUserId || x.TargetUserId == loggedUserId && x.RequestUserId == requestUserId) && x.IsDeleted == false) == null)
+                if (await _unitOfWork.FriendshipRepository.FindOneBy(x => (x.RequestUserId == loggedUserId && x.TargetUserId == requestUserId || x.TargetUserId == loggedUserId && x.RequestUserId == requestUserId) && x.Status == 1) == null)
                 {
                     filter = filter.And(x => x.Access == PostAccess.PUBLIC);
                 } 
@@ -507,10 +507,10 @@ namespace SocialNetwork.Business.Services.Concrete
 
             if (cursor != null)
             {
-                filter = filter.And(x => x.CreatedDate < cursor);
+                filter = filter.And(x => x.CreatedAt < cursor);
             }
 
-            var data = (await _unitOfWork.PostRepository.GetCursorPagedAsync(pageSize + 1, filter, x => x.CreatedDate, new Expression<Func<Post, object>>[]
+            var data = (await _unitOfWork.PostRepository.GetCursorPaged(pageSize + 1, filter, x => x.CreatedAt, new Expression<Func<Post, object>>[]
             {
                 x => x.Author,
                 x => x.PostMedias,
@@ -528,7 +528,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 data.RemoveAt(data.Count - 1);
             }
 
-            DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedDate : null;
+            DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedAt : null;
 
             if (endCursor != null)
             {
@@ -543,14 +543,14 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetPostByUser(string loggedUserId, string requestUserId, string? searchString, int pageSize, int pageNumber)
         {
-            Expression<Func<Post, bool>> filter = x => x.IsDeleted == false && x.AuthorId == requestUserId && x.GroupId == null;
+            Expression<Func<Post, bool>> filter = x => x.Status == 1 && x.AuthorId == requestUserId && x.GroupId == null;
 
             if (searchString != null)
             {
                 filter = filter.And(x => x.Content.Contains(searchString));
             }
 
-            int totalItems = await _unitOfWork.PostRepository.GetCountAsync(filter);
+            int totalItems = await _unitOfWork.PostRepository.GetCount(filter);
             int pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
 
             if (pageNumber > pageCount && pageCount != 0)
@@ -558,7 +558,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.OutOfPage);
             }    
 
-            var posts = await _unitOfWork.PostRepository.GetPagedAsync(pageSize, pageNumber, filter, x => x.CreatedDate);
+            var posts = await _unitOfWork.PostRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
             return new PagedResponse<List<GetPostResponse>>(_mapper.Map<List<GetPostResponse>>(posts), totalItems, 200);
         }
 
@@ -579,13 +579,13 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(403, Messages.Forbidden);
             }
 
-            var post = await _unitOfWork.PostRepository.FindByAsync(p => p.Id == postId && p.AuthorId == requestUserId);
+            var post = await _unitOfWork.PostRepository.FindBy(p => p.Id == postId && p.AuthorId == requestUserId);
             if (post == null)
             {
                 return new ErrorResponse(404, Messages.NotFound("Post"));
             }
 
-            await _unitOfWork.PostRepository.DeleteAsync(postId);
+            await _unitOfWork.PostRepository.Delete(postId);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -669,7 +669,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
             filter = filter.And(x => x.FriendshipTypeId == (int)FriendshipEnum.Accepted);
 
-            int totalItem = await _unitOfWork.FriendshipRepository.GetCountAsync(filter);
+            int totalItem = await _unitOfWork.FriendshipRepository.GetCount(filter);
             int pageCount = (int)Math.Ceiling((double)totalItem / pageSize);
 
             if (pageNumber > pageCount && pageCount > 0)
@@ -677,7 +677,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(404, Messages.OutOfPage);
             }
 
-            var friends = await _unitOfWork.FriendshipRepository.GetPagedAsync(pageSize, pageNumber, filter, x => x.CreatedDate);
+            var friends = await _unitOfWork.FriendshipRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
             var result = _mapper.Map<List<GetFriendshipResponse>>(friends);
 
             return new PagedResponse<List<GetFriendshipResponse>>(result, totalItem, 200);
@@ -685,7 +685,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         private async Task<bool> IsFriend(string userId1, string userId2)
         {
-            var result = await _unitOfWork.FriendshipRepository.FindOneByAsync(x => x.RequestUserId == userId1 && x.TargetUserId == userId2 || x.RequestUserId == userId1 && x.TargetUserId == userId2);
+            var result = await _unitOfWork.FriendshipRepository.FindOneBy(x => x.RequestUserId == userId1 && x.TargetUserId == userId2 || x.RequestUserId == userId1 && x.TargetUserId == userId2);
             return result != null;
         }
 
@@ -701,7 +701,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> ChangeCoverImage(string requestId, ChangeCoverImageRequest request)
         {
-            await _unitOfWork.UserRepository.UpdateCoverImageAsync(requestId, request.Url);
+            await _unitOfWork.UserRepository.UpdateCoverImage(requestId, request.Url);
             if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
 
             var data = (DataResponse<GetUserResponse>)await this.GetById(requestId);
@@ -711,7 +711,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> ChangeAvatar(string requestId, ChangeCoverImageRequest request)
         {
-            await _unitOfWork.UserRepository.UpdateAvatarAsync(requestId, request.Url);
+            await _unitOfWork.UserRepository.UpdateAvatar(requestId, request.Url);
             if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
 
             var data = (DataResponse<GetUserResponse>)await this.GetById(requestId);
@@ -725,7 +725,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> Stats(string requestUserId)
         {
-            int totalUser = await _unitOfWork.UserRepository.GetQueryable().CountAsync(x => x.IsDeleted == false);
+            int totalUser = await _unitOfWork.UserRepository.GetQueryable().CountAsync(x => x.Status == 1);
             int activingUser = _hubControl.GetActivingUser();
 
             var response = new StatsUserResponse

@@ -12,9 +12,9 @@ using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Abstract;
-using SocialNetwork.DataAccess.Enums;
+using SocialNetwork.DataAccess.Utilities.Enum;
+using SocialNetwork.DataAccess.Utilities.Roles;
 using System.Linq.Expressions;
-using SocialNetwork.DataAccess.Utilities;
 
 namespace SocialNetwork.Business.Services.Concrete
 {
@@ -52,13 +52,13 @@ namespace SocialNetwork.Business.Services.Concrete
 
             if (!await CheckPermission(requestUserId, request.PostId)) return new ErrorResponse(400, Messages.PostAccessDenied());
 
-            var post = await _unitOfWork.PostRepository.GetByIdAsync(request.PostId);
+            var post = await _unitOfWork.PostRepository.GetById(request.PostId);
 
             PostComment? parentComment = null;
 
             if (request.ParentCommentId != null)
             {
-                parentComment = await _unitOfWork.PostCommentRepository.FindOneByAsync(x => x.Id == request.ParentCommentId && !x.IsDeleted);
+                parentComment = await _unitOfWork.PostCommentRepository.FindOneBy(x => x.Id == request.ParentCommentId && x.Status == 1);
                 if (parentComment == null)
                 {
                     return new ErrorResponse(404, Messages.NotFound("Parent comment"));
@@ -70,7 +70,7 @@ namespace SocialNetwork.Business.Services.Concrete
             addComment.UserId = requestUserId;
             addComment.Path = parentComment == null ? addComment.Id.ToString() : parentComment.Path + $";{addComment.Id}";
 
-            await _unitOfWork.PostCommentRepository.AddAsync(addComment);
+            await _unitOfWork.PostCommentRepository.Add(addComment);
 
             var result = await _unitOfWork.CompleteAsync();
 
@@ -79,7 +79,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            var response = _mapper.Map<GetPostCommentResponse>(await _unitOfWork.PostCommentRepository.GetByIdAsync(addComment.Id, new Expression<Func<PostComment, object>>[]
+            var response = _mapper.Map<GetPostCommentResponse>(await _unitOfWork.PostCommentRepository.GetById(addComment.Id, new Expression<Func<PostComment, object>>[]
             {
                 x => x.User,
             }));
@@ -94,9 +94,9 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> Delete(string requestUserId, Guid id)
         {
-            var comment = await _unitOfWork.PostCommentRepository.GetByIdAsync(id) ?? throw new NotFoundException("Comment id: " + id.ToString());
+            var comment = await _unitOfWork.PostCommentRepository.GetById(id) ?? throw new NotFoundException("Comment id: " + id.ToString());
 
-            if (!await CheckOwnerComment(requestUserId, comment.UserId) && !await _unitOfWork.PostRepository.IsOwnerPostAsync(requestUserId, comment.PostId))
+            if (!await CheckOwnerComment(requestUserId, comment.UserId) && !await _unitOfWork.PostRepository.IsOwnerPost(requestUserId, comment.PostId))
             {
                 return new ErrorResponse(400, Messages.CommentNotOwner);
             }
@@ -104,7 +104,7 @@ namespace SocialNetwork.Business.Services.Concrete
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                await _unitOfWork.PostCommentRepository.DeleteAsync(id);
+                await _unitOfWork.PostCommentRepository.Delete(id);
 
                 if (!await _unitOfWork.CommitAsync())
                 {
@@ -125,14 +125,14 @@ namespace SocialNetwork.Business.Services.Concrete
         {
             if (!await CheckPermission(requestUserId, postId)) return new ErrorResponse(400, Messages.PostAccessDenied());
 
-            Expression<Func<PostComment, bool>> filter = x => !x.IsDeleted && x.PostId == postId && x.ParentCommentId == null;
+            Expression<Func<PostComment, bool>> filter = x => x.Status == 1 && x.PostId == postId && x.ParentCommentId == null;
             
             if (!string.IsNullOrEmpty(searchString))
             {
                 filter = filter.And(x => x.Content.Contains(searchString));
             }
 
-            int totalItems = await _unitOfWork.PostCommentRepository.GetCountAsync(filter);
+            int totalItems = await _unitOfWork.PostCommentRepository.GetCount(filter);
             int pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
 
             if (pageNumber > pageCount && pageCount != 0)
@@ -140,7 +140,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.OutOfPage);
             }    
 
-            var comments = await _unitOfWork.PostCommentRepository.GetPagedAsync(pageSize, pageNumber, filter, x => x.ModifiedDate);
+            var comments = await _unitOfWork.PostCommentRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
             var commentsResponse = _mapper.Map<List<GetPostCommentResponse>>(comments);
 
             return new PagedResponse<List<GetPostCommentResponse>>(commentsResponse, totalItems, 200);
@@ -150,18 +150,18 @@ namespace SocialNetwork.Business.Services.Concrete
         {
             if (!await CheckPermission(requestUserId, postId)) return new ErrorResponse(400, Messages.PostAccessDenied());
 
-            Expression<Func<PostComment, bool>> filter = x => x.PostId == postId && x.ParentCommentId == parentId && !x.IsDeleted;
+            Expression<Func<PostComment, bool>> filter = x => x.PostId == postId && x.ParentCommentId == parentId && x.Status == 1;
 
-            int totalItems = await _unitOfWork.PostCommentRepository.GetCountAsync(filter);
+            int totalItems = await _unitOfWork.PostCommentRepository.GetCount(filter);
 
             if (cursor != null)
             {
-                filter = filter.And(x => x.CreatedDate < cursor);
+                filter = filter.And(x => x.CreatedAt < cursor);
             }
 
             var comments = (await _unitOfWork
                 .PostCommentRepository
-                .GetCursorPagedAsync(pageSize + 1, filter, getNext)).ToList();
+                .GetCursorPaged(pageSize + 1, filter, getNext)).ToList();
 
             bool hasNext = false;
 
@@ -171,7 +171,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 comments.RemoveAt(comments.Count - 1);
             }
 
-            var endCursor = hasNext ? comments.LastOrDefault()?.CreatedDate : null;
+            var endCursor = hasNext ? comments.LastOrDefault()?.CreatedAt : null;
 
             if (endCursor != null)
             {
@@ -185,7 +185,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetById(string requestUserId, Guid id)
         {
-            var comment = await _unitOfWork.PostCommentRepository.GetByIdAsync(id) ?? throw new NotFoundException("Comment id: " + id.ToString());
+            var comment = await _unitOfWork.PostCommentRepository.GetById(id) ?? throw new NotFoundException("Comment id: " + id.ToString());
 
             if (!await CheckPermission(requestUserId, comment.PostId)) return new ErrorResponse(400, Messages.PostAccessDenied());
 
@@ -197,37 +197,37 @@ namespace SocialNetwork.Business.Services.Concrete
         {
             if (!await CheckPermission(requestUserId, Id)) return new ErrorResponse(400, Messages.PostAccessDenied());
 
-            int count = await _unitOfWork.PostCommentRepository.GetCountAsync(x => x.PostId == Id && x.IsDeleted == false);
+            int count = await _unitOfWork.PostCommentRepository.GetCount(x => x.PostId == Id && x.Status == 1);
 
             return new DataResponse<int>(count, 200, Messages.GetSuccessfully);
         }
 
         public async Task<IResponse> GetCountChild(string requestUserId, Guid commentId)
         {
-            var comment = await _unitOfWork.PostCommentRepository.FindOneByAsync(x => x.Id == commentId && x.Post.IsDeleted == false) ?? throw new NotFoundException("Comment id: " + commentId.ToString());
+            var comment = await _unitOfWork.PostCommentRepository.FindOneBy(x => x.Id == commentId && x.Post.Status == 1) ?? throw new NotFoundException("Comment id: " + commentId.ToString());
 
             if (!await CheckPermission(requestUserId, comment.PostId)) return new ErrorResponse(400, Messages.PostAccessDenied());
 
-            int childCount = await _unitOfWork.PostCommentRepository.GetCountAsync(x => x.ParentCommentId == commentId && x.IsDeleted == false);
+            int childCount = await _unitOfWork.PostCommentRepository.GetCount(x => x.ParentCommentId == commentId && x.Status == 1);
 
             return new DataResponse<int>(childCount, 200);
         }
 
         public async Task<IResponse> GetChild(string requestUserId, string? searchString, int pageSize, int pageNumber, Guid Id)
         {
-            var comment = await _unitOfWork.PostCommentRepository.GetByIdAsync(Id) ?? throw new NotFoundException("Comment id: " + Id.ToString());
+            var comment = await _unitOfWork.PostCommentRepository.GetById(Id) ?? throw new NotFoundException("Comment id: " + Id.ToString());
 
             if (!await CheckPermission(requestUserId, comment.PostId)) return new ErrorResponse(400, Messages.PostAccessDenied());
 
-            Expression<Func<PostComment, bool>> filter = x => x.IsDeleted == false && x.ParentCommentId == comment.Id;
+            Expression<Func<PostComment, bool>> filter = x => x.Status == 1 && x.ParentCommentId == comment.Id;
 
             if (searchString != null)
             {
                 filter.And(x => x.Content.Contains(searchString));
             }
 
-            int total = await _unitOfWork.PostCommentRepository.GetCountAsync(filter);
-            var comments = await _unitOfWork.PostCommentRepository.GetPagedAsync(pageSize, pageNumber, filter, x => x.CreatedDate);
+            int total = await _unitOfWork.PostCommentRepository.GetCount(filter);
+            var comments = await _unitOfWork.PostCommentRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
 
             var response = _mapper.Map<List<GetPostCommentResponse>>(comments);
             return new PagedResponse<List<GetPostCommentResponse>>(response, total, 200);
@@ -235,7 +235,7 @@ namespace SocialNetwork.Business.Services.Concrete
         
         public async Task<IResponse> Update(string requestUserId, Guid id, UpdatePostCommentRequest request)
         {
-            var comment = await _unitOfWork.PostCommentRepository.GetByIdAsync(id) ?? throw new NotFoundException("comment id:" + id.ToString());
+            var comment = await _unitOfWork.PostCommentRepository.GetById(id) ?? throw new NotFoundException("comment id:" + id.ToString());
 
             if (!await CheckOwnerComment(requestUserId, comment.UserId))
             {
@@ -243,14 +243,14 @@ namespace SocialNetwork.Business.Services.Concrete
             }
 
             _mapper.Map(request, comment);
-            await _unitOfWork.PostCommentRepository.UpdateAsync(comment);
+            await _unitOfWork.PostCommentRepository.Update(comment);
             
             if (!await _unitOfWork.CompleteAsync())
             {
                 return new ErrorResponse(400, Messages.UpdateError);
             }
 
-            var commentUpdated = await _unitOfWork.PostCommentRepository.GetByIdAsync(id, new Expression<Func<PostComment, object>>[]
+            var commentUpdated = await _unitOfWork.PostCommentRepository.GetById(id, new Expression<Func<PostComment, object>>[]
             {
                 x => x.User,
             });
@@ -286,13 +286,13 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetReactions(string requestUserId, Guid commentId, int pageSize, int pageNumber)
         {
-            var comment = await _unitOfWork.PostCommentRepository.GetByIdAsync(commentId) ?? throw new NotFoundException("comment id: " + commentId.ToString());
+            var comment = await _unitOfWork.PostCommentRepository.GetById(commentId) ?? throw new NotFoundException("comment id: " + commentId.ToString());
 
             if (!await CheckPermission(requestUserId, comment.PostId)) return new ErrorResponse(400, Messages.PostAccessDenied());
 
             Expression<Func<CommentReaction, bool>> filter = x => x.CommentId == commentId;
 
-            int totalItems = await _unitOfWork.CommentReactionRepository.GetCountAsync(filter);
+            int totalItems = await _unitOfWork.CommentReactionRepository.GetCount(filter);
             int pageCount = (int)Math.Ceiling((double) totalItems / pageSize);
 
             if (pageNumber > pageCount && pageCount != 0)
@@ -300,7 +300,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.OutOfPage);
             }    
 
-            var commentReactions = await _unitOfWork.CommentReactionRepository.GetPagedAsync(pageSize, pageNumber, filter, x => x.CreatedDate);
+            var commentReactions = await _unitOfWork.CommentReactionRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
             var commentReactionsResult = _mapper.Map<List<GetCommentReactionResponse>>(commentReactions);
 
             return new PagedResponse<List<GetCommentReactionResponse>>(commentReactionsResult, totalItems, 200);
@@ -308,7 +308,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetReactionById(string requestUserId, Guid commentId, int reactionId)
         {
-            var entity = await _unitOfWork.CommentReactionRepository.GetByIdAsync(commentId, requestUserId, reactionId);
+            var entity = await _unitOfWork.CommentReactionRepository.GetById(commentId, requestUserId, reactionId);
             
             if (entity == null)
             {
@@ -321,9 +321,9 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> CreateReaction(string requestUserId, Guid commentId, CreateCommentReactionRequest request)
         {
-            var comment = await _unitOfWork.PostCommentRepository.GetByIdAsync(commentId) ?? throw new NotFoundException("Comment id: " + commentId.ToString());
+            var comment = await _unitOfWork.PostCommentRepository.GetById(commentId) ?? throw new NotFoundException("Comment id: " + commentId.ToString());
 
-            var checkExist = await _unitOfWork.CommentReactionRepository.FindOneByAsync(x => x.CommentId == commentId && x.UserId == requestUserId);
+            var checkExist = await _unitOfWork.CommentReactionRepository.FindOneBy(x => x.CommentId == commentId && x.UserId == requestUserId);
             if (checkExist != null)
             {
                 return new ErrorResponse(400, Messages.ReactionExist);
@@ -333,7 +333,7 @@ namespace SocialNetwork.Business.Services.Concrete
             addEntity.CommentId = commentId;
             addEntity.UserId = requestUserId;
 
-            await _unitOfWork.CommentReactionRepository.AddAsync(addEntity);
+            await _unitOfWork.CommentReactionRepository.Add(addEntity);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -341,7 +341,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.AddError);
             }
 
-            var addedEntity = await _unitOfWork.CommentReactionRepository.GetByIdAsync(commentId, requestUserId, addEntity.ReactionId);
+            var addedEntity = await _unitOfWork.CommentReactionRepository.GetById(commentId, requestUserId, addEntity.ReactionId);
 
             var response = _mapper.Map<GetCommentReactionResponse>(addedEntity);
 
@@ -352,12 +352,12 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> UpdateReaction(string requestUserId, Guid commentId, Guid commentReactionId, CreateCommentReactionRequest request)
         {
-            var comment = await _unitOfWork.PostCommentRepository.GetByIdAsync(commentId);
+            var comment = await _unitOfWork.PostCommentRepository.GetById(commentId);
             if (comment == null)
             {
                 return new ErrorResponse(404, Messages.NotFound("Comment"));
             }
-            var reaction = await _unitOfWork.CommentReactionRepository.GetByIdAsync(commentReactionId);
+            var reaction = await _unitOfWork.CommentReactionRepository.GetById(commentReactionId);
 
             if (reaction == null)
             {
@@ -366,7 +366,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
             _mapper.Map(request, reaction);
 
-            await _unitOfWork.CommentReactionRepository.UpdateAsync(reaction);
+            await _unitOfWork.CommentReactionRepository.Update(reaction);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -379,19 +379,19 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> DeleteReaction(string requestUserId, Guid commentId, Guid commentReactionId)
         {
-            var comment = await _unitOfWork.PostCommentRepository.GetByIdAsync(commentId);
+            var comment = await _unitOfWork.PostCommentRepository.GetById(commentId);
             if (comment == null)
             {
                 return new ErrorResponse(404, Messages.NotFound("Comment"));
             }
 
-            var reaction = await _unitOfWork.CommentReactionRepository.GetByIdAsync(commentId);
+            var reaction = await _unitOfWork.CommentReactionRepository.GetById(commentId);
             if (reaction == null)
             {
                 return new ErrorResponse(404, Messages.NotFound());
             }
 
-            await _unitOfWork.CommentReactionRepository.DeleteAsync(commentReactionId);
+            await _unitOfWork.CommentReactionRepository.Delete(commentReactionId);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -405,7 +405,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         private async Task<bool> CheckPermission(string userId, Guid postId)
         {
-            var post = await _unitOfWork.PostRepository.GetByIdAsync(postId, new Expression<Func<Post, object>>[]
+            var post = await _unitOfWork.PostRepository.GetById(postId, new Expression<Func<Post, object>>[]
             {
                 x => x.Group
             }) ?? throw new NotFoundException("Post");
@@ -417,12 +417,12 @@ namespace SocialNetwork.Business.Services.Concrete
                 case PostAccess.ONLY_ME:
                     return post.AuthorId == userId;
                 case PostAccess.ONLY_FRIEND:
-                    return await _unitOfWork.FriendshipRepository.IsExistFriendshipAsync(userId, post.AuthorId);
+                    return await _unitOfWork.FriendshipRepository.ExistFriendShip(userId, post.AuthorId);
                 case PostAccess.PUBLIC:
                     return true;
                 case PostAccess.GROUP:
                     if (post.Group.IsPublic) return true;
-                    return await _unitOfWork.GroupMemberRepository.FindOneByAsync(x => x.GroupId == post.GroupId && x.UserId == userId) != null;
+                    return await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.GroupId == post.GroupId && x.UserId == userId) != null;
                 default:
                     return false;
             }
@@ -434,7 +434,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
             //if (!await _userManager.IsInRoleAsync(user, RoleName.Administrator)) return new ErrorResponse(401, Messages.UnAuthorized);
 
-            var totalComment = await _unitOfWork.PostCommentRepository.GetCountAsync(x => x.IsDeleted == false);
+            var totalComment = await _unitOfWork.PostCommentRepository.GetCount(x => x.Status == 1);
 
             var response = new StatsCommentResponse
             {

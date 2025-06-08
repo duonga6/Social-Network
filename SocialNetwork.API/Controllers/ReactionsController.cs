@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.API.Controllers.Base;
 using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.Services.Interfaces;
-using SocialNetwork.DataAccess.Utilities;
+using SocialNetwork.DataAccess.Utilities.Roles;
 
 namespace SocialNetwork.API.Controllers
 {

@@ -12,15 +12,15 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         {
         }
 
-        public async Task<bool> IsIPRegisteredAsync(string ipaddress)
+        public async Task<bool> CheckIPRegistered(string ipaddress)
         {
             var ipAddress = await _dbSet.FirstOrDefaultAsync(x => x.IpAddress == ipaddress);
 
             if (ipAddress != null)
             {
-                if (ipAddress.ModifiedDate < DateTime.UtcNow)
+                if (ipAddress.UpdatedAt.Date < DateTime.UtcNow.Date)
                 {
-                    ipAddress.ModifiedDate = DateTime.UtcNow;
+                    ipAddress.UpdatedAt = DateTime.UtcNow;
                     await _context.SaveChangesAsync();
                     return true;
                 }

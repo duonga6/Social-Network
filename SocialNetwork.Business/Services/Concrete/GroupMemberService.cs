@@ -24,9 +24,9 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> Delete(string requestId, Guid id)
         {
-            var memberDelete = await _unitOfWork.GroupMemberRepository.GetByIdAsync(id) ?? throw new NotFoundException("Member id: " + id.ToString());
+            var memberDelete = await _unitOfWork.GroupMemberRepository.GetById(id) ?? throw new NotFoundException("Member id: " + id.ToString());
 
-            var checkAdmin = await _unitOfWork.GroupMemberRepository.FindOneByAsync(x => x.UserId == requestId && x.IsAdmin && x.GroupId == memberDelete.GroupId);
+            var checkAdmin = await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.UserId == requestId && x.IsAdmin && x.GroupId == memberDelete.GroupId);
 
             if ((memberDelete.UserId != requestId && checkAdmin == null) || (memberDelete.IsAdmin && !checkAdmin.IsSuperAdmin))
             {
@@ -36,8 +36,8 @@ namespace SocialNetwork.Business.Services.Concrete
             try
             {
                 await _unitOfWork.BeginTransactionAsync();
-                await _unitOfWork.GroupMemberRepository.DeleteAsync(id);
-                await _unitOfWork.GroupRepository.ReduceMemberAsync(memberDelete.GroupId);
+                await _unitOfWork.GroupMemberRepository.Delete(id);
+                await _unitOfWork.GroupRepository.MinusMember(memberDelete.GroupId);
 
 
                 if (!await _unitOfWork.CommitAsync())
@@ -59,13 +59,13 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> Delete(string requestId, Guid groupId, string userId)
         {
-            var memberDelete = await _unitOfWork.GroupMemberRepository.FindOneByAsync(x => x.UserId == userId && x.GroupId == groupId);
+            var memberDelete = await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.UserId == userId && x.GroupId == groupId);
             if (memberDelete == null)
             {
                 return new ErrorResponse(404, Messages.NotFound("Member"));
             }
 
-            var checkAdmin = await _unitOfWork.GroupMemberRepository.FindOneByAsync(x => x.UserId == requestId && x.IsAdmin && x.GroupId == groupId);
+            var checkAdmin = await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.UserId == requestId && x.IsAdmin && x.GroupId == groupId);
 
             if (memberDelete.UserId != requestId && checkAdmin == null)
             {
@@ -81,8 +81,8 @@ namespace SocialNetwork.Business.Services.Concrete
             {
                 await _unitOfWork.BeginTransactionAsync();
 
-                await _unitOfWork.GroupRepository.ReduceMemberAsync(groupId);
-                await _unitOfWork.GroupMemberRepository.DeleteAsync(memberDelete.Id);
+                await _unitOfWork.GroupRepository.MinusMember(groupId);
+                await _unitOfWork.GroupMemberRepository.Delete(memberDelete.Id);
 
                 if (!await _unitOfWork.CommitAsync())
                 {
@@ -101,11 +101,11 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetAll(string requestId, int pageSize, int pageNumber, string? searchString, Guid groupId, MemberType memberType)
         {
-            var group = await _unitOfWork.GroupRepository.GetByIdAsync(groupId);
+            var group = await _unitOfWork.GroupRepository.GetById(groupId);
 
             if (group == null) return new ErrorResponse(404, Messages.NotFound("Group"));
 
-            if (!group.IsPublic && (await _unitOfWork.GroupMemberRepository.FindOneByAsync(x => x.UserId == requestId && x.GroupId == groupId) == null)) {
+            if (!group.IsPublic && (await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.UserId == requestId && x.GroupId == groupId) == null)) {
                 return new ErrorResponse(400, Messages.GroupAccessDenied);
             }
 
@@ -129,18 +129,18 @@ namespace SocialNetwork.Business.Services.Concrete
                     break;
             }
 
-            int totalItems = await _unitOfWork.GroupMemberRepository.GetCountAsync(filter);
+            int totalItems = await _unitOfWork.GroupMemberRepository.GetCount(filter);
             int totalPage = (int)Math.Ceiling((double)totalItems / pageSize);
 
             if (totalPage != 0 && pageNumber > totalPage) return new ErrorResponse(400, Messages.OutOfPage);
 
-            var members = await _unitOfWork.GroupMemberRepository.GetPagedAsync(pageSize, pageNumber,
+            var members = await _unitOfWork.GroupMemberRepository.GetPaged(pageSize, pageNumber,
                     new Expression<Func<GroupMember, object>>[]
                     {
                         x => x.User,
                     },
                     filter,
-                    x => x.CreatedDate
+                    x => x.CreatedAt
                 );
 
             var result = _mapper.Map<List<GetGroupMemberResponse>>(members);
@@ -150,13 +150,13 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetById(string requestId, Guid id)
         {
-            var member = await _unitOfWork.GroupMemberRepository.FindOneByAsync(x => x.Id == id && x.Group.IsDeleted == false,
+            var member = await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.Id == id && x.Group.Status == 1,
                 new Expression<Func<GroupMember, object>>[] {x => x.User, x => x.Group}
                 ) ?? throw new NotFoundException("Member");
 
             if (!member.Group.IsPublic)
             {
-                var memberCheck = await _unitOfWork.GroupMemberRepository.FindOneByAsync(x => x.GroupId == member.Group.Id && x.UserId == requestId);
+                var memberCheck = await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.GroupId == member.Group.Id && x.UserId == requestId);
                 if (memberCheck == null) return new ErrorResponse(400, Messages.GroupAccessDenied);
             }
 
@@ -168,12 +168,12 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetById(string requestId, Guid groupId, string userId)
         {
-            var member = await _unitOfWork.GroupMemberRepository.FindOneByAsync(x => x.GroupId == groupId && x.UserId == userId && x.Group.IsDeleted == false, 
+            var member = await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.GroupId == groupId && x.UserId == userId && x.Group.Status == 1, 
                 new Expression<Func<GroupMember, object>>[] { x => x.User, x => x.Group }) ?? throw new NotFoundException("Member");
 
             if (!member.Group.IsPublic)
             {
-                var memberCheck = await _unitOfWork.GroupMemberRepository.FindOneByAsync(x => x.GroupId == member.Group.Id && x.UserId == requestId);
+                var memberCheck = await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.GroupId == member.Group.Id && x.UserId == requestId);
                 if (memberCheck == null) return new ErrorResponse(400, Messages.GroupAccessDenied);
             }
 
@@ -184,16 +184,16 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> InviteUser(string requestId, CreateGroupMemberRequest request)
         {
-            var group = await _unitOfWork.GroupRepository.GetByIdAsync(request.GroupId) ?? throw new NotFoundException("Group id: " + request.GroupId.ToString());
-            var user = await _unitOfWork.UserRepository.GetByIdAsync(request.UserId) ?? throw new NotFoundException("User id: " + request.UserId);
+            var group = await _unitOfWork.GroupRepository.GetById(request.GroupId) ?? throw new NotFoundException("Group id: " + request.GroupId.ToString());
+            var user = await _unitOfWork.UserRepository.GetById(request.UserId) ?? throw new NotFoundException("User id: " + request.UserId);
 
-            var checkUserRequest = await _unitOfWork.GroupMemberRepository.FindOneByAsync(x => x.GroupId == request.GroupId && x.UserId == requestId);
+            var checkUserRequest = await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.GroupId == request.GroupId && x.UserId == requestId);
             if (checkUserRequest == null) return new ErrorResponse(400, Messages.GroupAccessDenied);
 
-            var checkUserInvite = await _unitOfWork.GroupInviteRepository.FindOneByAsync(x => x.GroupId == request.GroupId && x.UserId == request.UserId && x.CreatedId == requestId);
+            var checkUserInvite = await _unitOfWork.GroupInviteRepository.FindOneBy(x => x.GroupId == request.GroupId && x.UserId == request.UserId && x.CreatedId == requestId);
             if (checkUserInvite != null) return new ErrorResponse(400, Messages.GroupJoinRequestExist);
 
-            var checkUserJoined = await _unitOfWork.GroupMemberRepository.FindOneByAsync(x => x.GroupId == request.GroupId && x.UserId == request.UserId);
+            var checkUserJoined = await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.GroupId == request.GroupId && x.UserId == request.UserId);
             if (checkUserJoined != null) return new ErrorResponse(400, Messages.GroupJoinRequestExist);
 
             var newInvite = new GroupInvite
@@ -205,20 +205,20 @@ namespace SocialNetwork.Business.Services.Concrete
                 UserId = request.UserId,
             };
 
-            await _unitOfWork.GroupInviteRepository.AddAsync(newInvite);
+            await _unitOfWork.GroupInviteRepository.Add(newInvite);
 
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result) return new ErrorResponse(501, Messages.STWrong);
 
-            var response = await _unitOfWork.GroupInviteRepository.GetByIdAsync(newInvite.Id, new Expression<Func<GroupInvite, object>>[] { x => x.User });
+            var response = await _unitOfWork.GroupInviteRepository.GetById(newInvite.Id, new Expression<Func<GroupInvite, object>>[] { x => x.User });
             return new DataResponse<GetGroupInviteResponse>(_mapper.Map<GetGroupInviteResponse>(response), 201, Messages.CreatedSuccessfully);
         }
 
         public async Task<IResponse> GetCursor(string requestId, int pageSize, DateTime? cursor, string? searchString, Guid groupId) 
         {
-            var group = await _unitOfWork.GroupRepository.GetByIdAsync(groupId) ?? throw new NotFoundException("Group id: " + groupId.ToString());
-            if (!group.IsPublic && await _unitOfWork.GroupMemberRepository.FindOneByAsync(x => x.UserId == requestId && x.GroupId == groupId) == null) return new ErrorResponse(400, Messages.GroupAccessDenied);
+            var group = await _unitOfWork.GroupRepository.GetById(groupId) ?? throw new NotFoundException("Group id: " + groupId.ToString());
+            if (!group.IsPublic && await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.UserId == requestId && x.GroupId == groupId) == null) return new ErrorResponse(400, Messages.GroupAccessDenied);
 
             Expression<Func<GroupMember, bool>> filter = x => x.GroupId == groupId;
 
@@ -228,16 +228,16 @@ namespace SocialNetwork.Business.Services.Concrete
                 filter = filter.And(x => x.User.FirstName.Contains(searchString) || x.User.LastName.Contains(searchString));
             }
 
-            int totalItems = await _unitOfWork.GroupMemberRepository.GetCountAsync(filter);
+            int totalItems = await _unitOfWork.GroupMemberRepository.GetCount(filter);
 
-            if (cursor != null) filter = filter.And(x => x.CreatedDate < cursor);
+            if (cursor != null) filter = filter.And(x => x.CreatedAt < cursor);
 
             var data = await _unitOfWork.GroupMemberRepository.GetQueryable().AsNoTracking()
                 .Where(filter)
                 .Include(x => x.User)
                 .OrderByDescending(x => x.IsSuperAdmin)
                 .ThenByDescending(x => x.IsAdmin)
-                .ThenByDescending(x => x.CreatedDate)
+                .ThenByDescending(x => x.CreatedAt)
                 .Take(pageSize + 1)
                 .ToListAsync();
 
@@ -249,7 +249,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 data.RemoveAt(data.Count - 1);
             }
 
-            DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedDate : null;
+            DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedAt : null;
 
             var response = _mapper.Map<List<GetGroupMemberResponse>>(data);
 
@@ -262,11 +262,11 @@ namespace SocialNetwork.Business.Services.Concrete
             if (!await IsSuperAdmin(requestId, request.GroupId)) return new ErrorResponse(400, Messages.GroupAccessDenied);
 
             var checkUserJoined = await _unitOfWork.GroupMemberRepository
-                .FindOneByAsync(x => x.UserId == requestId && x.GroupId == request.GroupId && !x.IsAdmin,
+                .FindOneBy(x => x.UserId == requestId && x.GroupId == request.GroupId && !x.IsAdmin,
                 new Expression<Func<GroupMember, object>>[] { x => x.User }) ?? throw new NotFoundException("Member id: " + request.UserId);
 
             checkUserJoined.IsAdmin = true;
-            await _unitOfWork.GroupMemberRepository.UpdateAsync(checkUserJoined);
+            await _unitOfWork.GroupMemberRepository.Update(checkUserJoined);
             if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
 
             var response = _mapper.Map<GetGroupMemberResponse>(checkUserJoined);
@@ -279,11 +279,11 @@ namespace SocialNetwork.Business.Services.Concrete
             if (!await IsSuperAdmin(requestId, groupId)) return new ErrorResponse(400, Messages.GroupAccessDenied);
 
             var checkUserJoined = await _unitOfWork.GroupMemberRepository
-                .FindOneByAsync(x => x.UserId == requestId && x.GroupId == groupId && !x.IsAdmin,
+                .FindOneBy(x => x.UserId == requestId && x.GroupId == groupId && !x.IsAdmin,
                 new Expression<Func<GroupMember, object>>[] { x => x.User }) ?? throw new NotFoundException("Member id: " + userId);
 
             checkUserJoined.IsAdmin = false;
-            await _unitOfWork.GroupMemberRepository.UpdateAsync(checkUserJoined);
+            await _unitOfWork.GroupMemberRepository.Update(checkUserJoined);
             if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
 
             var response = _mapper.Map<GetGroupMemberResponse>(checkUserJoined);
@@ -294,12 +294,12 @@ namespace SocialNetwork.Business.Services.Concrete
         public async Task<IResponse> DeleteAdmin(string requestId, Guid memberId)
         {
             var member = await _unitOfWork.GroupMemberRepository
-                .FindOneByAsync(x => x.Id == memberId, new Expression<Func<GroupMember, object>>[] { x => x.User }) ?? throw new NotFoundException("Member id: " + memberId.ToString());
+                .FindOneBy(x => x.Id == memberId, new Expression<Func<GroupMember, object>>[] { x => x.User }) ?? throw new NotFoundException("Member id: " + memberId.ToString());
 
             if (!await IsSuperAdmin(requestId, member.GroupId)) return new ErrorResponse(400, Messages.GroupAccessDenied);
 
             member.IsAdmin = false;
-            await _unitOfWork.GroupMemberRepository.UpdateAsync(member);
+            await _unitOfWork.GroupMemberRepository.Update(member);
             if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
 
             var response = _mapper.Map<GetGroupMemberResponse>(member);
@@ -310,12 +310,12 @@ namespace SocialNetwork.Business.Services.Concrete
         public async Task<IResponse> CreateAdmin(string requestId, Guid memberId)
         {
             var member = await _unitOfWork.GroupMemberRepository
-                .FindOneByAsync(x => x.Id == memberId, new Expression<Func<GroupMember, object>>[] { x => x.User }) ?? throw new NotFoundException("Member id: " + memberId.ToString());
+                .FindOneBy(x => x.Id == memberId, new Expression<Func<GroupMember, object>>[] { x => x.User }) ?? throw new NotFoundException("Member id: " + memberId.ToString());
 
             if (!await IsSuperAdmin(requestId, member.GroupId)) return new ErrorResponse(400, Messages.GroupAccessDenied);
 
             member.IsAdmin = true;
-            await _unitOfWork.GroupMemberRepository.UpdateAsync(member);
+            await _unitOfWork.GroupMemberRepository.Update(member);
             if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
 
             var response = _mapper.Map<GetGroupMemberResponse>(member);
@@ -325,7 +325,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         private async Task<bool> IsSuperAdmin(string userId, Guid groupId)
         {
-            return (await _unitOfWork.GroupMemberRepository.FindOneByAsync(x => x.UserId == userId && x.GroupId == groupId && x.IsSuperAdmin) != null);
+            return (await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.UserId == userId && x.GroupId == groupId && x.IsSuperAdmin) != null);
         }
 
     }

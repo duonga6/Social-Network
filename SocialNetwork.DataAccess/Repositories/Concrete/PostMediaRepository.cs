@@ -12,13 +12,13 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         {
         }
 
-        public override async Task UpdateAsync(PostMedia media)
+        public override async Task Update(PostMedia media)
         {
             var entity = await _dbSet.FirstOrDefaultAsync(x => x.Id == media.Id);
             if (entity != null)
             {
                 entity.Url = media.Url;
-                entity.ModifiedDate = DateTime.UtcNow;
+                entity.UpdatedAt = DateTime.UtcNow;
             }
         }
     }

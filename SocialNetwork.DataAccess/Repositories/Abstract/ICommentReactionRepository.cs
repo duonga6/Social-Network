@@ -4,7 +4,7 @@ namespace SocialNetwork.DataAccess.Repositories.Abstract
 {
     public interface ICommentReactionRepository : IGenericRepository<CommentReaction, Guid>
     {
-        Task<CommentReaction> GetByIdAsync(Guid commentId, string userId, int reactionId);
-        Task<ICollection<CommentReaction>> GetByCommentAsync(Guid commentId);
+        Task<CommentReaction> GetById(Guid commentId, string userId, int reactionId);
+        Task<ICollection<CommentReaction>> GetByComment(Guid commentId);
     }
 }

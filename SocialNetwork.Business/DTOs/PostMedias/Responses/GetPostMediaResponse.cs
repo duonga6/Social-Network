@@ -7,6 +7,6 @@
         public int MediaTypeId { set; get; }
         public string Url { get; set; } = string.Empty;
         public Guid PostId { set; get; }
-        public DateTime CreatedDate { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace SocialNetwork.DataAccess.Entities
 {
-    public class Friendship : EntityAuditBase<Guid>
+    public class Friendship : BaseEntity<Guid>
     {
         public string RequestUserId { get; set; }
         public string TargetUserId { get; set; }

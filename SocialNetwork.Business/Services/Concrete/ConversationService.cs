@@ -13,9 +13,8 @@ using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Abstract;
-using SocialNetwork.DataAccess.Enums;
+using SocialNetwork.DataAccess.Utilities.Enum;
 using System.Linq.Expressions;
-using SocialNetwork.Business.Utilities;
 
 namespace SocialNetwork.Business.Services.Concrete
 {
@@ -32,11 +31,11 @@ namespace SocialNetwork.Business.Services.Concrete
         {
             if (request.UserIds.Count == 1)
             {
-                var checkPrivateConversation = await _unitOfWork.ConversationRepository.FindOneByAsync(
+                var checkPrivateConversation = await _unitOfWork.ConversationRepository.FindOneBy(
                     x => x.Type == ConversationType.PRIVATE &&
-                    x.IsDeleted == false && 
-                    x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.IsDeleted == false) &&
-                    x.ConversationParticipants.Any(cp => cp.UserId == request.UserIds[0] && cp.IsDeleted == false));
+                    x.Status == 1 && 
+                    x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.Status == 1) &&
+                    x.ConversationParticipants.Any(cp => cp.UserId == request.UserIds[0] && cp.Status == 1));
 
                 if (checkPrivateConversation != null)
                 {
@@ -45,7 +44,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 }
             }
 
-            var requestUser = await _unitOfWork.UserRepository.GetByIdAsync(requestId);
+            var requestUser = await _unitOfWork.UserRepository.GetById(requestId);
 
             var listParticipants = new List<ConversationParticipant>
             {
@@ -63,7 +62,7 @@ namespace SocialNetwork.Business.Services.Concrete
             {
                 if (uid == requestId) continue;
 
-                var user = await _unitOfWork.UserRepository.GetByIdAsync(uid) ?? throw new NotFoundException("User id: " + uid);
+                var user = await _unitOfWork.UserRepository.GetById(uid) ?? throw new NotFoundException("User id: " + uid);
                 listParticipants.Add(new()
                 {
                     UserId = user.Id,
@@ -81,7 +80,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 ConversationParticipants = listParticipants,
             };
 
-            await _unitOfWork.ConversationRepository.AddAsync(newConversation);
+            await _unitOfWork.ConversationRepository.Add(newConversation);
             if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
 
             var conversationCreated = (DataResponse<GetConversationResponse>)await this.GetById(requestId, newConversation.Id);
@@ -96,16 +95,16 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> Delete(string requestId, Guid conversationId)
         {
-            var conversation = await _unitOfWork.ConversationRepository.FindOneByAsync(x =>
+            var conversation = await _unitOfWork.ConversationRepository.FindOneBy(x =>
                 x.Id == conversationId &&
-                x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.IsSuperAdmin && cp.IsDeleted == false)
+                x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.IsSuperAdmin && cp.Status == 1)
             ) ?? throw new NotFoundException("Conversation id: " + conversationId.ToString());
 
-            await _unitOfWork.ConversationRepository.DeleteAsync(conversationId);
+            await _unitOfWork.ConversationRepository.Delete(conversationId);
             var result = await _unitOfWork.CompleteAsync();
             if (!result) throw new NoDataChangeException();
 
-            var conversationParticipantIds = (await _unitOfWork.ConversationParticipantRepository.FindByAsync(x => x.ConversationId == conversation.Id && x.IsDeleted == false)).Select(x => x.UserId).ToList();
+            var conversationParticipantIds = (await _unitOfWork.ConversationParticipantRepository.FindBy(x => x.ConversationId == conversation.Id && x.Status == 1)).Select(x => x.UserId).ToList();
 
             Task sendNotitication = Task.Run(async () =>
             {
@@ -118,22 +117,22 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetById(string requestId, Guid conversationId)
         {
-            var conversation = await _unitOfWork.ConversationRepository.FindOneByAsync(x =>
+            var conversation = await _unitOfWork.ConversationRepository.FindOneBy(x =>
                 x.Id == conversationId &&
-                x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.IsDeleted == false)
+                x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.Status == 1)
             ) ?? throw new NotFoundException("Conversation id: " + conversationId.ToString());
 
-            var lastMessage = await _unitOfWork.MessageRepository.GetPagedAsync(1, 1, new Expression<Func<Message, object>>[]
+            var lastMessage = await _unitOfWork.MessageRepository.GetPaged(1, 1, new Expression<Func<Message, object>>[]
             {
                 x => x.User
-            }, x => x.ConversationId == conversation.Id, x => x.CreatedDate);
+            }, x => x.ConversationId == conversation.Id, x => x.CreatedAt);
             conversation.Messages = lastMessage.ToList();
 
             var response = _mapper.Map<GetConversationResponse>(conversation);
 
             if (conversation.Type == ConversationType.PRIVATE)
             {
-                var participant = await _unitOfWork.ConversationParticipantRepository.FindOneByAsync(x => x.ConversationId == conversation.Id && x.UserId != requestId, new Expression<Func<ConversationParticipant, object>>[]
+                var participant = await _unitOfWork.ConversationParticipantRepository.FindOneBy(x => x.ConversationId == conversation.Id && x.UserId != requestId, new Expression<Func<ConversationParticipant, object>>[]
                 {
                     x => x.User
                 });
@@ -145,10 +144,10 @@ namespace SocialNetwork.Business.Services.Concrete
                 if (conversation.Name == null || conversation.Image == null)
                 {
 
-                    var participants = await _unitOfWork.ConversationParticipantRepository.GetPagedAsync(2, 1, new Expression<Func<ConversationParticipant, object>>[]
+                    var participants = await _unitOfWork.ConversationParticipantRepository.GetPaged(2, 1, new Expression<Func<ConversationParticipant, object>>[]
                     {
                     x => x.User
-                    }, x => x.ConversationId == conversation.Id, x => x.CreatedDate);
+                    }, x => x.ConversationId == conversation.Id, x => x.CreatedAt);
                     response.Name = string.Join(", ", participants.Select(x => x.User.FirstName));
 
                     if (conversation.Image == null)
@@ -168,7 +167,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetConversation(string requestId, int pageSize, string? searchString, DateTime? cursor, ConversationType? type)
         {
-            Expression<Func<Conversation, bool>> filter = x => x.IsDeleted == false && x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.IsDeleted == false);
+            Expression<Func<Conversation, bool>> filter = x => x.Status == 1 && x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.Status == 1);
 
             if (type != null)
             {
@@ -182,10 +181,10 @@ namespace SocialNetwork.Business.Services.Concrete
 
             if (cursor != null)
             {
-                filter = filter.And(x => x.ModifiedDate < cursor);
+                filter = filter.And(x => x.UpdatedAt < cursor);
             }
 
-            var data = (await _unitOfWork.ConversationRepository.GetCursorPagedAsync(pageSize + 1, filter, x => x.ModifiedDate)).ToList();
+            var data = (await _unitOfWork.ConversationRepository.GetCursorPaged(pageSize + 1, filter, x => x.UpdatedAt)).ToList();
 
             bool hasNext = false;
 
@@ -195,7 +194,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 data.RemoveAt(data.Count - 1);
             }
 
-            DateTime? endCursor = hasNext ? data.LastOrDefault()?.ModifiedDate : null;
+            DateTime? endCursor = hasNext ? data.LastOrDefault()?.UpdatedAt : null;
 
             if (endCursor != null)
             {
@@ -206,11 +205,11 @@ namespace SocialNetwork.Business.Services.Concrete
 
             foreach (var conversation in data)
             {
-                var lastMessage = await _unitOfWork.MessageRepository.GetPagedAsync(1, 1, new Expression<Func<Message, object>>[]
+                var lastMessage = await _unitOfWork.MessageRepository.GetPaged(1, 1, new Expression<Func<Message, object>>[]
                 {
                     x => x.User,
                     x => x.Participant
-                }, x => x.ConversationId == conversation.Id, x => x.CreatedDate);
+                }, x => x.ConversationId == conversation.Id, x => x.CreatedAt);
 
                 conversation.Messages = lastMessage.ToList();
 
@@ -218,7 +217,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
                 if (mappedConversation.Type == ConversationType.PRIVATE)
                 {
-                    var user = await _unitOfWork.ConversationParticipantRepository.FindOneByAsync(
+                    var user = await _unitOfWork.ConversationParticipantRepository.FindOneBy(
                         x => x.ConversationId == conversation.Id && x.UserId != requestId,
                         new Expression<Func<ConversationParticipant, object>>[] { x => x.User }) ?? throw new NotFoundException("User conversation");
                     mappedConversation.Images = new() { user.User.AvatarUrl };
@@ -229,10 +228,10 @@ namespace SocialNetwork.Business.Services.Concrete
                     if (string.IsNullOrEmpty(conversation.Name) || string.IsNullOrEmpty(conversation.Image))
                     {
 
-                        var participants = await _unitOfWork.ConversationParticipantRepository.GetPagedAsync(2, 1, new Expression<Func<ConversationParticipant, object>>[]
+                        var participants = await _unitOfWork.ConversationParticipantRepository.GetPaged(2, 1, new Expression<Func<ConversationParticipant, object>>[]
                         {
                             x => x.User
-                        }, x => x.ConversationId == conversation.Id, x => x.CreatedDate);
+                        }, x => x.ConversationId == conversation.Id, x => x.CreatedAt);
 
                         mappedConversation.Name ??= string.Join(", ", participants.Select(x => x.User.FirstName));
 
@@ -248,8 +247,8 @@ namespace SocialNetwork.Business.Services.Concrete
 
                     if (lastMessage.Count > 0)
                     {
-                        var messageSeen = await _unitOfWork.MessageMemberReadRepository.FindOneByAsync(x => x.ConversationId == conversation.Id && x.UserId == requestId && x.MessageId == lastMessage.First().Id);
-                        mappedConversation.LastMessage.ReadedAt = messageSeen?.CreatedDate;
+                        var messageSeen = await _unitOfWork.MessageMemberReadRepository.FindOneBy(x => x.ConversationId == conversation.Id && x.UserId == requestId && x.MessageId == lastMessage.First().Id);
+                        mappedConversation.LastMessage.ReadedAt = messageSeen?.CreatedAt;
                     }
 
                 }
@@ -267,7 +266,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.BadRequest);
             }
 
-            var conversation = await _unitOfWork.ConversationRepository.FindOneByAsync(x =>
+            var conversation = await _unitOfWork.ConversationRepository.FindOneBy(x =>
                 x.Id == conversationId &&
                 x.ConversationParticipants.Any(cp => cp.UserId == requestId)
             ) ?? throw new NotFoundException("Conversation id :" + conversationId.ToString());
@@ -282,13 +281,13 @@ namespace SocialNetwork.Business.Services.Concrete
                 conversation.Image = request.Image;
             }
 
-            await _unitOfWork.ConversationRepository.UpdateAsync(conversation);
+            await _unitOfWork.ConversationRepository.Update(conversation);
             if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
 
             var conversationUpdated = (DataResponse<GetConversationResponse>)await this.GetById(requestId, conversationId);
 
 
-            var participant = await _unitOfWork.ConversationParticipantRepository.GetConversationParticipantIdAsync(conversation.Id);
+            var participant = await _unitOfWork.ConversationParticipantRepository.GetConversationParticipantId(conversation.Id);
 
             if (!string.IsNullOrEmpty(request.Name))
             {
@@ -312,14 +311,14 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetByUserId(string requestId, string userId)
         {
-            var user = await _unitOfWork.UserRepository.GetByIdAsync(userId) ?? throw new NotFoundException("User id: " + userId);
+            var user = await _unitOfWork.UserRepository.GetById(userId) ?? throw new NotFoundException("User id: " + userId);
 
             var conversation = await _unitOfWork.ConversationRepository
-                .FindOneByAsync(x => 
+                .FindOneBy(x => 
                     x.Type == ConversationType.PRIVATE &&
-                    x.IsDeleted == false &&
-                    x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.IsDeleted == false) && 
-                    x.ConversationParticipants.Any(cp => cp.UserId == userId && cp.IsDeleted == false));
+                    x.Status == 1 &&
+                    x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.Status == 1) && 
+                    x.ConversationParticipants.Any(cp => cp.UserId == userId && cp.Status == 1));
 
             if (conversation == null)
             {
@@ -339,22 +338,22 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> AddParticipant(string requestId, Guid id, CreateParticipantRequest request)
         {
-            var conversation = await _unitOfWork.ConversationRepository.FindOneByAsync(x =>
+            var conversation = await _unitOfWork.ConversationRepository.FindOneBy(x =>
                 x.Id == id &&
-                x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.IsDeleted == false)) ?? throw new NotFoundException("Conversation id: " + id.ToString());
+                x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.Status == 1)) ?? throw new NotFoundException("Conversation id: " + id.ToString());
 
             var listParticipants = new List<ConversationParticipant>();
 
             foreach (var userId in request.UserIds)
             {
-                var user = await _unitOfWork.UserRepository.GetByIdAsync(userId) ?? throw new NotFoundException("User userId: " + userId);
-                var checkExistParticipant = await _unitOfWork.ConversationParticipantRepository.FindOneByAsync(x => x.ConversationId == id && x.UserId == userId);
+                var user = await _unitOfWork.UserRepository.GetById(userId) ?? throw new NotFoundException("User userId: " + userId);
+                var checkExistParticipant = await _unitOfWork.ConversationParticipantRepository.FindOneBy(x => x.ConversationId == id && x.UserId == userId);
 
-                if (checkExistParticipant != null && checkExistParticipant.IsDeleted == false) continue;
+                if (checkExistParticipant != null && checkExistParticipant.Status == 1) continue;
 
-                if (checkExistParticipant != null && checkExistParticipant.IsDeleted == true)
+                if (checkExistParticipant != null && checkExistParticipant.Status == 0)
                 {
-                    await _unitOfWork.ConversationParticipantRepository.AddParticipantExistedAsync(checkExistParticipant.Id);
+                    await _unitOfWork.ConversationParticipantRepository.AddParticipantExisted(checkExistParticipant.Id);
                 } 
                 else
                 {
@@ -367,7 +366,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 }
             }
 
-            await _unitOfWork.ConversationParticipantRepository.AddRangeAsync(listParticipants);
+            await _unitOfWork.ConversationParticipantRepository.AddRange(listParticipants);
             if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
 
 
@@ -381,15 +380,15 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetParticipant(string requestId, Guid id, int pageSize, int pageNumber, string? searchString)
         {
-            var conversation = await _unitOfWork.ConversationRepository.GetByIdAsync(id) ?? throw new NotFoundException("Conversation id: " + id.ToString());
+            var conversation = await _unitOfWork.ConversationRepository.GetById(id) ?? throw new NotFoundException("Conversation id: " + id.ToString());
 
-            var checkParticipant = await _unitOfWork.ConversationParticipantRepository.FindOneByAsync(x =>
+            var checkParticipant = await _unitOfWork.ConversationParticipantRepository.FindOneBy(x =>
                 x.ConversationId == id &&
-                x.UserId == requestId && x.IsDeleted == false);
+                x.UserId == requestId && x.Status == 1);
 
             if (checkParticipant == null) return new ErrorResponse(400, Messages.BadRequest);
 
-            Expression<Func<ConversationParticipant, bool>> filter = x => x.ConversationId == id && x.IsDeleted == false;
+            Expression<Func<ConversationParticipant, bool>> filter = x => x.ConversationId == id && x.Status == 1;
 
             if (!string.IsNullOrWhiteSpace(searchString))
             {
@@ -397,15 +396,15 @@ namespace SocialNetwork.Business.Services.Concrete
                 filter = filter.And( x => x.UserContactName.Contains(searchString));
             }
 
-            int totalItems = await _unitOfWork.ConversationParticipantRepository.GetCountAsync(filter);
+            int totalItems = await _unitOfWork.ConversationParticipantRepository.GetCount(filter);
             int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
             if (pageNumber > totalPages && totalPages > 0) return new ErrorResponse(400, Messages.OutOfPage);
 
-            var data = await _unitOfWork.ConversationParticipantRepository.GetPagedAsync(pageSize, pageNumber, new Expression<Func<ConversationParticipant, object>>[]
+            var data = await _unitOfWork.ConversationParticipantRepository.GetPaged(pageSize, pageNumber, new Expression<Func<ConversationParticipant, object>>[]
             {
                 x => x.User,
-            }, filter, x => x.CreatedDate, false);
+            }, filter, x => x.CreatedAt, false);
 
             var response = _mapper.Map<List<GetConversationParticipantResponse>>(data);
 
@@ -414,15 +413,15 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetParticipantByUserId(string requestId, Guid id, string userId)
         {
-            var conversation = await _unitOfWork.ConversationRepository.GetByIdAsync(id) ?? throw new NotFoundException("Conversation id: " + id.ToString());
+            var conversation = await _unitOfWork.ConversationRepository.GetById(id) ?? throw new NotFoundException("Conversation id: " + id.ToString());
 
-            var checkParticipant = await _unitOfWork.ConversationParticipantRepository.FindOneByAsync(x =>
+            var checkParticipant = await _unitOfWork.ConversationParticipantRepository.FindOneBy(x =>
                 x.ConversationId == id &&
-                x.UserId == requestId && x.IsDeleted == false);
+                x.UserId == requestId && x.Status == 1);
 
             if (checkParticipant == null) return new ErrorResponse(400, Messages.BadRequest);
 
-            var participant = await _unitOfWork.ConversationParticipantRepository.FindOneByAsync(x => x.ConversationId == id && x.UserId == userId, new Expression<Func<ConversationParticipant, object>>[]
+            var participant = await _unitOfWork.ConversationParticipantRepository.FindOneBy(x => x.ConversationId == id && x.UserId == userId, new Expression<Func<ConversationParticipant, object>>[]
             {
                 x => x.User,
             }) ?? throw new NotFoundException("Participant with user id: " + userId);
@@ -433,7 +432,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetParticipantById(string requestId, Guid id, Guid participantId)
         {
-            var checkParticipantMember = await _unitOfWork.ConversationParticipantRepository.FindOneByAsync(x => x.ConversationId == id && x.UserId == requestId && x.IsDeleted == false);
+            var checkParticipantMember = await _unitOfWork.ConversationParticipantRepository.FindOneBy(x => x.ConversationId == id && x.UserId == requestId && x.Status == 1);
             if (checkParticipantMember == null)
             {
                 return new ErrorResponse(400, Messages.BadRequest);
@@ -441,7 +440,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
 
             var response = _mapper.Map<GetConversationParticipantResponse>(
-            await _unitOfWork.ConversationParticipantRepository.FindOneByAsync(x => x.Id == participantId && x.ConversationId == id && x.IsDeleted == false, new Expression<Func<ConversationParticipant, object>>[]
+            await _unitOfWork.ConversationParticipantRepository.FindOneBy(x => x.Id == participantId && x.ConversationId == id && x.Status == 1, new Expression<Func<ConversationParticipant, object>>[]
                 {
                     x => x.User,
                 })
@@ -452,14 +451,14 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> RemoveParticipant(string requestId, Guid id, Guid participantId)
         {
-            var checkParticipantMember = await _unitOfWork.ConversationParticipantRepository.FindOneByAsync(x => x.ConversationId == id && x.UserId == requestId && x.IsDeleted == false);
+            var checkParticipantMember = await _unitOfWork.ConversationParticipantRepository.FindOneBy(x => x.ConversationId == id && x.UserId == requestId && x.Status == 1);
 
             if (checkParticipantMember == null)
             {
                 return new ErrorResponse(400, Messages.GroupAccessDenied);
             }
 
-            var participantRemove = await _unitOfWork.ConversationParticipantRepository.GetByIdAsync(participantId) ?? throw new NotFoundException("Participant id: " + participantId.ToString());
+            var participantRemove = await _unitOfWork.ConversationParticipantRepository.GetById(participantId) ?? throw new NotFoundException("Participant id: " + participantId.ToString());
 
             if (participantRemove.UserId != requestId)
             {
@@ -468,17 +467,17 @@ namespace SocialNetwork.Business.Services.Concrete
                 if (participantRemove.IsSuperAdmin || (participantRemove.IsAdmin && !checkParticipantMember.IsSuperAdmin)) return new ErrorResponse(400, Messages.GroupAccessDenied);
             }
 
+            await _unitOfWork.BeginTransactionAsync();
 
             try
             {
-                await _unitOfWork.BeginTransactionAsync();
-                await _unitOfWork.ConversationParticipantRepository.DeleteAsync(participantId);
+                await _unitOfWork.ConversationParticipantRepository.Delete(participantId);
                 if (participantRemove.IsSuperAdmin)
                 {
-                    var lastAdmin = (await _unitOfWork.ConversationParticipantRepository.GetPagedAsync(1, 1, x => x.ConversationId == id && x.IsAdmin && !x.IsSuperAdmin, x => x.CreatedDate, false)).ToList();
+                    var lastAdmin = (await _unitOfWork.ConversationParticipantRepository.GetPaged(1, 1, x => x.ConversationId == id && x.IsAdmin && !x.IsSuperAdmin, x => x.CreatedAt, false)).ToList();
                     if (lastAdmin.Count == 0)
                     {
-                        var lastMember = (await _unitOfWork.ConversationParticipantRepository.GetPagedAsync(1, 1, x => x.ConversationId == id && !x.IsAdmin && !x.IsSuperAdmin, x => x.CreatedDate, false)).ToList();
+                        var lastMember = (await _unitOfWork.ConversationParticipantRepository.GetPaged(1, 1, x => x.ConversationId == id && !x.IsAdmin && !x.IsSuperAdmin, x => x.CreatedAt, false)).ToList();
 
                         if (lastMember.Count == 0)
                         {
@@ -488,13 +487,13 @@ namespace SocialNetwork.Business.Services.Concrete
                         {
                             lastMember[0].IsAdmin = true;
                             lastMember[0].IsSuperAdmin = true;
-                            await _unitOfWork.ConversationParticipantRepository.UpdateAsync(lastMember[0]);
+                            await _unitOfWork.ConversationParticipantRepository.Update(lastMember[0]);
                         }
                     }
                     else
                     {
                         lastAdmin[0].IsSuperAdmin = true;
-                        await _unitOfWork.ConversationParticipantRepository.UpdateAsync(lastAdmin[0]);
+                        await _unitOfWork.ConversationParticipantRepository.Update(lastAdmin[0]);
                     }
                 }
                 if (!await _unitOfWork.CommitAsync()) throw new NoDataChangeException();
@@ -517,21 +516,21 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> UpdateParticipant(string requestId, Guid id, Guid participantId, UpdateParticipantRequest request)
         {
-            var checkParticipantMember = await _unitOfWork.ConversationParticipantRepository.FindOneByAsync(x => x.ConversationId == id && x.UserId == requestId && x.IsDeleted == false);
+            var checkParticipantMember = await _unitOfWork.ConversationParticipantRepository.FindOneBy(x => x.ConversationId == id && x.UserId == requestId && x.Status == 1);
 
             if (checkParticipantMember == null)
             {
                 return new ErrorResponse(400, Messages.BadRequest);
             }
 
-            var participant = await _unitOfWork.ConversationParticipantRepository.FindOneByAsync(x => x.Id == participantId && x.ConversationId == id) ?? throw new NotFoundException("Participant id: " + participantId.ToString());
+            var participant = await _unitOfWork.ConversationParticipantRepository.FindOneBy(x => x.Id == participantId && x.ConversationId == id) ?? throw new NotFoundException("Participant id: " + participantId.ToString());
 
             participant.UserContactName = request.Name;
 
-            await _unitOfWork.ConversationParticipantRepository.UpdateAsync(participant);
+            await _unitOfWork.ConversationParticipantRepository.Update(participant);
             if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
 
-            var updatedParticipant = await _unitOfWork.ConversationParticipantRepository.GetByIdAsync(participantId, new Expression<Func<ConversationParticipant, object>>[]
+            var updatedParticipant = await _unitOfWork.ConversationParticipantRepository.GetById(participantId, new Expression<Func<ConversationParticipant, object>>[]
             {
                 x => x.User
             });
@@ -542,9 +541,9 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetAdmin(string requestId, Guid id, int pageSize, int pageNumber, string? searchString)
         {
-            var conversation = await _unitOfWork.ConversationRepository.GetByIdAsync(id) ?? throw new NotFoundException("Conversation id: " + id.ToString());
+            var conversation = await _unitOfWork.ConversationRepository.GetById(id) ?? throw new NotFoundException("Conversation id: " + id.ToString());
 
-            var checkAccess = await _unitOfWork.ConversationParticipantRepository.FindOneByAsync(x => x.ConversationId == id && x.UserId == requestId  && x.IsDeleted == false);
+            var checkAccess = await _unitOfWork.ConversationParticipantRepository.FindOneBy(x => x.ConversationId == id && x.UserId == requestId  && x.Status == 1);
 
             if (checkAccess == null) return new ErrorResponse(400, Messages.BadRequest);
 
@@ -555,15 +554,15 @@ namespace SocialNetwork.Business.Services.Concrete
                 filter = x => x.UserContactName.Contains(searchString.Trim());
             }
 
-            int totalItems = await _unitOfWork.ConversationParticipantRepository.GetCountAsync(filter);
+            int totalItems = await _unitOfWork.ConversationParticipantRepository.GetCount(filter);
             int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
             if (pageNumber > totalPages && totalPages > 0) return new ErrorResponse(400, Messages.OutOfPage);
 
-            var data = await _unitOfWork.ConversationParticipantRepository.GetPagedAsync(pageSize, pageNumber, new Expression<Func<ConversationParticipant, object>>[]
+            var data = await _unitOfWork.ConversationParticipantRepository.GetPaged(pageSize, pageNumber, new Expression<Func<ConversationParticipant, object>>[]
             {
                 x => x.User,
-            }, filter, x => x.CreatedDate, false);
+            }, filter, x => x.CreatedAt, false);
 
             var response = _mapper.Map<List<GetConversationParticipantResponse>>(data);
 
@@ -572,20 +571,20 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> AddAdmin(string requestId, Guid id, CreateConversationAdminRequest request)
         {
-            var conversation = await _unitOfWork.ConversationRepository.GetByIdAsync(id) ?? throw new NotFoundException("Conversation id: " + id.ToString());
+            var conversation = await _unitOfWork.ConversationRepository.GetById(id) ?? throw new NotFoundException("Conversation id: " + id.ToString());
 
-            var checkAccess = await _unitOfWork.ConversationParticipantRepository.FindOneByAsync(x => x.ConversationId == id && x.UserId == requestId && x.IsSuperAdmin);
+            var checkAccess = await _unitOfWork.ConversationParticipantRepository.FindOneBy(x => x.ConversationId == id && x.UserId == requestId && x.IsSuperAdmin);
 
             if (checkAccess == null) return new ErrorResponse(400, Messages.BadRequest);
 
-            var participant = await _unitOfWork.ConversationParticipantRepository.GetByIdAsync(request.ParticipantId);
+            var participant = await _unitOfWork.ConversationParticipantRepository.GetById(request.ParticipantId);
             if (participant.IsAdmin) return new ErrorResponse(400, Messages.ParticipantAdminExisted);
 
             participant.IsAdmin = true;
-            await _unitOfWork.ConversationParticipantRepository.UpdateAsync(participant);
+            await _unitOfWork.ConversationParticipantRepository.Update(participant);
             if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
 
-            var response = _mapper.Map<GetConversationParticipantResponse>(await _unitOfWork.ConversationParticipantRepository.GetByIdAsync(id, new Expression<Func<ConversationParticipant, object>>[]
+            var response = _mapper.Map<GetConversationParticipantResponse>(await _unitOfWork.ConversationParticipantRepository.GetById(id, new Expression<Func<ConversationParticipant, object>>[]
             {
                 x => x.User
             }));
@@ -595,20 +594,20 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> RemoveAdmin(string requestId, Guid id, Guid participantId)
         {
-            var conversation = await _unitOfWork.ConversationRepository.GetByIdAsync(id) ?? throw new NotFoundException("Conversation id: " + id.ToString());
+            var conversation = await _unitOfWork.ConversationRepository.GetById(id) ?? throw new NotFoundException("Conversation id: " + id.ToString());
 
-            var checkAccess = await _unitOfWork.ConversationParticipantRepository.FindOneByAsync(x => x.ConversationId == id && x.UserId == requestId && x.IsSuperAdmin);
+            var checkAccess = await _unitOfWork.ConversationParticipantRepository.FindOneBy(x => x.ConversationId == id && x.UserId == requestId && x.IsSuperAdmin);
 
             if (checkAccess == null) return new ErrorResponse(400, Messages.BadRequest);
 
-            var participant = await _unitOfWork.ConversationParticipantRepository.GetByIdAsync(participantId);
+            var participant = await _unitOfWork.ConversationParticipantRepository.GetById(participantId);
             if (!participant.IsAdmin) return new ErrorResponse(400, Messages.ParticipantAdminNotExisted);
 
             participant.IsAdmin = false;
-            await _unitOfWork.ConversationParticipantRepository.UpdateAsync(participant);
+            await _unitOfWork.ConversationParticipantRepository.Update(participant);
             if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
 
-            var response = _mapper.Map<GetConversationParticipantResponse>(await _unitOfWork.ConversationParticipantRepository.GetByIdAsync(id, new Expression<Func<ConversationParticipant, object>>[]
+            var response = _mapper.Map<GetConversationParticipantResponse>(await _unitOfWork.ConversationParticipantRepository.GetById(id, new Expression<Func<ConversationParticipant, object>>[]
             {
                 x => x.User
             }));
@@ -619,9 +618,9 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetMessage(string requestId, Guid id, int pageSize, DateTime? cursor, string? searchString)
         {
-            var conversation = await _unitOfWork.ConversationRepository.FindOneByAsync(x =>
+            var conversation = await _unitOfWork.ConversationRepository.FindOneBy(x =>
                 x.Id == id &&
-                x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.IsDeleted == false)) ?? throw new NotFoundException("Converstaion id: " + id.ToString());
+                x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.Status == 1)) ?? throw new NotFoundException("Converstaion id: " + id.ToString());
 
             Expression<Func<Message, bool>> filter = x => x.ConversationId == id;
 
@@ -632,10 +631,10 @@ namespace SocialNetwork.Business.Services.Concrete
 
             if (cursor != null)
             {
-                filter = filter.And(x => x.CreatedDate < cursor);
+                filter = filter.And(x => x.CreatedAt < cursor);
             }
 
-            var data = (await _unitOfWork.MessageRepository.GetCursorPagedAsync(pageSize + 1, filter, x => x.CreatedDate, new Expression<Func<Message, object>>[]
+            var data = (await _unitOfWork.MessageRepository.GetCursorPaged(pageSize + 1, filter, x => x.CreatedAt, new Expression<Func<Message, object>>[]
             {
                 x => x.User,
                 x => x.Participant
@@ -648,7 +647,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 data.RemoveAt(data.Count - 1);
             }
 
-            DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedDate : null;
+            DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedAt : null;
 
             if (endCursor != null)
             {
@@ -662,11 +661,11 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetMessageById(string requestId, Guid id, Guid messageId)
         {
-            var conversation = await _unitOfWork.ConversationRepository.FindOneByAsync(x =>
+            var conversation = await _unitOfWork.ConversationRepository.FindOneBy(x =>
                 x.Id == id &&
-                x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.IsDeleted == false)) ?? throw new NotFoundException("Converstaion id: " + id.ToString());
+                x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.Status == 1)) ?? throw new NotFoundException("Converstaion id: " + id.ToString());
 
-            var message = await _unitOfWork.MessageRepository.FindOneByAsync(x => x.Id == messageId && x.ConversationId == id, new Expression<Func<Message, object>>[]
+            var message = await _unitOfWork.MessageRepository.FindOneBy(x => x.Id == messageId && x.ConversationId == id, new Expression<Func<Message, object>>[]
             {
                 x => x.User,
                 x => x.Participant,
@@ -677,11 +676,11 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> CreateMessage(string requestId, Guid id, CreateMessageOnConversationRequest request)
         {
-            var conversation = await _unitOfWork.ConversationRepository.FindOneByAsync(x =>
+            var conversation = await _unitOfWork.ConversationRepository.FindOneBy(x =>
                            x.Id == id) ?? throw new NotFoundException("Converstaion id: " + id.ToString());
 
             var participant = await _unitOfWork.ConversationParticipantRepository
-                .FindOneByAsync(x => x.ConversationId == conversation.Id && x.UserId == requestId && x.IsDeleted == false) ?? throw new NotFoundException("Participant in group");
+                .FindOneBy(x => x.ConversationId == conversation.Id && x.UserId == requestId && x.Status == 1) ?? throw new NotFoundException("Participant in group");
 
             var newMessage = new Message
             {
@@ -692,12 +691,12 @@ namespace SocialNetwork.Business.Services.Concrete
                 ParticipantId = participant.Id,
             };
 
-            await _unitOfWork.MessageRepository.AddAsync(newMessage);
+            await _unitOfWork.MessageRepository.Add(newMessage);
             if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
 
-            var response = _mapper.Map<GetMessageResponse>(await _unitOfWork.MessageRepository.GetByIdAsync(newMessage.Id, new Expression<Func<Message, object>>[] { x => x.User,x => x.Participant }));
+            var response = _mapper.Map<GetMessageResponse>(await _unitOfWork.MessageRepository.GetById(newMessage.Id, new Expression<Func<Message, object>>[] { x => x.User,x => x.Participant }));
 
-            var participantId = await _unitOfWork.ConversationParticipantRepository.GetConversationParticipantIdAsync(conversation.Id);
+            var participantId = await _unitOfWork.ConversationParticipantRepository.GetConversationParticipantId(conversation.Id);
 
             Task sendNotificaiton = Task.Run(async () =>
             {
@@ -709,14 +708,14 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> UnsendMessage(string requestId, Guid id, Guid messageId)
         {
-            var conversation = await _unitOfWork.ConversationRepository.FindOneByAsync(x =>
+            var conversation = await _unitOfWork.ConversationRepository.FindOneBy(x =>
                            x.Id == id &&
-                           x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.IsDeleted == false)) ?? throw new NotFoundException("Converstaion id: " + id.ToString());
+                           x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.Status == 1)) ?? throw new NotFoundException("Converstaion id: " + id.ToString());
 
-            var message = await _unitOfWork.MessageRepository.FindOneByAsync(x => x.Id == messageId && x.ConversationId == id);
+            var message = await _unitOfWork.MessageRepository.FindOneBy(x => x.Id == messageId && x.ConversationId == id);
             if (message.UserId != requestId) return new ErrorResponse(400, Messages.BadRequest);
 
-            await _unitOfWork.MessageRepository.RevokeMessageAsync(messageId);
+            await _unitOfWork.MessageRepository.RevokeMessage(messageId);
             if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
 
             return new DataResponse<GetMessageResponse>(_mapper.Map<GetMessageResponse>(message), 200, Messages.DeletedSuccessfully);
@@ -724,19 +723,19 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> SeenMessage(string requestId, Guid id, Guid messageId)
         {
-            var conversation = await _unitOfWork.ConversationRepository.FindOneByAsync(x =>
+            var conversation = await _unitOfWork.ConversationRepository.FindOneBy(x =>
                            x.Id == id &&
-                           x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.IsDeleted == false)) ?? throw new NotFoundException("Converstaion id: " + id.ToString());
+                           x.ConversationParticipants.Any(cp => cp.UserId == requestId && cp.Status == 1)) ?? throw new NotFoundException("Converstaion id: " + id.ToString());
 
             if (conversation.Type == ConversationType.PRIVATE)
             {
-                var message = await _unitOfWork.MessageRepository.FindOneByAsync(x => x.Id == messageId && x.ConversationId == id);
+                var message = await _unitOfWork.MessageRepository.FindOneBy(x => x.Id == messageId && x.ConversationId == id);
                 if (message.UserId == requestId) return new ErrorResponse(400, Messages.BadRequest);
 
-                await _unitOfWork.MessageRepository.SeenMessageAsync(messageId);
+                await _unitOfWork.MessageRepository.SeenMessage(messageId);
             } else
             {
-                var checkSeen = await _unitOfWork.MessageMemberReadRepository.FindOneByAsync(x => x.ConversationId == id && x.MessageId == messageId && x.UserId == requestId);
+                var checkSeen = await _unitOfWork.MessageMemberReadRepository.FindOneBy(x => x.ConversationId == id && x.MessageId == messageId && x.UserId == requestId);
                 if (checkSeen != null) return new ErrorResponse(400, Messages.SeenMessageExist);
 
                 var memberSeen = new MessageMemberReaded
@@ -746,7 +745,7 @@ namespace SocialNetwork.Business.Services.Concrete
                     UserId = requestId,
                 };
 
-                await _unitOfWork.MessageMemberReadRepository.AddAsync(memberSeen);
+                await _unitOfWork.MessageMemberReadRepository.Add(memberSeen);
             }
             
             if (!await _unitOfWork.CompleteAsync()) throw new NoDataChangeException();
