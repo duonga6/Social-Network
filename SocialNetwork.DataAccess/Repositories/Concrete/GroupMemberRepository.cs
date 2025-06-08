@@ -12,13 +12,13 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
         {
         }
 
-        public override async Task UpdateAsync(GroupMember member)
+        public override async Task Update(GroupMember member)
         {
             var entity = await _dbSet.FirstOrDefaultAsync(x => x.Id == member.Id);
             if (entity != null)
             {
                 entity.IsAdmin = member.IsAdmin;
-                entity.ModifiedDate = DateTime.UtcNow;
+                entity.UpdatedAt = DateTime.UtcNow;
             }
         }
     }

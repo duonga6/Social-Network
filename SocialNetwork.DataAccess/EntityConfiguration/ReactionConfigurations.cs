@@ -1,7 +1,7 @@
 ﻿using SocialNetwork.DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SocialNetwork.DataAccess.Enums;
+using SocialNetwork.DataAccess.Utilities.Enum;
 
 namespace SocialNetwork.DataAccess.EntityConfiguration
 {

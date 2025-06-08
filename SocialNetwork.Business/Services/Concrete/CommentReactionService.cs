@@ -9,7 +9,7 @@ using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Abstract;
-using SocialNetwork.DataAccess.Enums;
+using SocialNetwork.DataAccess.Utilities.Enum;
 
 namespace SocialNetwork.Business.Services.Concrete
 {
@@ -25,7 +25,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> Create(string requestUserId, CreateCommentReactionRequests request)
         {
-            var comment = await _unitOfWork.PostCommentRepository.GetByIdAsync(request.CommentId);
+            var comment = await _unitOfWork.PostCommentRepository.GetById(request.CommentId);
             if (comment == null)
             {
                 return new ErrorResponse(404, Messages.NotFound($"Comment {request.CommentId}"));
@@ -36,7 +36,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.PostAccessDenied(comment.PostId.ToString()));
             }
 
-            var checkExist = await _unitOfWork.CommentReactionRepository.GetByIdAsync(request.CommentId, requestUserId, request.ReactionId);
+            var checkExist = await _unitOfWork.CommentReactionRepository.GetById(request.CommentId, requestUserId, request.ReactionId);
             if (checkExist != null)
             {
                 return new ErrorResponse(400, Messages.CommentReactionExist);
@@ -45,7 +45,7 @@ namespace SocialNetwork.Business.Services.Concrete
             var reactionAdd = _mapper.Map<CommentReaction>(request);
             reactionAdd.UserId = requestUserId;
 
-            await _unitOfWork.CommentReactionRepository.AddAsync(reactionAdd);
+            await _unitOfWork.CommentReactionRepository.Add(reactionAdd);
             var result = await _unitOfWork.CompleteAsync();
 
 
@@ -54,7 +54,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(501, Messages.STWrong);
             }
 
-            var reactionAdded = await _unitOfWork.CommentReactionRepository.GetByIdAsync(reactionAdd.Id);
+            var reactionAdded = await _unitOfWork.CommentReactionRepository.GetById(reactionAdd.Id);
             var response = _mapper.Map<GetCommentReactionResponse>(reactionAdded);
 
             await _notificationService.CreateNotification(requestUserId, comment.UserId, NotificationEnum.COMMENT_REACTION, response);
@@ -64,7 +64,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> Delete(string requestUserId, Guid id)
         {
-            var commentReaction = await _unitOfWork.CommentReactionRepository.GetByIdAsync(id);
+            var commentReaction = await _unitOfWork.CommentReactionRepository.GetById(id);
             if (commentReaction == null)
             {
                 return new ErrorResponse(404, Messages.NotFound("Reaction of comment"));
@@ -75,7 +75,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.NotOwnerCommentReaction);
             }
 
-            await _unitOfWork.CommentReactionRepository.DeleteAsync(id);
+            await _unitOfWork.CommentReactionRepository.Delete(id);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -88,7 +88,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetById(string requestUserId, Guid id)
         {
-            var entity = await _unitOfWork.CommentReactionRepository.GetByIdAsync(id);
+            var entity = await _unitOfWork.CommentReactionRepository.GetById(id);
 
             if (entity == null)
             {
@@ -102,7 +102,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> Update(string requestUserId, Guid id, UpdateCommentReactionRequest request)
         {
-            var commentReaction = await _unitOfWork.CommentReactionRepository.GetByIdAsync(id);
+            var commentReaction = await _unitOfWork.CommentReactionRepository.GetById(id);
             if (commentReaction == null)
             {
                 return new ErrorResponse(404, Messages.NotFound("Comment reaction"));
@@ -114,7 +114,7 @@ namespace SocialNetwork.Business.Services.Concrete
             }
 
             commentReaction.ReactionId = request.ReactionId;
-            await _unitOfWork.CommentReactionRepository.UpdateAsync(commentReaction);
+            await _unitOfWork.CommentReactionRepository.Update(commentReaction);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -127,15 +127,15 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetOverview(string requestUserId, Guid id)
         {
-            var comment = await _unitOfWork.PostCommentRepository.FindOneByAsync(x => x.Id == id && x.Post.IsDeleted == false) ?? throw new NotFoundException("Comment id: " + id.ToString());
+            var comment = await _unitOfWork.PostCommentRepository.FindOneBy(x => x.Id == id && x.Post.Status == 1) ?? throw new NotFoundException("Comment id: " + id.ToString());
 
-            var userReacted = await _unitOfWork.CommentReactionRepository.FindOneByAsync(x => x.CommentId == id && x.UserId == requestUserId);
+            var userReacted = await _unitOfWork.CommentReactionRepository.FindOneBy(x => x.CommentId == id && x.UserId == requestUserId);
 
             var listReactionWithCount = new List<ReactionWithCount>();
 
             foreach(ReactionEnum reaction in Enum.GetValues(typeof(ReactionEnum)))
             {
-                var reactionCount = await _unitOfWork.CommentReactionRepository.GetCountAsync(x => x.CommentId == id && x.ReactionId == (int)reaction);
+                var reactionCount = await _unitOfWork.CommentReactionRepository.GetCount(x => x.CommentId == id && x.ReactionId == (int)reaction);
                 
                 if (reactionCount > 0)
                 {
@@ -169,7 +169,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         private async Task<bool> CheckPermission(string requestId, Guid postId)
         {
-            var post = await _unitOfWork.PostRepository.GetByIdAsync(postId, new System.Linq.Expressions.Expression<Func<Post, object>>[]
+            var post = await _unitOfWork.PostRepository.GetById(postId, new System.Linq.Expressions.Expression<Func<Post, object>>[]
             {
                 x => x.Group
             }) ?? throw new NotFoundException("Post");
@@ -181,12 +181,12 @@ namespace SocialNetwork.Business.Services.Concrete
                 case PostAccess.ONLY_ME:
                     return post.AuthorId == requestId;
                 case PostAccess.ONLY_FRIEND:
-                    return await _unitOfWork.FriendshipRepository.IsExistFriendshipAsync(requestId, post.AuthorId);
+                    return await _unitOfWork.FriendshipRepository.ExistFriendShip(requestId, post.AuthorId);
                 case PostAccess.PUBLIC:
                     return true;
                 case PostAccess.GROUP:
                     if (post.Group.IsPublic) return true;
-                    return await _unitOfWork.GroupMemberRepository.FindOneByAsync(x => x.GroupId == post.GroupId && x.UserId == requestId) != null;
+                    return await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.GroupId == post.GroupId && x.UserId == requestId) != null;
                 default:
                     return false;
             }

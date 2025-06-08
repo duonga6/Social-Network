@@ -1,6 +1,6 @@
 ﻿namespace SocialNetwork.DataAccess.Entities
 {
-    public class MediaType : EntityTrackingBase<int>
+    public class MediaType : BaseEntity<int>
     {
         public string Name { set; get; }
 

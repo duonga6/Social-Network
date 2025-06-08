@@ -26,7 +26,7 @@ namespace SocialNetwork.DataAccess.EntityConfiguration
                 x.UserId,
             }).IsUnique();
 
-            builder.HasIndex(x => x.CreatedDate);
+            builder.HasIndex(x => x.CreatedAt);
         }
     }
 }

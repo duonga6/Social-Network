@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using SocialNetwork.DataAccess.Utilities;
+using SocialNetwork.DataAccess.Utilities.Roles;
 
 namespace SocialNetwork.DataAccess.EntityConfiguration
 {

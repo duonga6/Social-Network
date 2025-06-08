@@ -2,7 +2,7 @@
 
 namespace SocialNetwork.DataAccess.Entities
 {
-    public class PostMedia : EntityAuditBase<Guid>
+    public class PostMedia : BaseEntity<Guid>
     {
         public string Title { set; get; }
         public string Url { get; set; }

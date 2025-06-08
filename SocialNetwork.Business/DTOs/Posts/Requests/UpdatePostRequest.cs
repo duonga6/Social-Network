@@ -1,5 +1,5 @@
 ﻿using SocialNetwork.Business.Utilities.Enum;
-using SocialNetwork.DataAccess.Enums;
+using SocialNetwork.DataAccess.Utilities.Enum;
 
 namespace SocialNetwork.Business.DTOs.Requests
 {

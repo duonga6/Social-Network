@@ -8,7 +8,7 @@ using SocialNetwork.DataAccess.Services;
 
 namespace SocialNetwork.DataAccess.Repositories.Concrete
 {
-    public class PostCacheRepository : SoftDeleteRepository<Post, Guid>, IPostRepository
+    public class PostCacheRepository : GenericRepository<Post, Guid>, IPostRepository
     {
         private readonly ICacheService _cacheService;
 
@@ -17,7 +17,7 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             _cacheService = cacheService;
         }
 
-        public override async Task<Post> GetByIdAsync(Guid id)
+        public override async Task<Post> GetById(Guid id)
         {
             string key = "post-" + id.ToString();
 
@@ -30,11 +30,11 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             } 
             else
             {
-                var query = _dbSet.Where(x => !x.IsDeleted && x.Id == id)
-                .Include(x => x.PostMedias.Where(i => !i.IsDeleted))
+                var query = _dbSet.Where(x => x.Status == 1 && x.Id == id)
+                .Include(x => x.PostMedias.Where(i => i.Status == 1))
                 .Include(x => x.Author)
                 .Include(x => x.SharePost)
-                .ThenInclude(x => x.PostMedias.Where(i => !i.IsDeleted))
+                .ThenInclude(x => x.PostMedias.Where(i => i.Status == 1))
                 .Include(x => x.SharePost.Author)
                 .AsNoTracking()
                 .AsQueryable();
@@ -46,10 +46,9 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             }
         }
 
-        public async Task<bool> IsOwnerPostAsync(string userId, Guid postId)
+        public Task<bool> IsOwnerPost(string userId, Guid postId)
         {
-            var post = await _dbSet.Where(x => x.AuthorId.Equals(userId) && x.Id.Equals(postId)).FirstOrDefaultAsync();
-            return post != null;
+            throw new NotImplementedException();
         }
     }
 }

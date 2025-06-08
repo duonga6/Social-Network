@@ -6,6 +6,6 @@
         public Guid CommentId { set; get; }
         public int ReactionId { set; get; }
         public string UserId { set; get; } = string.Empty;
-        public DateTime CreatedDate { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

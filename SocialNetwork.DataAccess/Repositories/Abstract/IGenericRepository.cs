@@ -1,36 +1,39 @@
-﻿using System.Linq.Expressions;
+﻿using SocialNetwork.DataAccess.Entities;
+using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Abstract
 {
-    public interface IGenericRepository<TEntity, in TKey> where TEntity : class
+    public interface IGenericRepository<TEntity, TKey> where TEntity : BaseEntity<TKey>
     {
-        Task<TEntity> GetByIdAsync(TKey id);
-        Task<TEntity> GetByIdAsync(TKey id, Expression<Func<TEntity, object>>[] includes);
-        Task<ICollection<TEntity>> GetAllAsync();
-        Task<int> GetCountAsync(Expression<Func<TEntity, bool>> filter = null);
+        Task<TEntity> GetById(TKey id);
+        Task<TEntity> GetById(TKey id, Expression<Func<TEntity, object>>[] includes);
+        Task<ICollection<TEntity>> GetAll();
+        Task<int> GetCount(Expression<Func<TEntity, bool>> filter = null);
 
 
-        Task<ICollection<TEntity>> FindByAsync(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>>[] includes = null);
-        Task<TEntity> FindOneByAsync(Expression<Func<TEntity, bool>> filter = null);
-        Task<TEntity> FindOneByAsync(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>>[] includes);
+        Task<ICollection<TEntity>> FindBy(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>>[] includes = null);
+        Task<TEntity> FindOneBy(Expression<Func<TEntity, bool>> filter = null);
+        Task<TEntity> FindOneBy(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>>[] includes);
 
-        Task<ICollection<TEntity>> GetPagedAsync(int pageSize, int pageNumber, Expression<Func<TEntity, bool>> filter = null, Expression<Func<TEntity, object>> orderBy = null, bool isDesc = true);
-        Task<ICollection<TEntity>> GetPagedAsync(int pageSize, int pageNumber, Expression<Func<TEntity, object>>[] includes, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>> orderby, bool isDesc = true);
-
-
-        Task<ICollection<TEntity>> GetCursorPagedAsync(int pageSize, Expression<Func<TEntity, bool>> filter, bool getNext = true);
-        Task<ICollection<TEntity>> GetCursorPagedAsync(int pageSize, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>>[] includes, bool getNext = true);
-        Task<ICollection<TEntity>> GetCursorPagedAsync(int pageSize, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>> orderBy, bool getNext = true);
-        Task<ICollection<TEntity>> GetCursorPagedAsync(int pageSize, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>> orderBy, Expression<Func<TEntity, object>>[] includes, bool getNext = true);
-
-        Task AddAsync(TEntity entity);
-        Task AddRangeAsync(List<TEntity> entities);
+        Task<ICollection<TEntity>> GetPaged(int pageSize, int pageNumber, Expression<Func<TEntity, bool>> filter = null, Expression<Func<TEntity, object>> orderBy = null, bool isDesc = true);
+        Task<ICollection<TEntity>> GetPaged(int pageSize, int pageNumber, Expression<Func<TEntity, object>>[] includes, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>> orderby, bool isDesc = true);
 
 
-        Task UpdateAsync(TEntity entity);
+        Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, bool>> filter, bool getNext = true);
+        Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>>[] includes, bool getNext = true);
+        Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>> orderBy, bool getNext = true);
+        Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>> orderBy, Expression<Func<TEntity, object>>[] includes, bool getNext = true);
 
-        Task DeleteAsync(TKey id);
+        Task Add(TEntity entity);
+        Task AddRange(List<TEntity> entities);
+
+
+        Task Update(TEntity entity);
+
+        Task Delete(TKey id);
 
         IQueryable<TEntity> GetQueryable();
+
+        Task RestoreEntity(TKey id);
     }
 }

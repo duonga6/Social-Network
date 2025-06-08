@@ -1,4 +1,4 @@
-﻿using SocialNetwork.DataAccess.Enums;
+﻿using SocialNetwork.DataAccess.Utilities.Enum;
 
 namespace SocialNetwork.Business.DTOs.Responses
 {
@@ -10,7 +10,7 @@ namespace SocialNetwork.Business.DTOs.Responses
         public bool IsSolved { set; get; }
         public string RelatedId { set; get; } = string.Empty;
         public ReportTypeEnum ReportType { set; get; }
-        public DateTime CreatedDate { set; get; }
+        public DateTime CreatedAt { set; get; }
         public DateTime SolvedAt { set; get; }
 
         public BasicUserResponse User { set; get; } = null!;

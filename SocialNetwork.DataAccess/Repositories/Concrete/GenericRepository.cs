@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 
 namespace SocialNetwork.DataAccess.Repositories.Concrete
 {
-    public class GenericRepository<TEntity, TKey> : IGenericRepository<TEntity, TKey> where TEntity : class, IEntityBase<TKey>, IDateTracking
+    public class GenericRepository<TEntity, TKey> : IGenericRepository<TEntity, TKey> where TEntity : BaseEntity<TKey>
     {
         protected readonly ILogger _logger;
         protected AppDbContext _context;
@@ -20,12 +20,12 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             _dbSet = context.Set<TEntity>();
         }
 
-        public virtual async Task<ICollection<TEntity>> GetAllAsync()
+        public virtual async Task<ICollection<TEntity>> GetAll()
         {
             return await _dbSet.AsNoTracking().ToListAsync();
         }
 
-        public virtual async Task<ICollection<TEntity>> FindByAsync(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>>[] includes = null)
+        public virtual async Task<ICollection<TEntity>> FindBy(Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>>[] includes = null)
         {
             var query = _dbSet.AsNoTracking().Where(filter);
 
@@ -40,12 +40,12 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             return await query.ToListAsync();
         }
 
-        public virtual async Task<TEntity> FindOneByAsync(Expression<Func<TEntity, bool>> filter = null)
+        public virtual async Task<TEntity> FindOneBy(Expression<Func<TEntity, bool>> filter = null)
         {
             return await _dbSet.AsNoTracking().FirstOrDefaultAsync(filter);
         }
 
-        public async Task<TEntity> FindOneByAsync(Expression<Func<TEntity, bool>> filter = null, Expression<Func<TEntity, object>>[] includes = null)
+        public async Task<TEntity> FindOneBy(Expression<Func<TEntity, bool>> filter = null, Expression<Func<TEntity, object>>[] includes = null)
         {
             var query = _dbSet.AsNoTracking().Where(filter);
 
@@ -57,34 +57,34 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             return await query.FirstOrDefaultAsync();
         }
 
-        public virtual async Task AddAsync(TEntity entity)
+        public virtual async Task Add(TEntity entity)
         {
             await _dbSet.AddAsync(entity);
         }
 
-        public virtual async Task AddRangeAsync(List<TEntity> entities)
+        public virtual async Task AddRange(List<TEntity> entities)
         {
             await _dbSet.AddRangeAsync(entities);
         }
 
-        public virtual async Task<TEntity> GetByIdAsync(TKey id)
+        public virtual async Task<TEntity> GetById(TKey id)
         {
-            return await GetByIdAsync(id, Array.Empty<Expression<Func<TEntity, object>>>());
+            return await GetById(id, Array.Empty<Expression<Func<TEntity, object>>>());
         }
 
         // No implement
-        public virtual Task UpdateAsync(TEntity entity)
+        public virtual Task Update(TEntity entity)
         {
             throw new NotImplementedException();
         }
 
-        public virtual async Task DeleteAsync(TKey id)
+        public virtual async Task Delete(TKey id)
         {
             var entity = await _dbSet.FindAsync(id);
             _dbSet.Remove(entity);
         }
 
-        public virtual async Task<int> GetCountAsync(Expression<Func<TEntity, bool>> filter = null)
+        public virtual async Task<int> GetCount(Expression<Func<TEntity, bool>> filter = null)
         {
             var query = _dbSet.AsNoTracking();
 
@@ -95,12 +95,12 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             return await query.CountAsync();
         }
 
-        public virtual async Task<ICollection<TEntity>> GetPagedAsync(int pageSize, int pageNumber, Expression<Func<TEntity, bool>> filter = null, Expression<Func<TEntity, object>> orderBy = null, bool isDesc = true)
+        public virtual async Task<ICollection<TEntity>> GetPaged(int pageSize, int pageNumber, Expression<Func<TEntity, bool>> filter = null, Expression<Func<TEntity, object>> orderBy = null, bool isDesc = true)
         {
-            return await GetPagedAsync(pageSize, pageNumber, Array.Empty<Expression<Func<TEntity, object>>>(), filter, orderBy, isDesc);   
+            return await GetPaged(pageSize, pageNumber, Array.Empty<Expression<Func<TEntity, object>>>(), filter, orderBy, isDesc);   
         }
         
-        public virtual async Task<ICollection<TEntity>> GetPagedAsync(int pageSize, int pageNumber, Expression<Func<TEntity, object>>[] includes, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>> orderby, bool isDesc = true)
+        public virtual async Task<ICollection<TEntity>> GetPaged(int pageSize, int pageNumber, Expression<Func<TEntity, object>>[] includes, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>> orderby, bool isDesc = true)
         {
             var query = _dbSet.AsNoTracking();
 
@@ -124,9 +124,9 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             return _dbSet.AsQueryable();
         }
 
-        public async Task<TEntity> GetByIdAsync(TKey id, Expression<Func<TEntity, object>>[] includes)
+        public async Task<TEntity> GetById(TKey id, Expression<Func<TEntity, object>>[] includes)
         {
-            var query = _dbSet.AsNoTracking().Where(x => x.Id.Equals(id));
+            var query = _dbSet.AsNoTracking().Where(x => x.Id.Equals(id) && x.Status == 1);
 
             foreach (var include in includes)
             {
@@ -136,12 +136,12 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
             return await query.FirstOrDefaultAsync();
         }
 
-        public virtual async Task<ICollection<TEntity>> GetCursorPagedAsync(int pageSize, Expression<Func<TEntity, bool>> filter, bool getNext = true)
+        public virtual async Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, bool>> filter, bool getNext = true)
         {
-            return await GetCursorPagedAsync(pageSize, filter, Array.Empty<Expression<Func<TEntity, object>>>(), getNext);
+            return await GetCursorPaged(pageSize, filter, Array.Empty<Expression<Func<TEntity, object>>>(), getNext);
         }
 
-        public virtual async Task<ICollection<TEntity>> GetCursorPagedAsync(int pageSize, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>>[] includes, bool getNext = true)
+        public virtual async Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>>[] includes, bool getNext = true)
         {
             var query = _dbSet.AsNoTracking().Where(filter);
 
@@ -152,22 +152,22 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
 
             if (getNext)
             {
-                return await query.OrderByDescending(x => x.CreatedDate).ThenByDescending(x => x.Id).Take(pageSize).ToListAsync();
+                return await query.OrderByDescending(x => x.CreatedAt).ThenByDescending(x => x.Id).Take(pageSize).ToListAsync();
             }
             else
             {
-                var result = await query.OrderBy(x => x.CreatedDate).ThenBy(x => x.Id).Take(pageSize).ToListAsync();
+                var result = await query.OrderBy(x => x.CreatedAt).ThenBy(x => x.Id).Take(pageSize).ToListAsync();
                 result.Reverse();
                 return result;
             }
         }
 
-        public virtual async Task<ICollection<TEntity>> GetCursorPagedAsync(int pageSize, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>> orderBy, bool getNext = true)
+        public virtual async Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>> orderBy, bool getNext = true)
         {
-            return await GetCursorPagedAsync(pageSize, filter, orderBy, Array.Empty<Expression<Func<TEntity, object>>>(), getNext);
+            return await GetCursorPaged(pageSize, filter, orderBy, Array.Empty<Expression<Func<TEntity, object>>>(), getNext);
         }
 
-        public virtual async Task<ICollection<TEntity>> GetCursorPagedAsync(int pageSize, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>> orderBy, Expression<Func<TEntity, object>>[] includes, bool getNext = true)
+        public virtual async Task<ICollection<TEntity>> GetCursorPaged(int pageSize, Expression<Func<TEntity, bool>> filter, Expression<Func<TEntity, object>> orderBy, Expression<Func<TEntity, object>>[] includes, bool getNext = true)
         {
             var query = _dbSet.AsNoTracking().Where(filter);
 
@@ -185,6 +185,15 @@ namespace SocialNetwork.DataAccess.Repositories.Concrete
                 var result = await query.OrderBy(orderBy).ThenBy(x => x.Id).Take(pageSize).ToListAsync();
                 result.Reverse();
                 return result;
+            }
+        }
+
+        public async Task RestoreEntity(TKey id)
+        {
+            var entity = await _dbSet.FirstOrDefaultAsync(x => x.Id.Equals(id));
+            if (entity != null)
+            {
+                entity.Status = 1;
             }
         }
     }

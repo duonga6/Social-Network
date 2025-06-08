@@ -9,7 +9,7 @@ using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Abstract;
-using SocialNetwork.DataAccess.Enums;
+using SocialNetwork.DataAccess.Utilities.Enum;
 using System.Linq.Expressions;
 using SocialNetwork.Business.DTOs.Requests;
 using SocialNetwork.Business.DTOs.Responses;
@@ -104,7 +104,7 @@ namespace SocialNetwork.Business.Services.Concrete
                     break;
             }
 
-            int totalItems = await _unitOfWork.FriendshipRepository.GetCountAsync(filter);
+            int totalItems = await _unitOfWork.FriendshipRepository.GetCount(filter);
             int pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
 
 
@@ -113,7 +113,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.OutOfPage);
             }
 
-            var friendships = await _unitOfWork.FriendshipRepository.GetPagedAsync(pageSize, pageNumber, filter, x => x.CreatedDate);
+            var friendships = await _unitOfWork.FriendshipRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
 
             return new PagedResponse<List<GetFriendshipResponse>>(_mapper.Map<List<GetFriendshipResponse>>(friendships), totalItems, 200);
         }
@@ -125,7 +125,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.NotFound("Request user"));
             }
 
-            var friendship = await _unitOfWork.FriendshipRepository.GetByIdAsync(id);
+            var friendship = await _unitOfWork.FriendshipRepository.GetById(id);
 
             if (friendship.RequestUserId != requestUserId && friendship.TargetUserId != requestUserId)
             {
@@ -139,7 +139,7 @@ namespace SocialNetwork.Business.Services.Concrete
         {
 
             var entity = await _unitOfWork.FriendshipRepository
-                    .GetByIdAsync(id) ?? throw new NotFoundException("Friendship id: " + id.ToString());
+                    .GetById(id) ?? throw new NotFoundException("Friendship id: " + id.ToString());
 
             if (entity.TargetUserId != requestUserId)
             {
@@ -152,9 +152,9 @@ namespace SocialNetwork.Business.Services.Concrete
             }
 
             entity.FriendshipTypeId = (int)FriendshipEnum.Accepted;
-            entity.ModifiedDate = DateTime.UtcNow;
+            entity.UpdatedAt = DateTime.UtcNow;
 
-            await _unitOfWork.FriendshipRepository.UpdateAsync(entity);
+            await _unitOfWork.FriendshipRepository.Update(entity);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -174,7 +174,7 @@ namespace SocialNetwork.Business.Services.Concrete
             }
 
             var checkExist = await _unitOfWork.FriendshipRepository
-                .FindOneByAsync(x => x.RequestUserId == requestUserId && x.TargetUserId == request.TargetUserId
+                .FindOneBy(x => x.RequestUserId == requestUserId && x.TargetUserId == request.TargetUserId
                     || x.RequestUserId == request.TargetUserId && x.TargetUserId == requestUserId);
 
 
@@ -187,12 +187,12 @@ namespace SocialNetwork.Business.Services.Concrete
             {
                 RequestUserId = requestUserId,
                 TargetUserId = request.TargetUserId,
-                CreatedDate = DateTime.UtcNow,
-                ModifiedDate = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
                 FriendshipTypeId = (int)FriendshipEnum.Pending
             };
 
-            await _unitOfWork.FriendshipRepository.AddAsync(newFriendShip);
+            await _unitOfWork.FriendshipRepository.Add(newFriendShip);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -216,7 +216,7 @@ namespace SocialNetwork.Business.Services.Concrete
             }
 
             var entity = await _unitOfWork.FriendshipRepository
-                .FindOneByAsync(x => x.RequestUserId == requestUserId && x.TargetUserId == request.TargetUserId || x.RequestUserId == request.TargetUserId && x.TargetUserId == requestUserId);
+                .FindOneBy(x => x.RequestUserId == requestUserId && x.TargetUserId == request.TargetUserId || x.RequestUserId == request.TargetUserId && x.TargetUserId == requestUserId);
 
             if (entity == null)
             {
@@ -224,17 +224,17 @@ namespace SocialNetwork.Business.Services.Concrete
                 {
                     RequestUserId = requestUserId,
                     TargetUserId = request.TargetUserId,
-                    CreatedDate = DateTime.UtcNow,
-                    ModifiedDate = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
                     FriendshipTypeId = (int)(int)FriendshipEnum.Blocked
                 };
 
-                await _unitOfWork.FriendshipRepository.AddAsync(newFriendShip);
+                await _unitOfWork.FriendshipRepository.Add(newFriendShip);
             }
             else
             {
                 entity.FriendshipTypeId = (int)FriendshipEnum.Blocked;
-                await _unitOfWork.FriendshipRepository.UpdateAsync(entity);
+                await _unitOfWork.FriendshipRepository.Update(entity);
             }
 
             var result = await _unitOfWork.CompleteAsync();
@@ -250,14 +250,14 @@ namespace SocialNetwork.Business.Services.Concrete
         {
 
             var entity = await _unitOfWork.FriendshipRepository
-                    .GetByIdAsync(id) ?? throw new NotFoundException("Friendship id: "+ id.ToString());
+                    .GetById(id) ?? throw new NotFoundException("Friendship id: "+ id.ToString());
 
             if (entity.FriendshipTypeId != (int)FriendshipEnum.Pending)
             {
                 return new ErrorResponse(400, Messages.FriendshipStatusInValid);
             }
 
-            await _unitOfWork.FriendshipRepository.DeleteAsync(entity.Id);
+            await _unitOfWork.FriendshipRepository.Delete(entity.Id);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -272,14 +272,14 @@ namespace SocialNetwork.Business.Services.Concrete
         public async Task<IResponse> RefuseRequest(string requestUserId, Guid id)
         {
             var entity = await _unitOfWork.FriendshipRepository
-                .GetByIdAsync(id);
+                .GetById(id);
             
             if (entity == null || entity.TargetUserId != requestUserId)
             {
                 return new ErrorResponse(404, Messages.NotFound());
             }
 
-            await _unitOfWork.FriendshipRepository.DeleteAsync(entity.Id);
+            await _unitOfWork.FriendshipRepository.Delete(entity.Id);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -294,7 +294,7 @@ namespace SocialNetwork.Business.Services.Concrete
         {
 
             var entity = await _unitOfWork.FriendshipRepository
-                .GetByIdAsync(id);
+                .GetById(id);
 
             if (entity == null || entity.RequestUserId != requestUserId)
             {
@@ -306,7 +306,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.FriendshipStatusInValid);
             }
 
-            await _unitOfWork.FriendshipRepository.DeleteAsync(entity.Id);
+            await _unitOfWork.FriendshipRepository.Delete(entity.Id);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -321,7 +321,7 @@ namespace SocialNetwork.Business.Services.Concrete
         {
 
             var entity = await _unitOfWork.FriendshipRepository
-                .GetByIdAsync(id);
+                .GetById(id);
             
             if (entity == null || entity.RequestUserId != requestUserId && entity.TargetUserId != requestUserId)
             {
@@ -333,7 +333,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.FriendshipStatusInValid);
             }
 
-            await _unitOfWork.FriendshipRepository.DeleteAsync(entity.Id);
+            await _unitOfWork.FriendshipRepository.Delete(entity.Id);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -348,7 +348,7 @@ namespace SocialNetwork.Business.Services.Concrete
         {
             var friendShip = await _unitOfWork
                 .FriendshipRepository
-                .FindOneByAsync(x => 
+                .FindOneBy(x => 
                     (x.TargetUserId == requestUserId && x.RequestUserId == targetUserId) || 
                     (x.TargetUserId == targetUserId && x.RequestUserId == requestUserId), new Expression<Func<Friendship, object>>[]
                     {
@@ -376,7 +376,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.OutOfPage);
             }
 
-            var friends = await query.OrderBy(x => x.CreatedDate).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+            var friends = await query.OrderBy(x => x.CreatedAt).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
             var result = _mapper.Map<List<BasicUserResponse>>(friends);
 
             return new PagedResponse<List<BasicUserResponse>>(result, totalItems, 200);
@@ -389,7 +389,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return true;
             }
 
-            var result = await _unitOfWork.FriendshipRepository.FindOneByAsync(x => x.RequestUserId == userId1 && x.TargetUserId == userId2 || x.RequestUserId == userId2 && x.TargetUserId == userId1);
+            var result = await _unitOfWork.FriendshipRepository.FindOneBy(x => x.RequestUserId == userId1 && x.TargetUserId == userId2 || x.RequestUserId == userId2 && x.TargetUserId == userId1);
             return result != null;
         }
 

@@ -10,7 +10,7 @@ using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Abstract;
-using SocialNetwork.DataAccess.Enums;
+using SocialNetwork.DataAccess.Utilities.Enum;
 using SocialNetwork.Business.DTOs.Responses;
 using System.Linq.Expressions;
 
@@ -54,7 +54,7 @@ namespace SocialNetwork.Business.Services.Concrete
                     {
                         content = @$"<strong>{fromUser.GetFullName()}</strong> đã thêm một bài viết.";
 
-                        var friendOfFromUser = (await _unitOfWork.FriendshipRepository.GetAllFriendshipAsync(fromUserId)).Select(x => x.RequestUserId == fromUserId ? x.TargetUserId : x.RequestUserId).ToList();
+                        var friendOfFromUser = (await _unitOfWork.FriendshipRepository.GetAllFriendship(fromUserId)).Select(x => x.RequestUserId == fromUserId ? x.TargetUserId : x.RequestUserId).ToList();
 
                         foreach (var targetId in friendOfFromUser)
                         {
@@ -151,7 +151,7 @@ namespace SocialNetwork.Business.Services.Concrete
                     }
 
             }
-            await _unitOfWork.NotificationRepository.AddRangeAsync(notifications);
+            await _unitOfWork.NotificationRepository.AddRange(notifications);
             await _unitOfWork.CompleteAsync();
 
             var notificationMapped = _mapper.Map<List<GetNotificationResponse>>(notifications);
@@ -175,7 +175,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 filter = filter.And(x => x.Content.Contains(searchString));
             }   
 
-            int totalItems = await _unitOfWork.NotificationRepository.GetCountAsync(filter);
+            int totalItems = await _unitOfWork.NotificationRepository.GetCount(filter);
             int pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
 
             if (pageCount < pageNumber && pageCount != 0)
@@ -183,7 +183,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.OutOfPage);
             }
 
-            var notifications = await _unitOfWork.NotificationRepository.GetPagedAsync(pageSize, pageNumber, filter, x => x.CreatedDate);
+            var notifications = await _unitOfWork.NotificationRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
             var notificationsResult = _mapper.Map<List<GetNotificationResponse>>(notifications);
 
             return new PagedResponse<List<GetNotificationResponse>>(notificationsResult, totalItems, 200);
@@ -191,10 +191,10 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> SeenNotification(string userId, Guid id)
         {
-            var notification = await _unitOfWork.NotificationRepository.GetByIdAsync(id);
+            var notification = await _unitOfWork.NotificationRepository.GetById(id);
             if (notification.ToId != userId) return new ErrorResponse(404, Messages.NotFound());
 
-            await _unitOfWork.NotificationRepository.SeenAsync(id);
+            await _unitOfWork.NotificationRepository.Seen(id);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -202,7 +202,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.STWrong);
             }
 
-            var response = await _unitOfWork.NotificationRepository.GetByIdAsync(id);
+            var response = await _unitOfWork.NotificationRepository.GetById(id);
 
             return new DataResponse<GetNotificationResponse>(_mapper.Map<GetNotificationResponse>(response), 200);
             
@@ -210,7 +210,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetById(string userId, Guid id)
         {
-            var notification = await _unitOfWork.NotificationRepository.GetByIdAsync(id);
+            var notification = await _unitOfWork.NotificationRepository.GetById(id);
 
             if (notification == null || notification.ToId != userId)
             {
@@ -225,16 +225,16 @@ namespace SocialNetwork.Business.Services.Concrete
         {
             Expression<Func<Notification, bool>> filter = x => x.ToId == requestUserId;
 
-            int totalItems = await _unitOfWork.NotificationRepository.GetCountAsync(filter);
+            int totalItems = await _unitOfWork.NotificationRepository.GetCount(filter);
 
             if (cursor != null)
             {
-                filter = filter.And(x => x.CreatedDate < cursor);
+                filter = filter.And(x => x.CreatedAt < cursor);
             }
 
             var notifications = (await _unitOfWork
                 .NotificationRepository
-                .GetCursorPagedAsync(pageSize + 1, filter, getNext)).ToList();
+                .GetCursorPaged(pageSize + 1, filter, getNext)).ToList();
 
             bool hasNext = true;
 
@@ -247,7 +247,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 notifications.RemoveAt(notifications.Count - 1);
             }
 
-            DateTime? endCursor = notifications.LastOrDefault()?.CreatedDate;
+            DateTime? endCursor = notifications.LastOrDefault()?.CreatedAt;
 
             if (endCursor != null)
             {
@@ -262,14 +262,14 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> SeenAll(string requestUserId)
         {
-            await _unitOfWork.NotificationRepository.SeenAllNoticiatioAsync(requestUserId);
+            await _unitOfWork.NotificationRepository.SeenAllNoticiation(requestUserId);
             await _unitOfWork.CompleteAsync();
             return new SuccessResponse(Messages.NotificationSeen, 200);
         }
 
         public async Task<IResponse> GetCountNotSeen(string requestId)
         {
-            var data = await _unitOfWork.NotificationRepository.CountNotSeenAsync(requestId);
+            var data = await _unitOfWork.NotificationRepository.CountNotSeen(requestId);
 
             return new DataResponse<int>(data, 200);
         }

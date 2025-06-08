@@ -4,6 +4,6 @@ namespace SocialNetwork.DataAccess.Repositories.Abstract
 {
     public interface IIPLimitRepository : IGenericRepository<IPLimit, Guid>
     {
-        Task<bool> IsIPRegisteredAsync(string ipaddress);
+        Task<bool> CheckIPRegistered(string ipaddress);
     }
 }

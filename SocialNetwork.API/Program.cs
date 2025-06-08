@@ -5,7 +5,6 @@ using SocialNetwork.API.Infrastructure.SignalR;
 using SocialNetwork.Business;
 using SocialNetwork.DataAccess;
 using SocialNetwork.DataAccess.Context;
-using SocialNetwork.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -104,8 +103,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-var loggerFactory = app.Services.GetRequiredService<ILoggerFactory>();
-StaticLogger.Initialize(loggerFactory);
 
 using (var scopeService = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
 {

@@ -14,7 +14,7 @@ using SocialNetwork.Business.Wrapper;
 using SocialNetwork.Business.Wrapper.Abstract;
 using SocialNetwork.DataAccess.Entities;
 using SocialNetwork.DataAccess.Repositories.Abstract;
-using SocialNetwork.DataAccess.Utilities;
+using SocialNetwork.DataAccess.Utilities.Roles;
 using System.Linq.Expressions;
 
 namespace SocialNetwork.Business.Services.Concrete
@@ -33,7 +33,7 @@ namespace SocialNetwork.Business.Services.Concrete
             var newGroup = _mapper.Map<Group>(request);
             newGroup.CreatedId = requestId;
 
-            await _unitOfWork.GroupRepository.AddAsync(newGroup);
+            await _unitOfWork.GroupRepository.Add(newGroup);
 
             var newGroupMember = new GroupMember()
             {
@@ -43,15 +43,15 @@ namespace SocialNetwork.Business.Services.Concrete
                 IsSuperAdmin = true,
             };
 
-            await _unitOfWork.GroupMemberRepository.AddAsync(newGroupMember);
+            await _unitOfWork.GroupMemberRepository.Add(newGroupMember);
             newGroup.TotalMember = 1;
             newGroup.CoverImage ??= DefaultImage.DefaultGroupImage;
             await _unitOfWork.CompleteAsync();
 
-            var response = _mapper.Map<GetGroupResponse>(await _unitOfWork.GroupRepository.GetByIdAsync(newGroup.Id, 
+            var response = _mapper.Map<GetGroupResponse>(await _unitOfWork.GroupRepository.GetById(newGroup.Id, 
                 new Expression<Func<Group, object>>[]
                 {
-                    x => x.CreatedUser,
+                    x => x.CreatedBy,
                 }
                 ));
 
@@ -61,14 +61,14 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> Delete(string requestId, Guid Id)
         {
-            var group = await _unitOfWork.GroupRepository.GetByIdAsync(Id) ?? throw new NotFoundException("Group id " + Id.ToString());
+            var group = await _unitOfWork.GroupRepository.GetById(Id) ?? throw new NotFoundException("Group id " + Id.ToString());
 
             if (!await CheckPermissionGroup(requestId, group.CreatedId))
             {
                 return new ErrorResponse(400, Messages.GroupAccessDenied);
             }
 
-            await _unitOfWork.GroupRepository.DeleteAsync(Id);
+            await _unitOfWork.GroupRepository.Delete(Id);
 
             if (!await _unitOfWork.CompleteAsync())
             {
@@ -82,7 +82,7 @@ namespace SocialNetwork.Business.Services.Concrete
         {
             int totalItems, pageCount;
             List<Group> data;
-            Expression<Func<Group, bool>> filter = x => x.IsDeleted == false;
+            Expression<Func<Group, bool>> filter = x => x.Status == 1;
             if (!string.IsNullOrEmpty(searchString))
             {
                 filter = filter.And(x => x.Name.Contains(searchString.Trim()) || x.Description.Contains(searchString.Trim()));
@@ -92,7 +92,7 @@ namespace SocialNetwork.Business.Services.Concrete
             {
                 case GroupType.ALL:
                     {
-                        totalItems = await _unitOfWork.GroupRepository.GetCountAsync(filter);
+                        totalItems = await _unitOfWork.GroupRepository.GetCount(filter);
                         pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
 
                         if (pageNumber > pageCount && pageCount != 0)
@@ -100,14 +100,14 @@ namespace SocialNetwork.Business.Services.Concrete
                             return new ErrorResponse(400, Messages.OutOfPage);
                         }
 
-                        data = (await _unitOfWork.GroupRepository.GetPagedAsync(pageSize, pageNumber,
+                        data = (await _unitOfWork.GroupRepository.GetPaged(pageSize, pageNumber,
                             new Expression<Func<Group, object>>[] {
-                            x => x.CreatedUser,
+                            x => x.CreatedBy,
                             x => x.GroupMembers.Where(gm => gm.UserId == requestId),
                             x => x.GroupInvites.Where(gi => gi.UserId == requestId && !gi.AdminAccepted)
                             },
                             filter,
-                            x => x.CreatedDate)
+                            x => x.CreatedAt)
                             ).ToList();
 
                         break;
@@ -118,7 +118,7 @@ namespace SocialNetwork.Business.Services.Concrete
                         filter = filter.And(x => x.GroupMembers.Any(gm => gm.UserId == requestId && !gm.IsAdmin));
 
 
-                        totalItems = await _unitOfWork.GroupRepository.GetCountAsync(filter);
+                        totalItems = await _unitOfWork.GroupRepository.GetCount(filter);
                         pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
 
                         if (pageNumber > pageCount && pageCount != 0)
@@ -126,13 +126,13 @@ namespace SocialNetwork.Business.Services.Concrete
                             return new ErrorResponse(400, Messages.OutOfPage);
                         }
 
-                        data = (await _unitOfWork.GroupRepository.GetPagedAsync(pageSize, pageNumber,
+                        data = (await _unitOfWork.GroupRepository.GetPaged(pageSize, pageNumber,
                             new Expression<Func<Group, object>>[] {
-                            x => x.CreatedUser,
+                            x => x.CreatedBy,
                             x => x.GroupMembers.Where(gm => gm.UserId == requestId),
                             },
                             filter,
-                            x => x.CreatedDate)
+                            x => x.CreatedAt)
                             ).ToList();
 
                         break;
@@ -141,7 +141,7 @@ namespace SocialNetwork.Business.Services.Concrete
                     {
                         filter = filter.And(x => x.GroupMembers.Any(gm => gm.UserId == requestId && gm.IsAdmin));
 
-                        totalItems = await _unitOfWork.GroupRepository.GetCountAsync(filter);
+                        totalItems = await _unitOfWork.GroupRepository.GetCount(filter);
                         pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
 
                         if (pageNumber > pageCount && pageCount != 0)
@@ -149,9 +149,9 @@ namespace SocialNetwork.Business.Services.Concrete
                             return new ErrorResponse(400, Messages.OutOfPage);
                         }
 
-                        data = (await _unitOfWork.GroupRepository.GetPagedAsync(pageSize, pageNumber,
+                        data = (await _unitOfWork.GroupRepository.GetPaged(pageSize, pageNumber,
                             new Expression<Func<Group, object>>[] {
-                            x => x.CreatedUser,
+                            x => x.CreatedBy,
                             x => x.GroupMembers.Where(gm => gm.UserId == requestId),
                             },
                             filter,
@@ -164,7 +164,7 @@ namespace SocialNetwork.Business.Services.Concrete
                     {
                         filter = filter.And(x => x.GroupMembers.Any(gm => gm.UserId == requestId));
 
-                        totalItems = await _unitOfWork.GroupRepository.GetCountAsync(filter);
+                        totalItems = await _unitOfWork.GroupRepository.GetCount(filter);
                         pageCount = (int)Math.Ceiling((double)totalItems / pageSize);
 
                         if (pageNumber > pageCount && pageCount != 0)
@@ -172,13 +172,13 @@ namespace SocialNetwork.Business.Services.Concrete
                             return new ErrorResponse(400, Messages.OutOfPage);
                         }
 
-                        data = (await _unitOfWork.GroupRepository.GetPagedAsync(pageSize, pageNumber,
+                        data = (await _unitOfWork.GroupRepository.GetPaged(pageSize, pageNumber,
                             new Expression<Func<Group, object>>[] {
-                            x => x.CreatedUser,
+                            x => x.CreatedBy,
                             x => x.GroupMembers.Where(gm => gm.UserId == requestId),
                             },
                             filter,
-                            x => x.CreatedDate)
+                            x => x.CreatedAt)
                             ).ToList();
                         break;
                     }
@@ -195,8 +195,8 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetById(string requestId, Guid Id)
         {
-            var group = await _unitOfWork.GroupRepository.GetByIdAsync(Id, new Expression<Func<Group, object>>[] {
-                x => x.CreatedUser, 
+            var group = await _unitOfWork.GroupRepository.GetById(Id, new Expression<Func<Group, object>>[] {
+                x => x.CreatedBy, 
             });
             if (group == null)
             {
@@ -210,8 +210,8 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> Update(string requestId, Guid Id, UpdateGroupRequest request)
         {
-            var group = await _unitOfWork.GroupRepository.GetByIdAsync(Id, new Expression<Func<Group, object>>[] {
-                x => x.CreatedUser,
+            var group = await _unitOfWork.GroupRepository.GetById(Id, new Expression<Func<Group, object>>[] {
+                x => x.CreatedBy,
             }) ?? throw new NotFoundException("Group id " + Id.ToString());
 
             if (requestId != group.CreatedId)
@@ -221,7 +221,7 @@ namespace SocialNetwork.Business.Services.Concrete
 
             _mapper.Map(request, group);
 
-            await _unitOfWork.GroupRepository.UpdateAsync(group);
+            await _unitOfWork.GroupRepository.Update(group);
             var result = await _unitOfWork.CompleteAsync();
 
             if (!result)
@@ -236,25 +236,25 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetMedia(string requestId, Guid groupId, int pageSize, int pageNumber)
         {
-            var group = await _unitOfWork.GroupRepository.GetByIdAsync(groupId);
+            var group = await _unitOfWork.GroupRepository.GetById(groupId);
             if (group == null) return new ErrorResponse(404, Messages.NotFound("Group"));
 
             if (!group.IsPublic)
             {
-                var checkMember = await _unitOfWork.GroupMemberRepository.FindOneByAsync(x => x.GroupId == groupId && x.UserId == requestId);
+                var checkMember = await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.GroupId == groupId && x.UserId == requestId);
                 if (checkMember == null) return new ErrorResponse(400, Messages.GroupAccessDenied);
             }
 
-            Expression<Func<PostMedia, bool>> filter = x => x.IsDeleted == false && x.Post.IsDeleted == false && x.Post.GroupId == groupId && x.Post.IsDeleted == false;
+            Expression<Func<PostMedia, bool>> filter = x => x.Status == 1 && x.Post.Status == 1 && x.Post.GroupId == groupId && x.Post.Status == 1;
 
-            int totalItems = await _unitOfWork.PostMediaRepository.GetCountAsync(filter);
+            int totalItems = await _unitOfWork.PostMediaRepository.GetCount(filter);
             int totalPage = (int)Math.Ceiling((double)totalItems / pageSize);
             if (pageNumber > totalPage && totalPage != 0)
             {
                 return new ErrorResponse(400, Messages.OutOfPage);
             }
 
-            var postImages = await _unitOfWork.PostMediaRepository.GetPagedAsync(pageSize, pageNumber, filter, x => x.CreatedDate);
+            var postImages = await _unitOfWork.PostMediaRepository.GetPaged(pageSize, pageNumber, filter, x => x.CreatedAt);
 
             var response = _mapper.Map<List<GetPostMediaResponse>>(postImages);
 
@@ -263,14 +263,14 @@ namespace SocialNetwork.Business.Services.Concrete
 
         public async Task<IResponse> GetFeed(string requestId, int pageSize, DateTime? cursor)
         {
-            Expression<Func<Post, bool>> filter = x => x.IsDeleted == false && x.GroupId != null && x.Group.IsDeleted == false && x.Group.GroupMembers.Any(x => x.UserId == requestId);
+            Expression<Func<Post, bool>> filter = x => x.Status == 1 && x.GroupId != null && x.Group.Status == 1 && x.Group.GroupMembers.Any(x => x.UserId == requestId);
 
             if (cursor != null)
             {
-                filter = filter.And(x => x.CreatedDate < cursor);
+                filter = filter.And(x => x.CreatedAt < cursor);
             }
 
-            var data = (await _unitOfWork.PostRepository.GetCursorPagedAsync(pageSize + 1, filter, x => x.CreatedDate, new Expression<Func<Post, object>>[]
+            var data = (await _unitOfWork.PostRepository.GetCursorPaged(pageSize + 1, filter, x => x.CreatedAt, new Expression<Func<Post, object>>[]
             {
                 x => x.Author,
                     x => x.PostMedias,
@@ -288,7 +288,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 data.RemoveAt(data.Count - 1);
             }
 
-            DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedDate : null;
+            DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedAt : null;
 
             if (endCursor != null)
             {
@@ -307,7 +307,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.GroupAccessDenied);
             }
 
-            Expression<Func<Post, bool>> filter = x => x.IsDeleted == false && x.GroupId == groupId && x.Group.IsDeleted == false;
+            Expression<Func<Post, bool>> filter = x => x.Status == 1 && x.GroupId == groupId && x.Group.Status == 1;
 
             if (!string.IsNullOrWhiteSpace(searchString))
             {
@@ -315,20 +315,20 @@ namespace SocialNetwork.Business.Services.Concrete
                 filter = filter.And(x => x.Content.Contains(searchString) || x.Author.FirstName.Contains(searchString) || x.Author.LastName.Contains(searchString));
             }
 
-            int totalItems = await _unitOfWork.PostRepository.GetCountAsync(filter);
+            int totalItems = await _unitOfWork.PostRepository.GetCount(filter);
             int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
             if (pageNumber > totalPages && totalPages != 0) return new ErrorResponse(400, Messages.OutOfPage);
 
-            var data = await _unitOfWork.PostRepository.GetPagedAsync(pageSize, pageNumber, new Expression<Func<Post, object>>[]
+            var data = await _unitOfWork.PostRepository.GetPaged(pageSize, pageNumber, new Expression<Func<Post, object>>[]
             {
                 x => x.Author,
-                x => x.PostMedias.Where(x => x.IsDeleted == false),
+                x => x.PostMedias.Where(x => x.Status == 1),
                 x => x.Group,
                 x => x.SharePost.Author,
                 x => x.SharePost.Group,
-                x => x.SharePost.PostMedias.Where(x => x.IsDeleted == false)
-            }, filter, x => x.CreatedDate);
+                x => x.SharePost.PostMedias.Where(x => x.Status == 1)
+            }, filter, x => x.CreatedAt);
 
             var response = _mapper.Map<List<GetPostResponse>>(data);
 
@@ -342,7 +342,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 return new ErrorResponse(400, Messages.GroupAccessDenied);
             }
 
-            Expression<Func<Post, bool>> filter = x => x.IsDeleted == false && x.GroupId == groupId && x.Group.IsDeleted == false;
+            Expression<Func<Post, bool>> filter = x => x.Status == 1 && x.GroupId == groupId && x.Group.Status == 1;
 
             if (!string.IsNullOrWhiteSpace(searchString))
             {
@@ -350,14 +350,14 @@ namespace SocialNetwork.Business.Services.Concrete
                 filter = filter.And(x => x.Content.Contains(searchString) || x.Author.FirstName.Contains(searchString) || x.Author.LastName.Contains(searchString));
             }
 
-            int totalItems = await _unitOfWork.PostRepository.GetCountAsync(filter);
+            int totalItems = await _unitOfWork.PostRepository.GetCount(filter);
 
             if (cursor != null)
             {
-                filter = filter.And(x => x.CreatedDate < cursor);
+                filter = filter.And(x => x.CreatedAt < cursor);
             }
 
-            var data = (await _unitOfWork.PostRepository.GetCursorPagedAsync(pageSize + 1, filter, x => x.CreatedDate, new Expression<Func<Post, object>>[]
+            var data = (await _unitOfWork.PostRepository.GetCursorPaged(pageSize + 1, filter, x => x.CreatedAt, new Expression<Func<Post, object>>[]
             {
                 x => x.Author,
                 x => x.PostMedias,
@@ -375,7 +375,7 @@ namespace SocialNetwork.Business.Services.Concrete
                 data.RemoveAt(data.Count - 1);
             }
 
-            DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedDate : null;
+            DateTime? endCursor = hasNext ? data.LastOrDefault()?.CreatedAt : null;
 
             if (endCursor != null)
             {
@@ -389,8 +389,8 @@ namespace SocialNetwork.Business.Services.Concrete
 
         private async Task<bool> CheckAccessGroup(string userId, Guid groupId)
         {
-            var group = await _unitOfWork.GroupRepository.GetByIdAsync(groupId) ?? throw new NotFoundException("Group id: " + groupId.ToString());
-            return !(!group.IsPublic && await _unitOfWork.GroupMemberRepository.FindOneByAsync(x => x.GroupId == groupId && x.UserId == userId) == null);
+            var group = await _unitOfWork.GroupRepository.GetById(groupId) ?? throw new NotFoundException("Group id: " + groupId.ToString());
+            return !(!group.IsPublic && await _unitOfWork.GroupMemberRepository.FindOneBy(x => x.GroupId == groupId && x.UserId == userId) == null);
         }
 
         private async Task<bool> CheckPermissionGroup(string userId, string authorId)
@@ -410,8 +410,8 @@ namespace SocialNetwork.Business.Services.Concrete
 
             //if (!await _userManager.IsInRoleAsync(user, RoleName.Administrator)) return new ErrorResponse(401, Messages.UnAuthorized);
 
-            var totalGroup = await _unitOfWork.GroupRepository.GetCountAsync(x => x.IsDeleted == false);
-            var privateGroup = await _unitOfWork.GroupRepository.GetCountAsync(x => x.IsDeleted == false && !x.IsPublic);
+            var totalGroup = await _unitOfWork.GroupRepository.GetCount(x => x.Status == 1);
+            var privateGroup = await _unitOfWork.GroupRepository.GetCount(x => x.Status == 1 && !x.IsPublic);
 
             var response = new StatsGroupResponse
             {

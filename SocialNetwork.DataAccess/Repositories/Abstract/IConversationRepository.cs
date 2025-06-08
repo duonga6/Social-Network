@@ -4,6 +4,6 @@ namespace SocialNetwork.DataAccess.Repositories.Abstract
 {
     public interface IConversationRepository : IGenericRepository<Conversation, Guid>
     {
-        Task UpdateNewestMessageAsync(Guid conversationId);
+        Task UpdateNewestMessage(Guid conversationId);
     }
 }

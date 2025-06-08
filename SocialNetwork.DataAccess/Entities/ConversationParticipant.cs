@@ -1,6 +1,6 @@
 ﻿namespace SocialNetwork.DataAccess.Entities
 {
-    public class ConversationParticipant : EntityAuditBase<Guid>
+    public class ConversationParticipant : BaseEntity<Guid>
     {
         public string UserId { set; get; }
         public Guid ConversationId { set; get; }
